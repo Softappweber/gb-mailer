@@ -1,35 +1,249 @@
 <div class="module-container">
     <div class="module-header">
-        <h2 class="module-title">Campaigns</h2>
-        <button class="btn btn-primary" onclick="showCreateCampaignModal()">
-            <i class="bi bi-send"></i> New Campaign
-        </button>
+        <div>
+            <h2 class="module-title">Campaigns</h2>
+            <p class="text-muted mb-0" id="campaignCount">0 campaigns</p>
+        </div>
+        <div>
+            <button class="btn learn-btn me-2" onclick="showCampaignsGuide()">
+                <i class="bi bi-book"></i> Learn Campaigns
+            </button>
+            <button class="btn btn-primary" onclick="showCreateCampaignModal()">
+                <i class="bi bi-send"></i> New Campaign
+            </button>
+        </div>
     </div>
-    
+
+    <div class="alert alert-warning">
+        <i class="bi bi-exclamation-triangle"></i>
+        Email sending via EmailJS will be integrated here. AWS SES coming soon!
+    </div>
+
     <div class="card">
-        <div class="card-body">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover">
+                <table class="table table-hover mb-0">
                     <thead>
                         <tr>
-                            <th>Campaign Name</th>
+                            <th>Campaign</th>
                             <th>Status</th>
                             <th>Recipients</th>
                             <th>Opens</th>
                             <th>Clicks</th>
                             <th>Created</th>
+                            <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody id="campaignsTableBody">
-                        <tr>
-                            <td colspan="6" class="text-center text-muted py-4">
-                                <i class="bi bi-send" style="font-size: 3rem;"></i>
-                                <p class="mt-2 mb-0">No campaigns yet. Create your first campaign.</p>
-                            </td>
-                        </tr>
+                        <tr><td colspan="7" class="text-center py-5">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Campaigns Guide Modal -->
+<div class="modal fade" id="campaignsGuideModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header learn-header">
+                <h5 class="modal-title text-white">
+                    <i class="bi bi-book"></i> Campaign Guide
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body">
+                                <h6 class="text-primary"><i class="bi bi-1-circle"></i> What is a Campaign?</h6>
+                                <p class="small">A campaign is a single email sent to a group of contacts. Track performance in real-time.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-success">
+                            <div class="card-body">
+                                <h6 class="text-success"><i class="bi bi-2-circle"></i> Campaign Types</h6>
+                                <ul class="small mb-0">
+                                    <li><strong>Newsletter</strong> - Regular updates</li>
+                                    <li><strong>Promotional</strong> - Sales & offers</li>
+                                    <li><strong>Announcement</strong> - Product launches</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-warning">
+                            <div class="card-body">
+                                <h6 class="text-warning"><i class="bi bi-3-circle"></i> Best Practices</h6>
+                                <ul class="small mb-0">
+                                    <li>Send during business hours</li>
+                                    <li>Avoid spam trigger words</li>
+                                    <li>Always include unsubscribe link</li>
+                                    <li>Test on different devices</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-info">
+                            <div class="card-body">
+                                <h6 class="text-info"><i class="bi bi-4-circle"></i> Metrics to Track</h6>
+                                <ul class="small mb-0">
+                                    <li><strong>Open Rate</strong> - Subject line effectiveness</li>
+                                    <li><strong>Click Rate</strong> - Content engagement</li>
+                                    <li><strong>Bounce Rate</strong> - List quality</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-success mt-3 mb-0">
+                    <i class="bi bi-graph-up"></i>
+                    <strong>Marketing Tip:</strong> Send campaigns on <strong>Tuesday or Thursday mornings</strong> for highest engagement!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Campaign Modal -->
+<div class="modal fade" id="campaignModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Campaign</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Campaign Name *</label>
+                    <input type="text" class="form-control" id="campaignName" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Select Template</label>
+                    <select class="form-select" id="campaignTemplate"></select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Select List</label>
+                    <select class="form-select" id="campaignList"></select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveCampaign()">Save Draft</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function initCampaignsModule() {
+    loadCampaigns();
+    loadTemplatesForCampaign();
+    loadListsForCampaign();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('campaignsTableBody')) initCampaignsModule();
+});
+
+async function loadCampaigns() {
+    try {
+        const { data, error } = await gbSupabase.client
+            .from('campaigns')
+            .select('*')
+            .eq('user_id', gbApp.currentUser.id)
+            .order('created_at', { ascending: false });
+        
+        if (error) { console.error(error); return; }
+        
+        renderCampaigns(data || []);
+        document.getElementById('campaignCount').textContent = `${data?.length || 0} campaigns`;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+function renderCampaigns(campaigns) {
+    const tbody = document.getElementById('campaignsTableBody');
+    
+    if (campaigns.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" class="text-center py-5">
+            <i class="bi bi-send" style="font-size: 3rem; color: #ccc;"></i>
+            <p class="mt-2">No campaigns yet</p>
+            <button class="btn learn-btn" onclick="showCampaignsGuide()">
+                <i class="bi bi-book"></i> Learn how campaigns work
+            </button>
+        </td></tr>`;
+        return;
+    }
+    
+    tbody.innerHTML = campaigns.map(c => `
+        <tr>
+            <td class="fw-bold">${c.name}</td>
+            <td><span class="badge bg-secondary">${c.status}</span></td>
+            <td>${c.total_recipients}</td>
+            <td>${c.open_count}</td>
+            <td>${c.click_count}</td>
+            <td>${GBUtils.formatDate(c.created_at, 'short')}</td>
+            <td><button class="btn btn-sm btn-outline-danger" onclick="deleteCampaign('${c.id}')">🗑</button></td>
+        </tr>
+    `).join('');
+}
+
+function showCampaignsGuide() {
+    new bootstrap.Modal(document.getElementById('campaignsGuideModal')).show();
+}
+
+async function loadTemplatesForCampaign() {
+    const { data } = await gbSupabase.client
+        .from('email_templates').select('id, name').eq('user_id', gbApp.currentUser.id);
+    document.getElementById('campaignTemplate').innerHTML = 
+        '<option value="">Select template...</option>' +
+        (data || []).map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+}
+
+async function loadListsForCampaign() {
+    const { data } = await gbSupabase.client
+        .from('lists').select('id, name').eq('user_id', gbApp.currentUser.id);
+    document.getElementById('campaignList').innerHTML = 
+        '<option value="">Select list...</option>' +
+        (data || []).map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+}
+
+function showCreateCampaignModal() {
+    new bootstrap.Modal(document.getElementById('campaignModal')).show();
+}
+
+async function saveCampaign() {
+    const name = document.getElementById('campaignName').value.trim();
+    const templateId = document.getElementById('campaignTemplate').value;
+    const listId = document.getElementById('campaignList').value;
+    
+    if (!name) { showToast('Enter campaign name', 'error'); return; }
+    
+    const { error } = await gbSupabase.insert('campaigns', {
+        user_id: gbApp.currentUser.id,
+        name,
+        template_id: templateId || null,
+        list_ids: listId ? [listId] : [],
+        status: 'draft'
+    });
+    
+    if (!error) {
+        bootstrap.Modal.getInstance(document.getElementById('campaignModal')).hide();
+        showToast('Campaign created!', 'success');
+        loadCampaigns();
+    }
+}
+
+async function deleteCampaign(id) {
+    if (!confirm('Delete campaign?')) return;
+    const { error } = await gbSupabase.delete('campaigns', { id });
+    if (!error) { showToast('Campaign deleted', 'success'); loadCampaigns(); }
+}
+</script>
