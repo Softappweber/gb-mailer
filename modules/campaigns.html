@@ -246,4 +246,94 @@ async function deleteCampaign(id) {
     const { error } = await gbSupabase.delete('campaigns', { id });
     if (!error) { showToast('Campaign deleted', 'success'); loadCampaigns(); }
 }
+
+
+    // Add this function to campaigns.html
+async function sendCampaignEmails(campaignId) {
+    try {
+        // Get campaign details
+        const { data: campaign } = await gbSupabase.client
+            .from('campaigns')
+            .select('*')
+            .eq('id', campaignId)
+            .single();
+        
+        if (!campaign) {
+            showToast('Campaign not found', 'error');
+            return;
+        }
+        
+        // Get template
+        const { data: template } = await gbSupabase.client
+            .from('email_templates')
+            .select('*')
+            .eq('id', campaign.template_id)
+            .single();
+        
+        if (!template) {
+            showToast('No template selected', 'error');
+            return;
+        }
+        
+        // Get contacts from list
+        const { data: contacts } = await gbSupabase.client
+            .from('contacts')
+            .select('*')
+            .eq('user_id', gbApp.currentUser.id)
+            .limit(10); // Limit for testing
+        
+        if (!contacts || contacts.length === 0) {
+            showToast('No contacts found', 'error');
+            return;
+        }
+        
+        // Get EmailJS config
+        const config = JSON.parse(localStorage.getItem('emailjs_config') || '{}');
+        
+        if (!config.serviceId || !config.templateId || !config.publicKey) {
+            showToast('EmailJS not configured. Go to Settings first.', 'error');
+            return;
+        }
+        
+        // Load EmailJS
+        if (!window.emailjs) {
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+            await new Promise((resolve) => { script.onload = resolve; document.head.appendChild(script); });
+        }
+        
+        emailjs.init(config.publicKey);
+        
+        // Send to each contact
+        let sent = 0;
+        showToast(`Sending to ${contacts.length} contacts...`, 'info');
+        
+        for (const contact of contacts) {
+            try {
+                await emailjs.send(config.serviceId, config.templateId, {
+                    to_email: contact.email,
+                    to_name: contact.first_name || contact.email,
+                    subject: template.subject,
+                    message: template.content_html.replace('{{first_name}}', contact.first_name || '')
+                });
+                sent++;
+            } catch (error) {
+                console.error('Failed for', contact.email, error);
+            }
+        }
+        
+        // Update campaign
+        await gbSupabase.update('campaigns', {
+            status: 'sent',
+            sent_at: new Date().toISOString(),
+            total_recipients: contacts.length
+        }, { id: campaignId });
+        
+        showToast(`Campaign sent! ${sent} emails delivered.`, 'success');
+        loadCampaigns();
+        
+    } catch (error) {
+        showToast('Error sending campaign: ' + error.message, 'error');
+    }
+}
 </script>
