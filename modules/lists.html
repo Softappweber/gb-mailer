@@ -207,7 +207,10 @@ async function loadLists() {
             .eq('user_id', gbApp.currentUser.id)
             .order('created_at', { ascending: false });
         
-        if (error) throw error;
+        if (error) {
+            console.error('Error loading lists:', error);
+            return;
+        }
         
         listsState.lists = data || [];
         updateListCount();
@@ -215,7 +218,6 @@ async function loadLists() {
         
     } catch (error) {
         console.error('Error loading lists:', error);
-        showToast('Failed to load lists', 'error');
     }
 }
 
