@@ -40,12 +40,10 @@ class GBMailerApp {
     }
     
     setupEventListeners() {
-        // Auth Events
         document.getElementById('loginBtn')?.addEventListener('click', () => this.handleLogin());
         document.getElementById('signupBtn')?.addEventListener('click', () => this.handleSignup());
         document.getElementById('logoutBtn')?.addEventListener('click', () => this.handleLogout());
         
-        // Navigation Events
         document.getElementById('showSignup')?.addEventListener('click', (e) => {
             e.preventDefault();
             this.showScreen('signup');
@@ -56,10 +54,8 @@ class GBMailerApp {
             this.showScreen('login');
         });
         
-        // Sidebar Toggle
         this.elements.sidebarToggle?.addEventListener('click', () => this.toggleSidebar());
         
-        // Module Navigation
         document.querySelectorAll('.nav-link[data-module]').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -67,16 +63,12 @@ class GBMailerApp {
             });
         });
         
-        // Notification and Help buttons
         document.querySelectorAll('.header-actions .btn').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 e.preventDefault();
                 const title = btn.getAttribute('title');
-                if (title === 'Notifications') {
-                    this.showNotifications();
-                } else if (title === 'Help') {
-                    this.showHelp();
-                }
+                if (title === 'Notifications') this.showNotifications();
+                else if (title === 'Help') this.showHelp();
             });
         });
     }
@@ -101,7 +93,6 @@ class GBMailerApp {
         try {
             this.showLoading(true);
             const { data, error } = await gbSupabase.signIn(email, password);
-            
             if (error) throw error;
             
             this.currentUser = data.user;
@@ -134,7 +125,6 @@ class GBMailerApp {
                 full_name: name,
                 plan: 'free'
             });
-            
             if (error) throw error;
             
             if (data.user) {
@@ -189,8 +179,14 @@ class GBMailerApp {
             const html = await response.text();
             this.elements.contentArea.innerHTML = html;
             
+            // Execute scripts with new Function
             this.executeModuleScripts(this.elements.contentArea);
-            this.initializeModule(module);
+            
+            // Initialize module after scripts execute
+            setTimeout(() => {
+                this.initializeModule(module);
+            }, 50);
+            
         } catch (error) {
             this.elements.contentArea.innerHTML = `
                 <div class="alert alert-danger">
@@ -204,51 +200,57 @@ class GBMailerApp {
     executeModuleScripts(container) {
         const scripts = container.querySelectorAll('script');
         scripts.forEach(script => {
-            const newScript = document.createElement('script');
-            Array.from(script.attributes).forEach(attr => {
-                newScript.setAttribute(attr.name, attr.value);
-            });
-            newScript.textContent = script.textContent;
-            script.parentNode.replaceChild(newScript, script);
+            try {
+                // Execute inline script code
+                const scriptContent = script.textContent;
+                const scriptFunc = new Function(scriptContent);
+                scriptFunc.call(window);
+            } catch (error) {
+                console.error('Script execution error:', error);
+            }
         });
     }
     
     initializeModule(module) {
         const moduleInitializers = {
             'dashboard': () => {
-                if (typeof loadDashboardData === 'function') loadDashboardData();
+                if (typeof window.loadDashboardData === 'function') window.loadDashboardData();
             },
             'contacts': () => {
-                if (typeof initContactsModule === 'function') initContactsModule();
+                if (typeof window.initContactsModule === 'function') window.initContactsModule();
             },
             'lists': () => {
-                if (typeof initListsModule === 'function') initListsModule();
+                if (typeof window.initListsModule === 'function') window.initListsModule();
             },
             'templates': () => {
-                if (typeof initTemplatesModule === 'function') initTemplatesModule();
+                if (typeof window.initTemplatesModule === 'function') window.initTemplatesModule();
             },
             'campaigns': () => {
-                if (typeof initCampaignsModule === 'function') initCampaignsModule();
+                if (typeof window.initCampaignsModule === 'function') window.initCampaignsModule();
             },
             'automation': () => {
-                if (typeof initAutomationModule === 'function') initAutomationModule();
+                if (typeof window.initAutomationModule === 'function') window.initAutomationModule();
             },
             'analytics': () => {
-                if (typeof initAnalyticsModule === 'function') initAnalyticsModule();
+                if (typeof window.initAnalyticsModule === 'function') window.initAnalyticsModule();
             },
             'scoring': () => {
-                if (typeof initScoringModule === 'function') initScoringModule();
+                if (typeof window.initScoringModule === 'function') window.initScoringModule();
             },
             'reports': () => {
-                if (typeof initReportsModule === 'function') initReportsModule();
+                if (typeof window.initReportsModule === 'function') window.initReportsModule();
             },
             'settings': () => {
-                if (typeof initSettingsModule === 'function') initSettingsModule();
+                if (typeof window.initSettingsModule === 'function') window.initSettingsModule();
             }
         };
         
         if (moduleInitializers[module]) {
-            moduleInitializers[module]();
+            try {
+                moduleInitializers[module]();
+            } catch (error) {
+                console.error('Module init error:', error);
+            }
         }
     }
     
@@ -351,7 +353,6 @@ style.textContent = `
         from { transform: translateX(100%); opacity: 0; }
         to { transform: translateX(0); opacity: 1; }
     }
-    
     @keyframes slideOut {
         from { transform: translateX(0); opacity: 1; }
         to { transform: translateX(100%); opacity: 0; }
