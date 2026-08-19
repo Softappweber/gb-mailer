@@ -5,16 +5,18 @@
             <p class="text-muted mb-0" id="contactCount">0 contacts</p>
         </div>
         <div>
-            <button class="btn learn-btn me-2" onclick="window.showContactsGuide()">
+            <button class="btn learn-btn me-2" onclick="showContactsGuide()">
                 <i class="bi bi-book"></i> Learn
             </button>
-            <button class="btn btn-outline-primary me-2" onclick="window.showImportModal()">
-                <i class="bi bi-upload"></i> Import XLSX/CSV
-            </button>
-            <button class="btn btn-outline-success me-2" onclick="window.exportContacts()">
+            <label class="btn btn-outline-primary me-2" style="cursor: pointer;">
+                <i class="bi bi-upload"></i> Upload File
+                <input type="file" id="importFile" accept=".xlsx,.xls,.csv" 
+                       style="display: none;" onchange="previewImportFile()">
+            </label>
+            <button class="btn btn-outline-success me-2" onclick="exportContacts()">
                 <i class="bi bi-download"></i> Export
             </button>
-            <button class="btn btn-primary" onclick="window.showAddContactModal()">
+            <button class="btn btn-primary" onclick="showAddContactModal()">
                 <i class="bi bi-person-plus"></i> Add Contact
             </button>
         </div>
@@ -26,21 +28,21 @@
                 <div class="col-md-4">
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" placeholder="Search contacts..." id="contactSearch" onkeyup="window.debounceSearch()">
+                        <input type="text" class="form-control" placeholder="Search contacts..." id="contactSearch" onkeyup="debounceSearch()">
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <select class="form-select" id="tagFilter" onchange="window.loadContacts()">
+                    <select class="form-select" id="tagFilter" onchange="loadContacts()">
                         <option value="">All Tags</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <select class="form-select" id="listFilter" onchange="window.loadContacts()">
+                    <select class="form-select" id="listFilter" onchange="loadContacts()">
                         <option value="">All Lists</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <select class="form-select" id="statusFilter" onchange="window.loadContacts()">
+                    <select class="form-select" id="statusFilter" onchange="loadContacts()">
                         <option value="">All Status</option>
                         <option value="active">Active</option>
                         <option value="unsubscribed">Unsubscribed</option>
@@ -53,17 +55,11 @@
 
     <div id="bulkActions" class="alert alert-primary d-none">
         <div class="d-flex justify-content-between align-items-center">
-            <span><strong id="selectedCount">0</strong> contacts selected</span>
+            <span><strong id="selectedCount">0</strong> selected</span>
             <div>
-                <button class="btn btn-sm btn-outline-primary me-1" onclick="window.bulkAddTag()">
-                    <i class="bi bi-tag"></i> Add Tag
-                </button>
-                <button class="btn btn-sm btn-outline-success me-1" onclick="window.bulkAddToList()">
-                    <i class="bi bi-list-plus"></i> Add to List
-                </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="window.bulkDelete()">
-                    <i class="bi bi-trash"></i> Delete
-                </button>
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="bulkAddTag()">Add Tag</button>
+                <button class="btn btn-sm btn-outline-success me-1" onclick="bulkAddToList()">Add to List</button>
+                <button class="btn btn-sm btn-outline-danger" onclick="bulkDelete()">Delete</button>
             </div>
         </div>
     </div>
@@ -74,7 +70,7 @@
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th width="40"><input type="checkbox" id="selectAll" onchange="window.toggleSelectAll()"></th>
+                            <th width="40"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Company</th>
@@ -94,18 +90,58 @@
 
     <div class="d-flex justify-content-between align-items-center mt-3">
         <div>
-            <select class="form-select form-select-sm" id="pageSize" onchange="window.changePageSize()" style="width: auto; display: inline-block;">
-                <option value="10">10 per page</option>
-                <option value="25" selected>25 per page</option>
-                <option value="50">50 per page</option>
-                <option value="100">100 per page</option>
+            <select class="form-select form-select-sm" id="pageSize" onchange="changePageSize()" style="width: auto; display: inline-block;">
+                <option value="10">10</option>
+                <option value="25" selected>25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
             </select>
         </div>
         <nav><ul class="pagination pagination-sm mb-0" id="pagination"></ul></nav>
     </div>
 </div>
 
-<!-- Add/Edit Contact Modal -->
+<!-- Import Preview Modal -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Import Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <strong id="importRowCount">0</strong> contacts found
+                </div>
+                <div class="table-responsive mb-3" style="max-height: 200px; overflow-y: auto;">
+                    <table class="table table-sm table-bordered">
+                        <thead id="importHeaders"></thead>
+                        <tbody id="importRows"></tbody>
+                    </table>
+                </div>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Email Column *</label>
+                        <select class="form-select" id="emailColumn">
+                            <option value="">Select...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Name Column</label>
+                        <select class="form-select" id="nameColumn">
+                            <option value="">Select...</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="btn btn-primary" onclick="importContacts()">
+                    <i class="bi bi-upload"></i> Import Now
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Contact Modal -->
 <div class="modal fade" id="contactModal" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -114,249 +150,109 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form id="contactForm">
-                    <input type="hidden" id="contactId">
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">First Name</label>
-                            <input type="text" class="form-control" id="firstName">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Last Name</label>
-                            <input type="text" class="form-control" id="lastName">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Email *</label>
-                        <input type="email" class="form-control" id="contactEmail" required>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Company</label>
-                            <input type="text" class="form-control" id="contactCompany">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label">Phone</label>
-                            <input type="text" class="form-control" id="contactPhone">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Tags</label>
-                        <input type="text" class="form-control" id="contactTags" placeholder="tag1, tag2, tag3">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="window.saveContact()">Save Contact</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Import Modal -->
-<div class="modal fade" id="importModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Import Contacts (XLSX or CSV)</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
+                <input type="hidden" id="contactId">
                 <div class="mb-3">
-                    <label class="form-label">Upload File</label>
-                    <input type="file" class="form-control" id="importFile" accept=".xlsx,.xls,.csv" onchange="window.previewImportFile()">
-                    <small class="text-muted">Supports Excel (.xlsx) and CSV files</small>
+                    <label class="form-label">Email *</label>
+                    <input type="email" class="form-control" id="contactEmail">
                 </div>
-                <div id="importPreview" class="d-none">
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i>
-                        <strong id="importRowCount">0</strong> contacts found
-                    </div>
-                    <div class="table-responsive mb-3" style="max-height: 200px; overflow-y: auto;">
-                        <table class="table table-sm table-bordered">
-                            <thead id="importHeaders"></thead>
-                            <tbody id="importRows"></tbody>
-                        </table>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Email Column *</label>
-                            <select class="form-select" id="emailColumn">
-                                <option value="">Select email column...</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Name Column (Optional)</label>
-                            <select class="form-select" id="nameColumn">
-                                <option value="">Select name column...</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div class="form-check mb-3">
-                        <input class="form-check-input" type="checkbox" id="skipDuplicates" checked>
-                        <label class="form-check-label">Skip duplicate emails</label>
-                    </div>
-                    <button class="btn btn-primary" id="importBtn" onclick="window.importContacts()" disabled>
-                        <i class="bi bi-upload"></i> Import Contacts
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Contacts Guide Modal -->
-<div class="modal fade" id="contactsGuideModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header learn-header">
-                <h5 class="modal-title text-white"><i class="bi bi-book"></i> Contacts Guide</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <div class="card h-100 border-primary">
-                            <div class="card-body">
-                                <h6 class="text-primary"><i class="bi bi-1-circle"></i> Import Contacts</h6>
-                                <p class="small">Import 1000+ contacts from Excel or CSV in seconds.</p>
-                            </div>
-                        </div>
+                        <label class="form-label">First Name</label>
+                        <input type="text" class="form-control" id="firstName">
                     </div>
                     <div class="col-md-6 mb-3">
-                        <div class="card h-100 border-success">
-                            <div class="card-body">
-                                <h6 class="text-success"><i class="bi bi-2-circle"></i> Organize</h6>
-                                <p class="small">Use tags and lists to organize contacts.</p>
-                            </div>
-                        </div>
+                        <label class="form-label">Last Name</label>
+                        <input type="text" class="form-control" id="lastName">
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Add Tag Modal -->
-<div class="modal fade" id="tagModal" tabindex="-1">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add Tag</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="text" class="form-control" id="newTag" placeholder="Enter tag name">
+                <div class="mb-3">
+                    <label class="form-label">Company</label>
+                    <input type="text" class="form-control" id="contactCompany">
+                </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="window.applyTag()">Apply</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Add to List Modal -->
-<div class="modal fade" id="listModal" tabindex="-1">
-    <div class="modal-dialog modal-sm">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Add to List</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <select class="form-select" id="listSelect">
-                    <option value="">Select list...</option>
-                </select>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="window.applyList()">Add</button>
+                <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button class="btn btn-primary" onclick="saveContact()">Save</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-// All functions defined globally
+let contactsState = {
+    contacts: [],
+    selectedContacts: new Set(),
+    currentPage: 1,
+    pageSize: 25,
+    totalPages: 1,
+    searchQuery: '',
+    importData: [],
+    importHeaders: []
+};
+
 function initContactsModule() {
-    loadTags();
-    loadLists();
     loadContacts();
 }
 
-function showContactsGuide() {
-    new bootstrap.Modal(document.getElementById('contactsGuideModal')).show();
+async function loadContacts(page = 1) {
+    contactsState.currentPage = page;
+    try {
+        const start = (page - 1) * contactsState.pageSize;
+        const end = start + contactsState.pageSize - 1;
+        
+        const { data, error, count } = await gbSupabase.client
+            .from('contacts')
+            .select('*', { count: 'exact' })
+            .eq('user_id', gbApp.currentUser.id)
+            .order('created_at', { ascending: false })
+            .range(start, end);
+        
+        if (error) { console.error(error); return; }
+        
+        contactsState.contacts = data || [];
+        contactsState.totalPages = Math.ceil((count || 0) / contactsState.pageSize);
+        document.getElementById('contactCount').textContent = `${count || 0} contacts`;
+        renderContactsTable();
+        renderPagination();
+    } catch (error) {
+        console.error('Error:', error);
+    }
 }
 
-function showImportModal() {
-    new bootstrap.Modal(document.getElementById('importModal')).show();
-}
-
-function showAddContactModal() {
-    document.getElementById('contactModalTitle').textContent = 'Add Contact';
-    document.getElementById('contactForm').reset();
-    document.getElementById('contactId').value = '';
-    new bootstrap.Modal(document.getElementById('contactModal')).show();
-}
-
-function editContact(id) {
-    const contact = contactsState.contacts.find(c => c.id === id);
-    if (!contact) return;
-    document.getElementById('contactModalTitle').textContent = 'Edit Contact';
-    document.getElementById('contactId').value = contact.id;
-    document.getElementById('firstName').value = contact.first_name || '';
-    document.getElementById('lastName').value = contact.last_name || '';
-    document.getElementById('contactEmail').value = contact.email;
-    document.getElementById('contactCompany').value = contact.company || '';
-    document.getElementById('contactPhone').value = contact.phone || '';
-    document.getElementById('contactTags').value = (contact.tags || []).join(', ');
-    new bootstrap.Modal(document.getElementById('contactModal')).show();
-}
-
-async function saveContact() {
-    const contactId = document.getElementById('contactId').value;
-    const firstName = document.getElementById('firstName').value.trim();
-    const lastName = document.getElementById('lastName').value.trim();
-    const email = document.getElementById('contactEmail').value.trim();
-    const company = document.getElementById('contactCompany').value.trim();
-    const phone = document.getElementById('contactPhone').value.trim();
-    const tags = document.getElementById('contactTags').value.split(',').map(t => t.trim()).filter(t => t);
-    
-    if (!email || !GBUtils.isValidEmail(email)) {
-        showToast('Please enter a valid email', 'error');
+function renderContactsTable() {
+    const tbody = document.getElementById('contactsTableBody');
+    if (contactsState.contacts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-5">No contacts yet. Upload your file!</td></tr>';
         return;
     }
     
-    try {
-        if (contactId) {
-            await gbSupabase.update('contacts', {
-                first_name: firstName, last_name: lastName, email,
-                company, phone, tags
-            }, { id: contactId });
-            showToast('Contact updated!', 'success');
-        } else {
-            await gbSupabase.insert('contacts', {
-                user_id: gbApp.currentUser.id,
-                first_name: firstName, last_name: lastName, email,
-                company, phone, tags,
-                status: 'active', subscribed: true
-            });
-            showToast('Contact added!', 'success');
-        }
-        bootstrap.Modal.getInstance(document.getElementById('contactModal')).hide();
-        loadContacts();
-    } catch (error) {
-        showToast('Error: ' + error.message, 'error');
-    }
+    tbody.innerHTML = contactsState.contacts.map(c => `
+        <tr>
+            <td><input type="checkbox" class="contact-checkbox" value="${c.id}" onchange="toggleContactSelection('${c.id}', this.checked)"></td>
+            <td>${c.first_name || ''} ${c.last_name || ''}</td>
+            <td>${c.email}</td>
+            <td>${c.company || '-'}</td>
+            <td>${(c.tags || []).join(', ')}</td>
+            <td><span class="badge bg-success">${c.status || 'active'}</span></td>
+            <td>${GBUtils.formatDate(c.created_at, 'short')}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteContact('${c.id}')">🗑</button>
+            </td>
+        </tr>
+    `).join('');
 }
 
-async function deleteContact(id) {
-    if (!confirm('Delete this contact?')) return;
-    await gbSupabase.delete('contacts', { id });
-    showToast('Contact deleted', 'success');
-    loadContacts();
+function renderPagination() {
+    const pagination = document.getElementById('pagination');
+    if (contactsState.totalPages <= 1) { pagination.innerHTML = ''; return; }
+    
+    let html = '';
+    for (let i = 1; i <= contactsState.totalPages; i++) {
+        html += `<li class="page-item ${i === contactsState.currentPage ? 'active' : ''}">
+            <a class="page-link" href="#" onclick="loadContacts(${i})">${i}</a>
+        </li>`;
+    }
+    pagination.innerHTML = html;
 }
 
 function previewImportFile() {
@@ -373,20 +269,17 @@ function previewImportFile() {
             if (fileName.endsWith('.csv')) {
                 const text = e.target.result;
                 const lines = text.split('\n');
-                if (lines.length < 2) { showToast('Empty file', 'error'); return; }
                 const headers = lines[0].split(',').map(h => h.trim());
                 for (let i = 1; i < lines.length; i++) {
                     if (!lines[i].trim()) continue;
                     const values = lines[i].split(',');
                     const row = {};
-                    headers.forEach((h, idx) => {
-                        row[h] = values[idx] ? values[idx].trim() : '';
-                    });
+                    headers.forEach((h, idx) => { row[h] = values[idx]?.trim() || ''; });
                     data.push(row);
                 }
             } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
                 if (typeof XLSX === 'undefined') {
-                    showToast('XLSX library not loaded. Please refresh page.', 'error');
+                    showToast('XLSX library not loaded. Use CSV instead.', 'error');
                     return;
                 }
                 const workbook = XLSX.read(e.target.result, { type: 'array' });
@@ -399,32 +292,33 @@ function previewImportFile() {
             contactsState.importData = data;
             contactsState.importHeaders = Object.keys(data[0]);
             
-            document.getElementById('importPreview').classList.remove('d-none');
             document.getElementById('importRowCount').textContent = data.length;
-            document.getElementById('importBtn').disabled = false;
             
             const emailSelect = document.getElementById('emailColumn');
             const nameSelect = document.getElementById('nameColumn');
-            let emailOptions = '<option value="">Select email column...</option>';
-            let nameOptions = '<option value="">Select name column...</option>';
+            let emailOpts = '<option value="">Select...</option>';
+            let nameOpts = '<option value="">Select...</option>';
             
-            contactsState.importHeaders.forEach(header => {
-                const lower = header.toLowerCase();
+            contactsState.importHeaders.forEach(h => {
+                const lower = h.toLowerCase();
                 const isEmail = lower.includes('email') || lower.includes('mail');
-                const isName = lower.includes('name') || lower.includes('first');
-                emailOptions += `<option value="${header}" ${isEmail ? 'selected' : ''}>${header}</option>`;
-                nameOptions += `<option value="${header}" ${isName ? 'selected' : ''}>${header}</option>`;
+                const isName = lower.includes('name');
+                emailOpts += `<option value="${h}" ${isEmail ? 'selected' : ''}>${h}</option>`;
+                nameOpts += `<option value="${h}" ${isName ? 'selected' : ''}>${h}</option>`;
             });
             
-            emailSelect.innerHTML = emailOptions;
-            nameSelect.innerHTML = nameOptions;
+            emailSelect.innerHTML = emailOpts;
+            nameSelect.innerHTML = nameOpts;
             
-            const headersHtml = contactsState.importHeaders.map(h => `<th>${h}</th>`).join('');
-            document.getElementById('importHeaders').innerHTML = `<tr>${headersHtml}</tr>`;
-            const rowsHtml = data.slice(0, 5).map(row => {
-                return `<tr>${contactsState.importHeaders.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`;
-            }).join('');
-            document.getElementById('importRows').innerHTML = rowsHtml;
+            document.getElementById('importHeaders').innerHTML = 
+                '<tr>' + contactsState.importHeaders.map(h => `<th>${h}</th>`).join('') + '</tr>';
+            
+            document.getElementById('importRows').innerHTML = 
+                data.slice(0, 5).map(row => 
+                    '<tr>' + contactsState.importHeaders.map(h => `<td>${row[h] || ''}</td>`).join('') + '</tr>'
+                ).join('');
+            
+            new bootstrap.Modal(document.getElementById('importModal')).show();
             
         } catch (error) {
             console.error('Error:', error);
@@ -443,19 +337,18 @@ async function importContacts() {
     const emailCol = document.getElementById('emailColumn').value;
     const nameCol = document.getElementById('nameColumn').value;
     
-    if (!emailCol) { showToast('Select email column first', 'error'); return; }
+    if (!emailCol) { showToast('Select email column', 'error'); return; }
     
-    let added = 0, skipped = 0;
-    
+    let added = 0;
     for (const row of contactsState.importData) {
         const email = String(row[emailCol] || '').trim().toLowerCase();
-        if (!email || !email.includes('@')) { skipped++; continue; }
+        if (!email || !email.includes('@')) continue;
         
         const { data: existing } = await gbSupabase.client
             .from('contacts').select('id')
             .eq('email', email).eq('user_id', gbApp.currentUser.id);
         
-        if (existing && existing.length > 0) { skipped++; continue; }
+        if (existing && existing.length > 0) continue;
         
         let firstName = '', lastName = '';
         if (nameCol && row[nameCol]) {
@@ -464,101 +357,51 @@ async function importContacts() {
             lastName = parts.slice(1).join(' ') || '';
         }
         
-        const { error } = await gbSupabase.client
-            .from('contacts').insert({
-                user_id: gbApp.currentUser.id,
-                email: email,
-                first_name: firstName,
-                last_name: lastName,
-                status: 'active',
-                subscribed: true
-            });
+        const { error } = await gbSupabase.client.from('contacts').insert({
+            user_id: gbApp.currentUser.id,
+            email, first_name: firstName, last_name: lastName,
+            status: 'active', subscribed: true
+        });
         
-        if (error) { skipped++; } else { added++; }
+        if (!error) added++;
     }
     
     bootstrap.Modal.getInstance(document.getElementById('importModal')).hide();
-    showToast(`Done! ${added} added, ${skipped} skipped`, 'success');
+    showToast(`${added} contacts imported!`, 'success');
     loadContacts();
-    loadTags();
 }
 
-async function loadContacts(page = 1) {
-    contactsState.currentPage = page;
-    try {
-        const start = (page - 1) * contactsState.pageSize;
-        const end = start + contactsState.pageSize - 1;
-        
-        let query = gbSupabase.client.from('contacts')
-            .select('*', { count: 'exact' })
-            .eq('user_id', gbApp.currentUser.id);
-        
-        if (contactsState.searchQuery) {
-            query = query.or(`first_name.ilike.%${contactsState.searchQuery}%,last_name.ilike.%${contactsState.searchQuery}%,email.ilike.%${contactsState.searchQuery}%`);
-        }
-        
-        query = query.order(contactsState.sortColumn, { ascending: contactsState.sortOrder === 'asc' });
-        query = query.range(start, end);
-        
-        const { data, error, count } = await query;
-        if (error) { console.error(error); return; }
-        
-        contactsState.contacts = data || [];
-        contactsState.totalPages = Math.ceil((count || 0) / contactsState.pageSize);
-        
-        document.getElementById('contactCount').textContent = `${count || 0} contacts`;
-        renderContactsTable();
-        renderPagination();
-        
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-function renderContactsTable() {
-    const tbody = document.getElementById('contactsTableBody');
-    if (contactsState.contacts.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5">
-            <i class="bi bi-people" style="font-size: 3rem; color: #ccc;"></i>
-            <p class="text-muted mt-2 mb-0">No contacts found</p>
-        </td></tr>`;
-        return;
-    }
+async function saveContact() {
+    const email = document.getElementById('contactEmail').value.trim();
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const company = document.getElementById('contactCompany').value.trim();
     
-    tbody.innerHTML = contactsState.contacts.map(contact => `
-        <tr>
-            <td><input type="checkbox" class="contact-checkbox" value="${contact.id}" onchange="toggleContactSelection('${contact.id}', this.checked)"></td>
-            <td>
-                <div class="d-flex align-items-center">
-                    <div class="contact-avatar me-2" style="background: ${getAvatarColor(contact.email)}">
-                        ${getInitials(contact.first_name, contact.last_name, contact.email)}
-                    </div>
-                    <div class="fw-bold">${contact.first_name || ''} ${contact.last_name || ''}</div>
-                </div>
-            </td>
-            <td>${contact.email}</td>
-            <td>${contact.company || '-'}</td>
-            <td>${(contact.tags || []).map(tag => `<span class="badge bg-light text-dark me-1">${tag}</span>`).join('')}</td>
-            <td><span class="badge bg-${contact.status === 'active' ? 'success' : 'warning'}">${contact.status}</span></td>
-            <td>${GBUtils.formatDate(contact.created_at, 'short')}</td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="editContact('${contact.id}')"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteContact('${contact.id}')"><i class="bi bi-trash"></i></button>
-            </td>
-        </tr>
-    `).join('');
+    if (!email) { showToast('Enter email', 'error'); return; }
+    
+    await gbSupabase.insert('contacts', {
+        user_id: gbApp.currentUser.id,
+        email, first_name: firstName, last_name: lastName,
+        company, status: 'active', subscribed: true
+    });
+    
+    bootstrap.Modal.getInstance(document.getElementById('contactModal')).hide();
+    showToast('Contact added!', 'success');
+    loadContacts();
 }
 
-function renderPagination() {
-    const pagination = document.getElementById('pagination');
-    if (contactsState.totalPages <= 1) { pagination.innerHTML = ''; return; }
-    
-    let html = `<li class="page-item ${contactsState.currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="loadContacts(${contactsState.currentPage - 1})">&laquo;</a></li>`;
-    for (let i = 1; i <= contactsState.totalPages; i++) {
-        html += `<li class="page-item ${contactsState.currentPage === i ? 'active' : ''}"><a class="page-link" href="#" onclick="loadContacts(${i})">${i}</a></li>`;
-    }
-    html += `<li class="page-item ${contactsState.currentPage === contactsState.totalPages ? 'disabled' : ''}"><a class="page-link" href="#" onclick="loadContacts(${contactsState.currentPage + 1})">&raquo;</a></li>`;
-    pagination.innerHTML = html;
+async function deleteContact(id) {
+    if (!confirm('Delete?')) return;
+    await gbSupabase.delete('contacts', { id });
+    loadContacts();
+}
+
+function showAddContactModal() {
+    new bootstrap.Modal(document.getElementById('contactModal')).show();
+}
+
+function showContactsGuide() {
+    showToast('Import contacts using XLSX or CSV file', 'info');
 }
 
 function debounceSearch() {
@@ -586,138 +429,39 @@ function toggleContactSelection(id, checked) {
 }
 
 function updateBulkActions() {
-    const bulkActions = document.getElementById('bulkActions');
+    const bulk = document.getElementById('bulkActions');
     document.getElementById('selectedCount').textContent = contactsState.selectedContacts.size;
-    if (contactsState.selectedContacts.size > 0) bulkActions.classList.remove('d-none');
-    else bulkActions.classList.add('d-none');
+    bulk.classList.toggle('d-none', contactsState.selectedContacts.size === 0);
 }
 
 async function bulkDelete() {
-    if (!confirm(`Delete ${contactsState.selectedContacts.size} contacts?`)) return;
+    if (!confirm('Delete selected?')) return;
     for (const id of contactsState.selectedContacts) {
         await gbSupabase.delete('contacts', { id });
     }
     contactsState.selectedContacts.clear();
-    updateBulkActions();
     loadContacts();
 }
 
-function bulkAddTag() {
-    new bootstrap.Modal(document.getElementById('tagModal')).show();
-}
-
-async function applyTag() {
-    const tag = document.getElementById('newTag').value.trim();
-    if (!tag) return;
-    for (const id of contactsState.selectedContacts) {
-        const contact = contactsState.contacts.find(c => c.id === id);
-        const tags = [...(contact.tags || []), tag];
-        await gbSupabase.update('contacts', { tags }, { id });
-    }
-    bootstrap.Modal.getInstance(document.getElementById('tagModal')).hide();
-    loadContacts();
-    loadTags();
-}
-
-function bulkAddToList() {
-    new bootstrap.Modal(document.getElementById('listModal')).show();
-}
-
-async function applyList() {
-    const listId = document.getElementById('listSelect').value;
-    if (!listId) return;
-    for (const contactId of contactsState.selectedContacts) {
-        await gbSupabase.client.from('list_contacts').insert({ list_id: listId, contact_id: contactId });
-    }
-    bootstrap.Modal.getInstance(document.getElementById('listModal')).hide();
-}
-
-async function loadTags() {
-    const { data } = await gbSupabase.client.from('contacts').select('tags').eq('user_id', gbApp.currentUser.id);
-    const allTags = new Set();
-    (data || []).forEach(c => (c.tags || []).forEach(t => allTags.add(t)));
-    document.getElementById('tagFilter').innerHTML = '<option value="">All Tags</option>' +
-        Array.from(allTags).sort().map(t => `<option value="${t}">${t}</option>`).join('');
-}
-
-async function loadLists() {
-    const { data } = await gbSupabase.client.from('lists').select('id, name').eq('user_id', gbApp.currentUser.id);
-    const options = '<option value="">Select list...</option>' + (data || []).map(l => `<option value="${l.id}">${l.name}</option>`).join('');
-    document.getElementById('listSelect').innerHTML = options;
-    document.getElementById('listFilter').innerHTML = '<option value="">All Lists</option>' + (data || []).map(l => `<option value="${l.id}">${l.name}</option>`).join('');
-}
+function bulkAddTag() { showToast('Tag feature coming', 'info'); }
+function bulkAddToList() { showToast('List feature coming', 'info'); }
 
 async function exportContacts() {
-    const { data } = await gbSupabase.client.from('contacts').select('*').eq('user_id', gbApp.currentUser.id);
+    const { data } = await gbSupabase.client
+        .from('contacts').select('*').eq('user_id', gbApp.currentUser.id);
+    
     const exportData = (data || []).map(c => ({
         'First Name': c.first_name || '',
         'Last Name': c.last_name || '',
         'Email': c.email,
-        'Company': c.company || '',
-        'Phone': c.phone || ''
+        'Company': c.company || ''
     }));
-    GBUtils.exportToCSV(exportData, 'gb-mailer-contacts.csv');
+    
+    GBUtils.exportToCSV(exportData, 'contacts.csv');
 }
 
 function changePageSize() {
     contactsState.pageSize = parseInt(document.getElementById('pageSize').value);
     loadContacts(1);
 }
-
-function getInitials(firstName, lastName, email) {
-    if (firstName && lastName) return (firstName[0] + lastName[0]).toUpperCase();
-    if (firstName) return firstName[0].toUpperCase();
-    return email[0].toUpperCase();
-}
-
-function getAvatarColor(email) {
-    const colors = ['#e94560', '#0f3460', '#533483', '#00b4d8', '#fb8500', '#219ebc'];
-    return colors[email.charCodeAt(0) % colors.length];
-}
-
-// State
-let contactsState = {
-    contacts: [],
-    selectedContacts: new Set(),
-    currentPage: 1,
-    pageSize: 25,
-    totalPages: 1,
-    searchQuery: '',
-    sortColumn: 'created_at',
-    sortOrder: 'desc',
-    importData: [],
-    importHeaders: []
-};
-
-// Initialize
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('contactsTableBody')) {
-        initContactsModule();
-    }
-});
-
-// Expose all functions globally
-Object.assign(window, {
-    initContactsModule, showContactsGuide, showImportModal, showAddContactModal,
-    editContact, saveContact, deleteContact, previewImportFile, importContacts,
-    loadContacts, renderContactsTable, renderPagination, debounceSearch,
-    toggleSelectAll, toggleContactSelection, updateBulkActions, bulkDelete,
-    bulkAddTag, applyTag, bulkAddToList, applyList, loadTags, loadLists,
-    exportContacts, changePageSize, getInitials, getAvatarColor
-});
 </script>
-
-<style>
-.contact-avatar {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: bold;
-    font-size: 14px;
-    flex-shrink: 0;
-}
-</style>
