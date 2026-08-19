@@ -167,7 +167,7 @@
     </div>
 </div>
 
-<!-- Import Modal with XLSX Support -->
+<!-- Import Modal -->
 <div class="modal fade" id="importModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -180,7 +180,7 @@
                     <label class="form-label">Upload File</label>
                     <input type="file" class="form-control" id="importFile" 
                            accept=".xlsx,.xls,.csv" onchange="previewImportFile()">
-                    <small class="text-muted">Supports Excel (.xlsx) and CSV files up to 10MB</small>
+                    <small class="text-muted">Supports Excel (.xlsx) and CSV files</small>
                 </div>
                 
                 <div id="importPreview" class="d-none">
@@ -200,13 +200,13 @@
                         <div class="col-md-6">
                             <label class="form-label">Email Column *</label>
                             <select class="form-select" id="emailColumn">
-                                <option value="">Select column...</option>
+                                <option value="">Select email column...</option>
                             </select>
                         </div>
                         <div class="col-md-6">
                             <label class="form-label">Name Column (Optional)</label>
                             <select class="form-select" id="nameColumn">
-                                <option value="">Select column...</option>
+                                <option value="">Select name column...</option>
                             </select>
                         </div>
                     </div>
@@ -432,7 +432,6 @@ function renderPagination() {
     pagination.innerHTML = html;
 }
 
-// Preview Import File (XLSX or CSV)
 function previewImportFile() {
     const fileInput = document.getElementById('importFile');
     const file = fileInput.files[0];
@@ -446,12 +445,10 @@ function previewImportFile() {
             const fileName = file.name.toLowerCase();
             
             if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
-                // Parse XLSX
                 const workbook = XLSX.read(e.target.result, { type: 'array' });
                 const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
                 data = XLSX.utils.sheet_to_json(firstSheet);
             } else if (fileName.endsWith('.csv')) {
-                // Parse CSV
                 data = parseCSVData(e.target.result);
             } else {
                 showToast('Unsupported file format', 'error');
@@ -466,22 +463,18 @@ function previewImportFile() {
             contactsState.importData = data;
             contactsState.importHeaders = Object.keys(data[0]);
             
-            // Show preview
             document.getElementById('importPreview').classList.remove('d-none');
             document.getElementById('importRowCount').textContent = data.length;
             document.getElementById('importBtn').disabled = false;
             
-            // Render preview headers
             const headersHtml = contactsState.importHeaders.map(h => `<th>${h}</th>`).join('');
             document.getElementById('importHeaders').innerHTML = `<tr>${headersHtml}</tr>`;
             
-            // Render preview rows (first 5)
             const rowsHtml = data.slice(0, 5).map(row => {
                 return `<tr>${contactsState.importHeaders.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`;
             }).join('');
             document.getElementById('importRows').innerHTML = rowsHtml;
             
-            // Populate column mapping
             populateColumnMapping();
             
         } catch (error) {
@@ -565,7 +558,6 @@ function populateColumnMapping() {
         options.map(o => `<option value="${o.header}" ${o.nameMatch}>${o.header}</option>`).join('');
 }
 
-// Import Contacts with progress
 async function importContacts() {
     const emailColumn = document.getElementById('emailColumn').value;
     const nameColumn = document.getElementById('nameColumn').value;
@@ -592,7 +584,6 @@ async function importContacts() {
                 continue;
             }
             
-            // Check duplicates
             const { data: existing } = await gbSupabase.client
                 .from('contacts')
                 .select('id')
@@ -604,7 +595,6 @@ async function importContacts() {
                 continue;
             }
             
-            // Parse name
             let firstName = '', lastName = '';
             if (nameColumn && row[nameColumn]) {
                 const nameParts = row[nameColumn].toString().trim().split(' ');
@@ -632,7 +622,6 @@ async function importContacts() {
                 skipped++;
             }
             
-            // Update progress every 100 contacts
             if (i % 100 === 0) {
                 showToast(`Imported ${imported}/${total}...`, 'info');
             }
@@ -649,7 +638,6 @@ async function importContacts() {
     }
 }
 
-// Rest of functions (saveContact, deleteContact, etc.) remain same
 function showContactsGuide() {
     new bootstrap.Modal(document.getElementById('contactsGuideModal')).show();
 }
@@ -658,6 +646,22 @@ function showAddContactModal() {
     document.getElementById('contactModalTitle').textContent = 'Add Contact';
     document.getElementById('contactForm').reset();
     document.getElementById('contactId').value = '';
+    new bootstrap.Modal(document.getElementById('contactModal')).show();
+}
+
+function editContact(id) {
+    const contact = contactsState.contacts.find(c => c.id === id);
+    if (!contact) return;
+    
+    document.getElementById('contactModalTitle').textContent = 'Edit Contact';
+    document.getElementById('contactId').value = contact.id;
+    document.getElementById('firstName').value = contact.first_name || '';
+    document.getElementById('lastName').value = contact.last_name || '';
+    document.getElementById('contactEmail').value = contact.email;
+    document.getElementById('contactCompany').value = contact.company || '';
+    document.getElementById('contactPhone').value = contact.phone || '';
+    document.getElementById('contactTags').value = (contact.tags || []).join(', ');
+    
     new bootstrap.Modal(document.getElementById('contactModal')).show();
 }
 
