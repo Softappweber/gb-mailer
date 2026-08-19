@@ -39,7 +39,7 @@
                         <th>Email</th>
                         <th>Phone</th>
                         <th>Company</th>
-                        <th>Position</th>
+                        <th>Job Title</th>
                         <th style="width:150px;">Actions</th>
                     </tr>
                 </thead>
@@ -53,15 +53,12 @@
         <div class="pagination" id="pagination"></div>
     </div>
 
-    <!-- ============================================ -->
-    <!-- UPLOAD MODAL -->
-    <!-- ============================================ -->
+    <!-- Upload Modal -->
     <div id="uploadModal" class="modal">
         <div class="modal-content modal-large">
             <span class="close" onclick="closeModal('uploadModal')">&times;</span>
             <h2><i class="fas fa-upload"></i> Upload Contacts</h2>
             
-            <!-- Step 1: Select File -->
             <div id="step1">
                 <div class="upload-area">
                     <p><i class="fas fa-file-excel" style="font-size:48px;color:#217346;"></i></p>
@@ -74,10 +71,9 @@
                 </div>
             </div>
             
-            <!-- Step 2: Column Mapping -->
             <div id="step2" style="display:none;">
                 <h3>Map Your Columns</h3>
-                <p>Select <strong>5-6 columns</strong> to display. All other columns will be stored as custom fields.</p>
+                <p>Select columns to display. All other columns will be stored as custom fields.</p>
                 <div id="columnMapping"></div>
                 <div class="mapping-actions" style="margin-top:20px;">
                     <button onclick="confirmMapping()" class="btn btn-success">
@@ -89,7 +85,6 @@
                 </div>
             </div>
             
-            <!-- Step 3: Import Progress -->
             <div id="step3" style="display:none;">
                 <h3>Importing...</h3>
                 <div class="progress-bar">
@@ -100,9 +95,7 @@
         </div>
     </div>
 
-    <!-- ============================================ -->
-    <!-- EMAIL COMPOSER MODAL -->
-    <!-- ============================================ -->
+    <!-- Email Composer Modal -->
     <div id="emailModal" class="modal">
         <div class="modal-content modal-large">
             <span class="close" onclick="closeModal('emailModal')">&times;</span>
@@ -118,7 +111,7 @@
                 </div>
                 
                 <div class="form-group">
-                    <label>Body * <small>(Use {{name}}, {{company}}, etc. for personalization)</small></label>
+                    <label>Body * <small>(Use {{first_name}}, {{company}}, etc. for personalization)</small></label>
                     <textarea id="emailBody" rows="8" placeholder="Write your email..." required></textarea>
                 </div>
                 
@@ -145,12 +138,8 @@
         </div>
     </div>
 
-    <!-- ============================================ -->
-    <!-- JAVASCRIPT -->
-    <!-- ============================================ -->
     <script src="{{ url_for('static', filename='js/contacts.js') }}"></script>
     <script>
-        // Initialize on page load
         document.addEventListener('DOMContentLoaded', function() {
             loadContacts();
         });
