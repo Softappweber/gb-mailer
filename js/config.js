@@ -3,6 +3,7 @@ const GB_CONFIG = {
     // Supabase Configuration - UPDATE THESE LATER
     SUPABASE_URL: 'https://cqvcdbnkmtgdpnldeejq.supabase.co',
     SUPABASE_ANON_KEY: 'sb_publishable_Xut2MmJFXb0QJPJgC1lVbg_0206dtlU',
+    BACKEND_URL: 'https://gb-mailer-backend.onrender.com',
     
     // Backend URL (Render) - UPDATE LATER
     BACKEND_URL: 'https://your-backend.onrender.com',
