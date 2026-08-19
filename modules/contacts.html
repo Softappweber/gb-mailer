@@ -1,48 +1,46 @@
 <div class="module-container">
-    <!-- Header -->
     <div class="module-header">
         <div>
             <h2 class="module-title">Contacts</h2>
             <p class="text-muted mb-0" id="contactCount">0 contacts</p>
         </div>
         <div>
-            <button class="btn learn-btn me-2" onclick="showContactsGuide()">
+            <button class="btn learn-btn me-2" onclick="window.showContactsGuide()">
                 <i class="bi bi-book"></i> Learn
             </button>
-            <button class="btn btn-outline-primary me-2" onclick="showImportModal()">
+            <button class="btn btn-outline-primary me-2" onclick="window.showImportModal()">
                 <i class="bi bi-upload"></i> Import XLSX/CSV
             </button>
-            <button class="btn btn-outline-success me-2" onclick="exportContacts()">
+            <button class="btn btn-outline-success me-2" onclick="window.exportContacts()">
                 <i class="bi bi-download"></i> Export
             </button>
-            <button class="btn btn-primary" onclick="showAddContactModal()">
+            <button class="btn btn-primary" onclick="window.showAddContactModal()">
                 <i class="bi bi-person-plus"></i> Add Contact
             </button>
         </div>
     </div>
 
-    <!-- Search and Filters -->
     <div class="card mb-3">
         <div class="card-body">
             <div class="row g-2">
                 <div class="col-md-4">
                     <div class="input-group">
                         <span class="input-group-text"><i class="bi bi-search"></i></span>
-                        <input type="text" class="form-control" placeholder="Search contacts..." id="contactSearch" onkeyup="debounceSearch()">
+                        <input type="text" class="form-control" placeholder="Search contacts..." id="contactSearch" onkeyup="window.debounceSearch()">
                     </div>
                 </div>
                 <div class="col-md-3">
-                    <select class="form-select" id="tagFilter" onchange="loadContacts()">
+                    <select class="form-select" id="tagFilter" onchange="window.loadContacts()">
                         <option value="">All Tags</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <select class="form-select" id="listFilter" onchange="loadContacts()">
+                    <select class="form-select" id="listFilter" onchange="window.loadContacts()">
                         <option value="">All Lists</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <select class="form-select" id="statusFilter" onchange="loadContacts()">
+                    <select class="form-select" id="statusFilter" onchange="window.loadContacts()">
                         <option value="">All Status</option>
                         <option value="active">Active</option>
                         <option value="unsubscribed">Unsubscribed</option>
@@ -53,34 +51,30 @@
         </div>
     </div>
 
-    <!-- Bulk Actions Bar -->
     <div id="bulkActions" class="alert alert-primary d-none">
         <div class="d-flex justify-content-between align-items-center">
             <span><strong id="selectedCount">0</strong> contacts selected</span>
             <div>
-                <button class="btn btn-sm btn-outline-primary me-1" onclick="bulkAddTag()">
+                <button class="btn btn-sm btn-outline-primary me-1" onclick="window.bulkAddTag()">
                     <i class="bi bi-tag"></i> Add Tag
                 </button>
-                <button class="btn btn-sm btn-outline-success me-1" onclick="bulkAddToList()">
+                <button class="btn btn-sm btn-outline-success me-1" onclick="window.bulkAddToList()">
                     <i class="bi bi-list-plus"></i> Add to List
                 </button>
-                <button class="btn btn-sm btn-outline-danger" onclick="bulkDelete()">
+                <button class="btn btn-sm btn-outline-danger" onclick="window.bulkDelete()">
                     <i class="bi bi-trash"></i> Delete
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Contacts Table -->
     <div class="card">
         <div class="card-body p-0">
             <div class="table-responsive">
                 <table class="table table-hover mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th width="40">
-                                <input type="checkbox" id="selectAll" onchange="toggleSelectAll()">
-                            </th>
+                            <th width="40"><input type="checkbox" id="selectAll" onchange="window.toggleSelectAll()"></th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Company</th>
@@ -91,30 +85,23 @@
                         </tr>
                     </thead>
                     <tbody id="contactsTableBody">
-                        <tr>
-                            <td colspan="8" class="text-center py-5">
-                                <div class="spinner-border text-primary"></div>
-                            </td>
-                        </tr>
+                        <tr><td colspan="8" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
     </div>
 
-    <!-- Pagination -->
     <div class="d-flex justify-content-between align-items-center mt-3">
         <div>
-            <select class="form-select form-select-sm" id="pageSize" onchange="changePageSize()" style="width: auto; display: inline-block;">
+            <select class="form-select form-select-sm" id="pageSize" onchange="window.changePageSize()" style="width: auto; display: inline-block;">
                 <option value="10">10 per page</option>
                 <option value="25" selected>25 per page</option>
                 <option value="50">50 per page</option>
                 <option value="100">100 per page</option>
             </select>
         </div>
-        <nav>
-            <ul class="pagination pagination-sm mb-0" id="pagination"></ul>
-        </nav>
+        <nav><ul class="pagination pagination-sm mb-0" id="pagination"></ul></nav>
     </div>
 </div>
 
@@ -161,7 +148,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveContact()">Save Contact</button>
+                <button type="button" class="btn btn-primary" onclick="window.saveContact()">Save Contact</button>
             </div>
         </div>
     </div>
@@ -178,24 +165,20 @@
             <div class="modal-body">
                 <div class="mb-3">
                     <label class="form-label">Upload File</label>
-                    <input type="file" class="form-control" id="importFile" 
-                           accept=".xlsx,.xls,.csv" onchange="previewImportFile()">
+                    <input type="file" class="form-control" id="importFile" accept=".xlsx,.xls,.csv" onchange="window.previewImportFile()">
                     <small class="text-muted">Supports Excel (.xlsx) and CSV files</small>
                 </div>
-                
                 <div id="importPreview" class="d-none">
                     <div class="alert alert-info">
                         <i class="bi bi-info-circle"></i>
                         <strong id="importRowCount">0</strong> contacts found
                     </div>
-                    
                     <div class="table-responsive mb-3" style="max-height: 200px; overflow-y: auto;">
                         <table class="table table-sm table-bordered">
                             <thead id="importHeaders"></thead>
                             <tbody id="importRows"></tbody>
                         </table>
                     </div>
-                    
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <label class="form-label">Email Column *</label>
@@ -210,13 +193,11 @@
                             </select>
                         </div>
                     </div>
-                    
                     <div class="form-check mb-3">
                         <input class="form-check-input" type="checkbox" id="skipDuplicates" checked>
                         <label class="form-check-label">Skip duplicate emails</label>
                     </div>
-                    
-                    <button class="btn btn-primary" id="importBtn" onclick="importContacts()" disabled>
+                    <button class="btn btn-primary" id="importBtn" onclick="window.importContacts()" disabled>
                         <i class="bi bi-upload"></i> Import Contacts
                     </button>
                 </div>
@@ -230,9 +211,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header learn-header">
-                <h5 class="modal-title text-white">
-                    <i class="bi bi-book"></i> Contacts Guide
-                </h5>
+                <h5 class="modal-title text-white"><i class="bi bi-book"></i> Contacts Guide</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -241,7 +220,7 @@
                         <div class="card h-100 border-primary">
                             <div class="card-body">
                                 <h6 class="text-primary"><i class="bi bi-1-circle"></i> Import Contacts</h6>
-                                <p class="small">Import 1000+ contacts from Excel or CSV in seconds. Just upload your file and map columns.</p>
+                                <p class="small">Import 1000+ contacts from Excel or CSV in seconds.</p>
                             </div>
                         </div>
                     </div>
@@ -249,7 +228,7 @@
                         <div class="card h-100 border-success">
                             <div class="card-body">
                                 <h6 class="text-success"><i class="bi bi-2-circle"></i> Organize</h6>
-                                <p class="small">Use tags and lists to organize contacts. Segment by company, interest, or engagement.</p>
+                                <p class="small">Use tags and lists to organize contacts.</p>
                             </div>
                         </div>
                     </div>
@@ -272,7 +251,7 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="applyTag()">Apply</button>
+                <button type="button" class="btn btn-primary" onclick="window.applyTag()">Apply</button>
             </div>
         </div>
     </div>
@@ -293,353 +272,26 @@
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="applyList()">Add</button>
+                <button type="button" class="btn btn-primary" onclick="window.applyList()">Add</button>
             </div>
         </div>
     </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
 <script>
-let contactsState = {
-    contacts: [],
-    selectedContacts: new Set(),
-    currentPage: 1,
-    pageSize: 25,
-    totalPages: 1,
-    searchQuery: '',
-    sortColumn: 'created_at',
-    sortOrder: 'desc',
-    importData: [],
-    importHeaders: []
-};
-
+// All functions defined globally
 function initContactsModule() {
     loadTags();
     loadLists();
     loadContacts();
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('contactsTableBody')) {
-        initContactsModule();
-    }
-});
-
-async function loadContacts(page = 1) {
-    contactsState.currentPage = page;
-    
-    try {
-        const start = (page - 1) * contactsState.pageSize;
-        const end = start + contactsState.pageSize - 1;
-        
-        let query = gbSupabase.client
-            .from('contacts')
-            .select('*', { count: 'exact' })
-            .eq('user_id', gbApp.currentUser.id);
-        
-        if (contactsState.searchQuery) {
-            query = query.or(`first_name.ilike.%${contactsState.searchQuery}%,last_name.ilike.%${contactsState.searchQuery}%,email.ilike.%${contactsState.searchQuery}%,company.ilike.%${contactsState.searchQuery}%`);
-        }
-        
-        const tagFilter = document.getElementById('tagFilter').value;
-        const statusFilter = document.getElementById('statusFilter').value;
-        
-        if (tagFilter) query = query.contains('tags', [tagFilter]);
-        if (statusFilter) query = query.eq('status', statusFilter);
-        
-        query = query.order(contactsState.sortColumn, { ascending: contactsState.sortOrder === 'asc' });
-        query = query.range(start, end);
-        
-        const { data, error, count } = await query;
-        
-        if (error) { console.error(error); return; }
-        
-        contactsState.contacts = data || [];
-        contactsState.totalPages = Math.ceil((count || 0) / contactsState.pageSize);
-        
-        updateContactCount(count || 0);
-        renderContactsTable();
-        renderPagination();
-        
-    } catch (error) {
-        console.error('Error:', error);
-    }
-}
-
-function renderContactsTable() {
-    const tbody = document.getElementById('contactsTableBody');
-    
-    if (contactsState.contacts.length === 0) {
-        tbody.innerHTML = `
-            <tr>
-                <td colspan="8" class="text-center py-5">
-                    <i class="bi bi-people" style="font-size: 3rem; color: #ccc;"></i>
-                    <p class="text-muted mt-2 mb-0">No contacts found</p>
-                    <button class="btn btn-primary btn-sm mt-2" onclick="showAddContactModal()">Add Contact</button>
-                    <button class="btn learn-btn btn-sm mt-2" onclick="showContactsGuide()">Learn</button>
-                </td>
-            </tr>
-        `;
-        return;
-    }
-    
-    tbody.innerHTML = contactsState.contacts.map(contact => `
-        <tr>
-            <td><input type="checkbox" class="contact-checkbox" value="${contact.id}" onchange="toggleContactSelection('${contact.id}', this.checked)"></td>
-            <td>
-                <div class="d-flex align-items-center">
-                    <div class="contact-avatar me-2" style="background: ${getAvatarColor(contact.email)}">
-                        ${getInitials(contact.first_name, contact.last_name, contact.email)}
-                    </div>
-                    <div class="fw-bold">${contact.first_name || ''} ${contact.last_name || ''}</div>
-                </div>
-            </td>
-            <td>${contact.email}</td>
-            <td>${contact.company || '-'}</td>
-            <td>${(contact.tags || []).map(tag => `<span class="badge bg-light text-dark me-1">${tag}</span>`).join('')}</td>
-            <td><span class="badge bg-${contact.status === 'active' ? 'success' : 'warning'}">${contact.status}</span></td>
-            <td>${GBUtils.formatDate(contact.created_at, 'short')}</td>
-            <td>
-                <button class="btn btn-sm btn-outline-primary" onclick="editContact('${contact.id}')"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteContact('${contact.id}')"><i class="bi bi-trash"></i></button>
-            </td>
-        </tr>
-    `).join('');
-}
-
-function renderPagination() {
-    const pagination = document.getElementById('pagination');
-    
-    if (contactsState.totalPages <= 1) {
-        pagination.innerHTML = '';
-        return;
-    }
-    
-    let html = '';
-    html += `<li class="page-item ${contactsState.currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="loadContacts(${contactsState.currentPage - 1})">&laquo;</a></li>`;
-    
-    for (let i = 1; i <= contactsState.totalPages; i++) {
-        if (i === 1 || i === contactsState.totalPages || (i >= contactsState.currentPage - 2 && i <= contactsState.currentPage + 2)) {
-            html += `<li class="page-item ${contactsState.currentPage === i ? 'active' : ''}"><a class="page-link" href="#" onclick="loadContacts(${i})">${i}</a></li>`;
-        } else if (i === contactsState.currentPage - 3 || i === contactsState.currentPage + 3) {
-            html += '<li class="page-item disabled"><span class="page-link">...</span></li>';
-        }
-    }
-    
-    html += `<li class="page-item ${contactsState.currentPage === contactsState.totalPages ? 'disabled' : ''}"><a class="page-link" href="#" onclick="loadContacts(${contactsState.currentPage + 1})">&raquo;</a></li>`;
-    pagination.innerHTML = html;
-}
-
-function previewImportFile() {
-    const fileInput = document.getElementById('importFile');
-    const file = fileInput.files[0];
-    if (!file) return;
-    
-    const reader = new FileReader();
-    
-    reader.onload = function(e) {
-        try {
-            let data;
-            const fileName = file.name.toLowerCase();
-            
-            if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
-                const workbook = XLSX.read(e.target.result, { type: 'array' });
-                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                data = XLSX.utils.sheet_to_json(firstSheet);
-            } else if (fileName.endsWith('.csv')) {
-                data = parseCSVData(e.target.result);
-            } else {
-                showToast('Unsupported file format', 'error');
-                return;
-            }
-            
-            if (!data || data.length === 0) {
-                showToast('No data found in file', 'error');
-                return;
-            }
-            
-            contactsState.importData = data;
-            contactsState.importHeaders = Object.keys(data[0]);
-            
-            document.getElementById('importPreview').classList.remove('d-none');
-            document.getElementById('importRowCount').textContent = data.length;
-            document.getElementById('importBtn').disabled = false;
-            
-            const headersHtml = contactsState.importHeaders.map(h => `<th>${h}</th>`).join('');
-            document.getElementById('importHeaders').innerHTML = `<tr>${headersHtml}</tr>`;
-            
-            const rowsHtml = data.slice(0, 5).map(row => {
-                return `<tr>${contactsState.importHeaders.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`;
-            }).join('');
-            document.getElementById('importRows').innerHTML = rowsHtml;
-            
-            populateColumnMapping();
-            
-        } catch (error) {
-            console.error('Import error:', error);
-            showToast('Error reading file: ' + error.message, 'error');
-        }
-    };
-    
-    if (file.name.toLowerCase().endsWith('.csv')) {
-        reader.readAsText(file);
-    } else {
-        reader.readAsArrayBuffer(file);
-    }
-}
-
-function parseCSVData(csvText) {
-    const lines = csvText.split(/\r?\n/);
-    if (lines.length < 2) return [];
-    
-    const headers = parseCSVLine(lines[0]);
-    const result = [];
-    
-    for (let i = 1; i < lines.length; i++) {
-        if (!lines[i].trim()) continue;
-        const values = parseCSVLine(lines[i]);
-        const obj = {};
-        headers.forEach((header, index) => {
-            obj[header.trim()] = values[index] ? values[index].trim() : '';
-        });
-        if (Object.values(obj).some(value => value !== '')) {
-            result.push(obj);
-        }
-    }
-    
-    return result;
-}
-
-function parseCSVLine(line) {
-    const result = [];
-    let current = '';
-    let inQuotes = false;
-    
-    for (let i = 0; i < line.length; i++) {
-        const char = line[i];
-        if (char === '"') {
-            inQuotes = !inQuotes;
-        } else if (char === ',' && !inQuotes) {
-            result.push(current);
-            current = '';
-        } else {
-            current += char;
-        }
-    }
-    result.push(current);
-    return result;
-}
-
-function populateColumnMapping() {
-    const emailSelect = document.getElementById('emailColumn');
-    const nameSelect = document.getElementById('nameColumn');
-    
-    const options = contactsState.importHeaders.map(header => {
-        const lower = header.toLowerCase();
-        let emailMatch = '';
-        let nameMatch = '';
-        
-        if (lower.includes('email') || lower.includes('e-mail') || lower.includes('mail')) {
-            emailMatch = 'selected';
-        }
-        if (lower.includes('name') || lower.includes('first')) {
-            nameMatch = 'selected';
-        }
-        
-        return { header, emailMatch, nameMatch };
-    });
-    
-    emailSelect.innerHTML = '<option value="">Select email column...</option>' + 
-        options.map(o => `<option value="${o.header}" ${o.emailMatch}>${o.header}</option>`).join('');
-    
-    nameSelect.innerHTML = '<option value="">Select name column...</option>' + 
-        options.map(o => `<option value="${o.header}" ${o.nameMatch}>${o.header}</option>`).join('');
-}
-
-async function importContacts() {
-    const emailColumn = document.getElementById('emailColumn').value;
-    const nameColumn = document.getElementById('nameColumn').value;
-    const skipDuplicates = document.getElementById('skipDuplicates').checked;
-    
-    if (!emailColumn) {
-        showToast('Please select email column', 'error');
-        return;
-    }
-    
-    let imported = 0;
-    let skipped = 0;
-    const total = contactsState.importData.length;
-    
-    showToast(`Importing ${total} contacts...`, 'info');
-    
-    try {
-        for (let i = 0; i < contactsState.importData.length; i++) {
-            const row = contactsState.importData[i];
-            const email = (row[emailColumn] || '').toString().trim();
-            
-            if (!email || !GBUtils.isValidEmail(email)) {
-                skipped++;
-                continue;
-            }
-            
-            const { data: existing } = await gbSupabase.client
-                .from('contacts')
-                .select('id')
-                .eq('email', email)
-                .eq('user_id', gbApp.currentUser.id);
-            
-            if (existing && existing.length > 0 && skipDuplicates) {
-                skipped++;
-                continue;
-            }
-            
-            let firstName = '', lastName = '';
-            if (nameColumn && row[nameColumn]) {
-                const nameParts = row[nameColumn].toString().trim().split(' ');
-                firstName = nameParts[0] || '';
-                lastName = nameParts.slice(1).join(' ') || '';
-            }
-            
-            const contactData = {
-                user_id: gbApp.currentUser.id,
-                email: email,
-                first_name: firstName,
-                last_name: lastName,
-                company: row['Company'] || row['company'] || '',
-                phone: row['Phone'] || row['phone'] || '',
-                status: 'active',
-                subscribed: true,
-                subscribed_at: new Date().toISOString()
-            };
-            
-            const { error } = await gbSupabase.insert('contacts', contactData);
-            
-            if (!error) {
-                imported++;
-            } else {
-                skipped++;
-            }
-            
-            if (i % 100 === 0) {
-                showToast(`Imported ${imported}/${total}...`, 'info');
-            }
-        }
-        
-        bootstrap.Modal.getInstance(document.getElementById('importModal')).hide();
-        showToast(`Import complete: ${imported} added, ${skipped} skipped`, 'success');
-        loadContacts();
-        loadTags();
-        
-    } catch (error) {
-        console.error('Import error:', error);
-        showToast('Error importing: ' + error.message, 'error');
-    }
-}
-
 function showContactsGuide() {
     new bootstrap.Modal(document.getElementById('contactsGuideModal')).show();
+}
+
+function showImportModal() {
+    new bootstrap.Modal(document.getElementById('importModal')).show();
 }
 
 function showAddContactModal() {
@@ -652,7 +304,6 @@ function showAddContactModal() {
 function editContact(id) {
     const contact = contactsState.contacts.find(c => c.id === id);
     if (!contact) return;
-    
     document.getElementById('contactModalTitle').textContent = 'Edit Contact';
     document.getElementById('contactId').value = contact.id;
     document.getElementById('firstName').value = contact.first_name || '';
@@ -661,7 +312,6 @@ function editContact(id) {
     document.getElementById('contactCompany').value = contact.company || '';
     document.getElementById('contactPhone').value = contact.phone || '';
     document.getElementById('contactTags').value = (contact.tags || []).join(', ');
-    
     new bootstrap.Modal(document.getElementById('contactModal')).show();
 }
 
@@ -695,7 +345,6 @@ async function saveContact() {
             });
             showToast('Contact added!', 'success');
         }
-        
         bootstrap.Modal.getInstance(document.getElementById('contactModal')).hide();
         loadContacts();
     } catch (error) {
@@ -710,10 +359,215 @@ async function deleteContact(id) {
     loadContacts();
 }
 
-const debounceSearch = GBUtils.debounce(() => {
-    contactsState.searchQuery = document.getElementById('contactSearch').value.trim();
-    loadContacts(1);
-}, 300);
+function previewImportFile() {
+    const fileInput = document.getElementById('importFile');
+    const file = fileInput.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            let data = [];
+            const fileName = file.name.toLowerCase();
+            
+            if (fileName.endsWith('.csv')) {
+                const text = e.target.result;
+                const lines = text.split('\n');
+                if (lines.length < 2) { showToast('Empty file', 'error'); return; }
+                const headers = lines[0].split(',').map(h => h.trim());
+                for (let i = 1; i < lines.length; i++) {
+                    if (!lines[i].trim()) continue;
+                    const values = lines[i].split(',');
+                    const row = {};
+                    headers.forEach((h, idx) => {
+                        row[h] = values[idx] ? values[idx].trim() : '';
+                    });
+                    data.push(row);
+                }
+            } else if (fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) {
+                if (typeof XLSX === 'undefined') {
+                    showToast('XLSX library not loaded. Please refresh page.', 'error');
+                    return;
+                }
+                const workbook = XLSX.read(e.target.result, { type: 'array' });
+                const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                data = XLSX.utils.sheet_to_json(firstSheet);
+            }
+            
+            if (data.length === 0) { showToast('No data found', 'error'); return; }
+            
+            contactsState.importData = data;
+            contactsState.importHeaders = Object.keys(data[0]);
+            
+            document.getElementById('importPreview').classList.remove('d-none');
+            document.getElementById('importRowCount').textContent = data.length;
+            document.getElementById('importBtn').disabled = false;
+            
+            const emailSelect = document.getElementById('emailColumn');
+            const nameSelect = document.getElementById('nameColumn');
+            let emailOptions = '<option value="">Select email column...</option>';
+            let nameOptions = '<option value="">Select name column...</option>';
+            
+            contactsState.importHeaders.forEach(header => {
+                const lower = header.toLowerCase();
+                const isEmail = lower.includes('email') || lower.includes('mail');
+                const isName = lower.includes('name') || lower.includes('first');
+                emailOptions += `<option value="${header}" ${isEmail ? 'selected' : ''}>${header}</option>`;
+                nameOptions += `<option value="${header}" ${isName ? 'selected' : ''}>${header}</option>`;
+            });
+            
+            emailSelect.innerHTML = emailOptions;
+            nameSelect.innerHTML = nameOptions;
+            
+            const headersHtml = contactsState.importHeaders.map(h => `<th>${h}</th>`).join('');
+            document.getElementById('importHeaders').innerHTML = `<tr>${headersHtml}</tr>`;
+            const rowsHtml = data.slice(0, 5).map(row => {
+                return `<tr>${contactsState.importHeaders.map(h => `<td>${row[h] || ''}</td>`).join('')}</tr>`;
+            }).join('');
+            document.getElementById('importRows').innerHTML = rowsHtml;
+            
+        } catch (error) {
+            console.error('Error:', error);
+            showToast('Error reading file', 'error');
+        }
+    };
+    
+    if (file.name.toLowerCase().endsWith('.csv')) {
+        reader.readAsText(file);
+    } else {
+        reader.readAsArrayBuffer(file);
+    }
+}
+
+async function importContacts() {
+    const emailCol = document.getElementById('emailColumn').value;
+    const nameCol = document.getElementById('nameColumn').value;
+    
+    if (!emailCol) { showToast('Select email column first', 'error'); return; }
+    
+    let added = 0, skipped = 0;
+    
+    for (const row of contactsState.importData) {
+        const email = String(row[emailCol] || '').trim().toLowerCase();
+        if (!email || !email.includes('@')) { skipped++; continue; }
+        
+        const { data: existing } = await gbSupabase.client
+            .from('contacts').select('id')
+            .eq('email', email).eq('user_id', gbApp.currentUser.id);
+        
+        if (existing && existing.length > 0) { skipped++; continue; }
+        
+        let firstName = '', lastName = '';
+        if (nameCol && row[nameCol]) {
+            const parts = String(row[nameCol]).trim().split(/\s+/);
+            firstName = parts[0] || '';
+            lastName = parts.slice(1).join(' ') || '';
+        }
+        
+        const { error } = await gbSupabase.client
+            .from('contacts').insert({
+                user_id: gbApp.currentUser.id,
+                email: email,
+                first_name: firstName,
+                last_name: lastName,
+                status: 'active',
+                subscribed: true
+            });
+        
+        if (error) { skipped++; } else { added++; }
+    }
+    
+    bootstrap.Modal.getInstance(document.getElementById('importModal')).hide();
+    showToast(`Done! ${added} added, ${skipped} skipped`, 'success');
+    loadContacts();
+    loadTags();
+}
+
+async function loadContacts(page = 1) {
+    contactsState.currentPage = page;
+    try {
+        const start = (page - 1) * contactsState.pageSize;
+        const end = start + contactsState.pageSize - 1;
+        
+        let query = gbSupabase.client.from('contacts')
+            .select('*', { count: 'exact' })
+            .eq('user_id', gbApp.currentUser.id);
+        
+        if (contactsState.searchQuery) {
+            query = query.or(`first_name.ilike.%${contactsState.searchQuery}%,last_name.ilike.%${contactsState.searchQuery}%,email.ilike.%${contactsState.searchQuery}%`);
+        }
+        
+        query = query.order(contactsState.sortColumn, { ascending: contactsState.sortOrder === 'asc' });
+        query = query.range(start, end);
+        
+        const { data, error, count } = await query;
+        if (error) { console.error(error); return; }
+        
+        contactsState.contacts = data || [];
+        contactsState.totalPages = Math.ceil((count || 0) / contactsState.pageSize);
+        
+        document.getElementById('contactCount').textContent = `${count || 0} contacts`;
+        renderContactsTable();
+        renderPagination();
+        
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+function renderContactsTable() {
+    const tbody = document.getElementById('contactsTableBody');
+    if (contactsState.contacts.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-5">
+            <i class="bi bi-people" style="font-size: 3rem; color: #ccc;"></i>
+            <p class="text-muted mt-2 mb-0">No contacts found</p>
+        </td></tr>`;
+        return;
+    }
+    
+    tbody.innerHTML = contactsState.contacts.map(contact => `
+        <tr>
+            <td><input type="checkbox" class="contact-checkbox" value="${contact.id}" onchange="toggleContactSelection('${contact.id}', this.checked)"></td>
+            <td>
+                <div class="d-flex align-items-center">
+                    <div class="contact-avatar me-2" style="background: ${getAvatarColor(contact.email)}">
+                        ${getInitials(contact.first_name, contact.last_name, contact.email)}
+                    </div>
+                    <div class="fw-bold">${contact.first_name || ''} ${contact.last_name || ''}</div>
+                </div>
+            </td>
+            <td>${contact.email}</td>
+            <td>${contact.company || '-'}</td>
+            <td>${(contact.tags || []).map(tag => `<span class="badge bg-light text-dark me-1">${tag}</span>`).join('')}</td>
+            <td><span class="badge bg-${contact.status === 'active' ? 'success' : 'warning'}">${contact.status}</span></td>
+            <td>${GBUtils.formatDate(contact.created_at, 'short')}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-primary" onclick="editContact('${contact.id}')"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteContact('${contact.id}')"><i class="bi bi-trash"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+function renderPagination() {
+    const pagination = document.getElementById('pagination');
+    if (contactsState.totalPages <= 1) { pagination.innerHTML = ''; return; }
+    
+    let html = `<li class="page-item ${contactsState.currentPage === 1 ? 'disabled' : ''}"><a class="page-link" href="#" onclick="loadContacts(${contactsState.currentPage - 1})">&laquo;</a></li>`;
+    for (let i = 1; i <= contactsState.totalPages; i++) {
+        html += `<li class="page-item ${contactsState.currentPage === i ? 'active' : ''}"><a class="page-link" href="#" onclick="loadContacts(${i})">${i}</a></li>`;
+    }
+    html += `<li class="page-item ${contactsState.currentPage === contactsState.totalPages ? 'disabled' : ''}"><a class="page-link" href="#" onclick="loadContacts(${contactsState.currentPage + 1})">&raquo;</a></li>`;
+    pagination.innerHTML = html;
+}
+
+function debounceSearch() {
+    clearTimeout(window.searchTimeout);
+    window.searchTimeout = setTimeout(() => {
+        contactsState.searchQuery = document.getElementById('contactSearch').value.trim();
+        loadContacts(1);
+    }, 300);
+}
 
 function toggleSelectAll() {
     const checked = document.getElementById('selectAll').checked;
@@ -745,7 +599,6 @@ async function bulkDelete() {
     }
     contactsState.selectedContacts.clear();
     updateBulkActions();
-    showToast('Contacts deleted', 'success');
     loadContacts();
 }
 
@@ -756,15 +609,12 @@ function bulkAddTag() {
 async function applyTag() {
     const tag = document.getElementById('newTag').value.trim();
     if (!tag) return;
-    
     for (const id of contactsState.selectedContacts) {
         const contact = contactsState.contacts.find(c => c.id === id);
         const tags = [...(contact.tags || []), tag];
         await gbSupabase.update('contacts', { tags }, { id });
     }
-    
     bootstrap.Modal.getInstance(document.getElementById('tagModal')).hide();
-    showToast('Tag added', 'success');
     loadContacts();
     loadTags();
 }
@@ -776,60 +626,37 @@ function bulkAddToList() {
 async function applyList() {
     const listId = document.getElementById('listSelect').value;
     if (!listId) return;
-    
     for (const contactId of contactsState.selectedContacts) {
-        await gbSupabase.client.from('list_contacts').insert({
-            list_id: listId, contact_id: contactId
-        });
+        await gbSupabase.client.from('list_contacts').insert({ list_id: listId, contact_id: contactId });
     }
-    
     bootstrap.Modal.getInstance(document.getElementById('listModal')).hide();
-    showToast('Contacts added to list', 'success');
 }
 
 async function loadTags() {
-    const { data } = await gbSupabase.client
-        .from('contacts').select('tags').eq('user_id', gbApp.currentUser.id);
-    
+    const { data } = await gbSupabase.client.from('contacts').select('tags').eq('user_id', gbApp.currentUser.id);
     const allTags = new Set();
     (data || []).forEach(c => (c.tags || []).forEach(t => allTags.add(t)));
-    
     document.getElementById('tagFilter').innerHTML = '<option value="">All Tags</option>' +
         Array.from(allTags).sort().map(t => `<option value="${t}">${t}</option>`).join('');
 }
 
 async function loadLists() {
-    const { data } = await gbSupabase.client
-        .from('lists').select('id, name').eq('user_id', gbApp.currentUser.id);
-    
-    document.getElementById('listSelect').innerHTML = '<option value="">Select list...</option>' +
-        (data || []).map(l => `<option value="${l.id}">${l.name}</option>`).join('');
-    
-    document.getElementById('listFilter').innerHTML = '<option value="">All Lists</option>' +
-        (data || []).map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+    const { data } = await gbSupabase.client.from('lists').select('id, name').eq('user_id', gbApp.currentUser.id);
+    const options = '<option value="">Select list...</option>' + (data || []).map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+    document.getElementById('listSelect').innerHTML = options;
+    document.getElementById('listFilter').innerHTML = '<option value="">All Lists</option>' + (data || []).map(l => `<option value="${l.id}">${l.name}</option>`).join('');
 }
 
 async function exportContacts() {
-    const { data } = await gbSupabase.client
-        .from('contacts').select('*').eq('user_id', gbApp.currentUser.id);
-    
+    const { data } = await gbSupabase.client.from('contacts').select('*').eq('user_id', gbApp.currentUser.id);
     const exportData = (data || []).map(c => ({
         'First Name': c.first_name || '',
         'Last Name': c.last_name || '',
         'Email': c.email,
         'Company': c.company || '',
-        'Phone': c.phone || '',
-        'Tags': (c.tags || []).join(';'),
-        'Status': c.status,
-        'Created': GBUtils.formatDate(c.created_at)
+        'Phone': c.phone || ''
     }));
-    
     GBUtils.exportToCSV(exportData, 'gb-mailer-contacts.csv');
-    showToast('Contacts exported!', 'success');
-}
-
-function updateContactCount(count) {
-    document.getElementById('contactCount').textContent = `${count} contacts`;
 }
 
 function changePageSize() {
@@ -847,6 +674,37 @@ function getAvatarColor(email) {
     const colors = ['#e94560', '#0f3460', '#533483', '#00b4d8', '#fb8500', '#219ebc'];
     return colors[email.charCodeAt(0) % colors.length];
 }
+
+// State
+let contactsState = {
+    contacts: [],
+    selectedContacts: new Set(),
+    currentPage: 1,
+    pageSize: 25,
+    totalPages: 1,
+    searchQuery: '',
+    sortColumn: 'created_at',
+    sortOrder: 'desc',
+    importData: [],
+    importHeaders: []
+};
+
+// Initialize
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('contactsTableBody')) {
+        initContactsModule();
+    }
+});
+
+// Expose all functions globally
+Object.assign(window, {
+    initContactsModule, showContactsGuide, showImportModal, showAddContactModal,
+    editContact, saveContact, deleteContact, previewImportFile, importContacts,
+    loadContacts, renderContactsTable, renderPagination, debounceSearch,
+    toggleSelectAll, toggleContactSelection, updateBulkActions, bulkDelete,
+    bulkAddTag, applyTag, bulkAddToList, applyList, loadTags, loadLists,
+    exportContacts, changePageSize, getInitials, getAvatarColor
+});
 </script>
 
 <style>
