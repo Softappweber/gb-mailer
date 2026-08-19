@@ -40,10 +40,12 @@ class GBMailerApp {
     }
     
     setupEventListeners() {
+        // Auth Events
         document.getElementById('loginBtn')?.addEventListener('click', () => this.handleLogin());
         document.getElementById('signupBtn')?.addEventListener('click', () => this.handleSignup());
         document.getElementById('logoutBtn')?.addEventListener('click', () => this.handleLogout());
         
+        // Navigation Events
         document.getElementById('showSignup')?.addEventListener('click', (e) => {
             e.preventDefault();
             this.showScreen('signup');
@@ -54,14 +56,37 @@ class GBMailerApp {
             this.showScreen('login');
         });
         
+        // Sidebar Toggle
         this.elements.sidebarToggle?.addEventListener('click', () => this.toggleSidebar());
         
+        // Module Navigation
         document.querySelectorAll('.nav-link[data-module]').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.navigateToModule(link.dataset.module);
             });
         });
+        
+        // Notification and Help buttons
+        document.querySelectorAll('.header-actions .btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                const title = btn.getAttribute('title');
+                if (title === 'Notifications') {
+                    this.showNotifications();
+                } else if (title === 'Help') {
+                    this.showHelp();
+                }
+            });
+        });
+    }
+    
+    showNotifications() {
+        this.showToast('No new notifications', 'info');
+    }
+    
+    showHelp() {
+        this.showToast('Help center coming soon!', 'info');
     }
     
     async handleLogin() {
@@ -84,7 +109,6 @@ class GBMailerApp {
             this.showToast('Welcome back!', 'success');
         } catch (error) {
             this.showToast(error.message, 'error');
-        } finally {
             this.showLoading(false);
         }
     }
@@ -120,7 +144,6 @@ class GBMailerApp {
             }
         } catch (error) {
             this.showToast(error.message, 'error');
-        } finally {
             this.showLoading(false);
         }
     }
@@ -160,7 +183,6 @@ class GBMailerApp {
         });
         
         try {
-            // Don't show full loading screen for module navigation
             const response = await fetch(`modules/${module}.html`);
             if (!response.ok) throw new Error('Module not found');
             
@@ -194,43 +216,33 @@ class GBMailerApp {
     initializeModule(module) {
         const moduleInitializers = {
             'dashboard': () => {
-                console.log('Dashboard initialized');
                 if (typeof loadDashboardData === 'function') loadDashboardData();
             },
             'contacts': () => {
-                console.log('Contacts initialized');
                 if (typeof initContactsModule === 'function') initContactsModule();
             },
             'lists': () => {
-                console.log('Lists initialized');
                 if (typeof initListsModule === 'function') initListsModule();
             },
             'templates': () => {
-                console.log('Templates initialized');
                 if (typeof initTemplatesModule === 'function') initTemplatesModule();
             },
             'campaigns': () => {
-                console.log('Campaigns initialized');
                 if (typeof initCampaignsModule === 'function') initCampaignsModule();
             },
             'automation': () => {
-                console.log('Automation initialized');
                 if (typeof initAutomationModule === 'function') initAutomationModule();
             },
             'analytics': () => {
-                console.log('Analytics initialized');
                 if (typeof initAnalyticsModule === 'function') initAnalyticsModule();
             },
             'scoring': () => {
-                console.log('Scoring initialized');
                 if (typeof initScoringModule === 'function') initScoringModule();
             },
             'reports': () => {
-                console.log('Reports initialized');
                 if (typeof initReportsModule === 'function') initReportsModule();
             },
             'settings': () => {
-                console.log('Settings initialized');
                 if (typeof initSettingsModule === 'function') initSettingsModule();
             }
         };
@@ -318,7 +330,7 @@ class GBMailerApp {
         setTimeout(() => {
             toast.style.animation = 'slideOut 0.3s ease';
             setTimeout(() => {
-                if (this.toastContainer && toast.parentNode === this.toastContainer) {
+                if (toast.parentNode === this.toastContainer) {
                     this.toastContainer.removeChild(toast);
                 }
             }, 300);
