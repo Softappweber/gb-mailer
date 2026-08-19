@@ -1,8 +1,11 @@
 // GB Mailer Configuration
 const GB_CONFIG = {
-    // Supabase Configuration
+    // Supabase Configuration - UPDATE THESE LATER
     SUPABASE_URL: 'https://YOUR_PROJECT_ID.supabase.co',
     SUPABASE_ANON_KEY: 'YOUR_ANON_KEY',
+    
+    // Backend URL (Render) - UPDATE LATER
+    BACKEND_URL: 'https://your-backend.onrender.com',
     
     // App Settings
     APP_NAME: 'GB Mailer',
@@ -18,10 +21,7 @@ const GB_CONFIG = {
         ANALYTICS: true,
         LEAD_SCORING: true,
         REPORTS: true,
-        SMTP_INTEGRATION: true,
-        MULTI_TENANT: false,
-        API_ACCESS: false,
-        WEBHOOKS: false
+        SMTP_INTEGRATION: true
     },
     
     // Limits (for free tier)
@@ -31,25 +31,5 @@ const GB_CONFIG = {
         FREE_LISTS: 5,
         FREE_TEMPLATES: 10,
         FREE_AUTOMATIONS: 3
-    },
-    
-    // SMTP Configuration (for later)
-    SMTP: {
-        DEFAULT_HOST: '',
-        DEFAULT_PORT: 587,
-        DEFAULT_ENCRYPTION: 'tls'
-    },
-    
-    // Analytics Settings
-    ANALYTICS: {
-        TRACK_OPENS: true,
-        TRACK_CLICKS: true,
-        TRACK_BOUNCES: true,
-        TRACK_UNSUBSCRIBES: true
     }
 };
-
-// Export for use in modules
-if (typeof module !== 'undefined' && module.exports) {
-    module.exports = GB_CONFIG;
-}
