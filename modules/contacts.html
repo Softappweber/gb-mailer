@@ -775,7 +775,6 @@ function showImportModal() {
     const modal = new bootstrap.Modal(document.getElementById('importModal'));
     modal.show();
 }
-
 function previewCSV() {
     const fileInput = document.getElementById('csvFile');
     const file = fileInput.files[0];
@@ -783,7 +782,8 @@ function previewCSV() {
     
     const reader = new FileReader();
     reader.onload = function(e) {
-        const csvData = GBUtils.parseCSV(e.target.result);
+        const csvText = e.target.result;
+        const csvData = parseCSVData(csvText);
         contactsState.csvData = csvData;
         
         if (csvData.length === 0) {
@@ -812,6 +812,56 @@ function previewCSV() {
     reader.readAsText(file);
 }
 
+// Better CSV Parser
+function parseCSVData(csvText) {
+    const lines = csvText.split(/\r?\n/);
+    if (lines.length < 2) return [];
+    
+    // Parse headers (first line)
+    const headers = parseCSVLine(lines[0]);
+    
+    const result = [];
+    for (let i = 1; i < lines.length; i++) {
+        if (!lines[i].trim()) continue;
+        
+        const values = parseCSVLine(lines[i]);
+        const obj = {};
+        
+        headers.forEach((header, index) => {
+            obj[header.trim()] = values[index] ? values[index].trim() : '';
+        });
+        
+        // Only add if at least one value exists
+        if (Object.values(obj).some(value => value !== '')) {
+            result.push(obj);
+        }
+    }
+    
+    return result;
+}
+
+// Parse single CSV line (handles quoted values)
+function parseCSVLine(line) {
+    const result = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+        const char = line[i];
+        
+        if (char === '"') {
+            inQuotes = !inQuotes;
+        } else if (char === ',' && !inQuotes) {
+            result.push(current);
+            current = '';
+        } else {
+            current += char;
+        }
+    }
+    
+    result.push(current);
+    return result;
+}
 function createColumnMapping(headers) {
     const mappingDiv = document.getElementById('columnMapping');
     
@@ -823,24 +873,50 @@ function createColumnMapping(headers) {
         { key: 'phone', label: 'Phone' }
     ];
     
-    mappingDiv.innerHTML = fields.map(field => `
-        <div class="col-md-6 mb-2">
-            <label class="form-label">${field.label}</label>
-            <select class="form-select csv-mapping" data-field="${field.key}">
-                <option value="">-- Select Column --</option>
-                ${headers.map(header => {
-                    const isMatch = header.toLowerCase().replace(/[^a-z]/g, '') === field.key.replace('_', '');
-                    return `<option value="${header}" ${isMatch ? 'selected' : ''}>${header}</option>`;
-                }).join('')}
-            </select>
-        </div>
-    `).join('');
+    mappingDiv.innerHTML = fields.map(field => {
+        // Auto-detect best match
+        let selectedHeader = '';
+        const fieldLower = field.key.toLowerCase();
+        
+        // Try exact match first
+        selectedHeader = headers.find(h => 
+            h.toLowerCase().replace(/[^a-z]/g, '') === fieldLower.replace('_', '')
+        ) || '';
+        
+        // Try partial match
+        if (!selectedHeader) {
+            selectedHeader = headers.find(h => 
+                h.toLowerCase().includes(fieldLower.split('_')[0])
+            ) || '';
+        }
+        
+        // Special case for email
+        if (field.key === 'email' && !selectedHeader) {
+            selectedHeader = headers.find(h => 
+                h.toLowerCase().includes('email') || h.toLowerCase().includes('e-mail')
+            ) || '';
+        }
+        
+        return `
+            <div class="col-md-6 mb-2">
+                <label class="form-label">${field.label}</label>
+                <select class="form-select csv-mapping" data-field="${field.key}">
+                    <option value="">-- Select Column --</option>
+                    ${headers.map(header => 
+                        `<option value="${header}" ${header === selectedHeader ? 'selected' : ''}>${header}</option>`
+                    ).join('')}
+                </select>
+            </div>
+        `;
+    }).join('');
 }
-
 async function importContacts() {
+    // Get mapping from selects
     const mapping = {};
     document.querySelectorAll('.csv-mapping').forEach(select => {
-        mapping[select.dataset.field] = select.value;
+        if (select.value) {
+            mapping[select.dataset.field] = select.value;
+        }
     });
     
     if (!mapping.email) {
@@ -851,13 +927,16 @@ async function importContacts() {
     const skipDuplicates = document.getElementById('skipDuplicates').checked;
     let imported = 0;
     let skipped = 0;
+    let errors = [];
     
     try {
         for (const row of contactsState.csvData) {
-            const email = row[mapping.email];
+            const email = row[mapping.email] || '';
             
+            // Validate email
             if (!email || !GBUtils.isValidEmail(email)) {
                 skipped++;
+                errors.push(`Invalid email: ${email}`);
                 continue;
             }
             
@@ -871,40 +950,61 @@ async function importContacts() {
             if (existing && existing.length > 0) {
                 if (skipDuplicates) {
                     skipped++;
+                    errors.push(`Duplicate: ${email}`);
                     continue;
                 }
             }
             
+            // Prepare contact data
             const contactData = {
                 user_id: gbApp.currentUser.id,
                 email: email,
-                first_name: mapping.first_name ? row[mapping.first_name] : '',
-                last_name: mapping.last_name ? row[mapping.last_name] : '',
-                company: mapping.company ? row[mapping.company] : '',
-                phone: mapping.phone ? row[mapping.phone] : '',
+                first_name: mapping.first_name ? (row[mapping.first_name] || '') : '',
+                last_name: mapping.last_name ? (row[mapping.last_name] || '') : '',
+                company: mapping.company ? (row[mapping.company] || '') : '',
+                phone: mapping.phone ? (row[mapping.phone] || '') : '',
                 status: 'active',
-                subscribed: true
+                subscribed: true,
+                subscribed_at: new Date().toISOString(),
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
             };
             
+            // Insert contact
             const { error } = await gbSupabase.insert('contacts', contactData);
             
             if (!error) {
                 imported++;
+                console.log('Imported:', email);
             } else {
                 skipped++;
+                errors.push(`Error for ${email}: ${error.message}`);
+                console.error('Import error:', error);
             }
         }
         
+        // Close modal
         bootstrap.Modal.getInstance(document.getElementById('importModal')).hide();
-        showToast(`Import complete: ${imported} added, ${skipped} skipped`, 'success');
+        
+        // Show summary
+        if (errors.length > 0) {
+            console.log('Import errors:', errors);
+            showToast(`Import complete: ${imported} added, ${skipped} skipped. Check console for details.`, imported > 0 ? 'success' : 'warning');
+        } else {
+            showToast(`Import successful: ${imported} contacts added!`, 'success');
+        }
+        
+        // Reload contacts
         loadContacts();
         loadTags();
         
     } catch (error) {
+        console.error('Import error:', error);
         showToast('Error importing contacts: ' + error.message, 'error');
     }
 }
 
+    
 // Export Contacts
 async function exportContacts() {
     try {
