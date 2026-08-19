@@ -291,10 +291,17 @@ let contactsState = {
 };
 
 // Initialize Contacts Module
-document.addEventListener('DOMContentLoaded', () => {
+function initContactsModule() {
     loadTags();
     loadLists();
     loadContacts();
+}
+
+// Backup initialization
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('contactsTableBody')) {
+        initContactsModule();
+    }
 });
 
 // Load Contacts from Supabase
