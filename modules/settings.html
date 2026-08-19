@@ -13,36 +13,79 @@
 
     <div class="row">
         <div class="col-md-8">
+            <!-- Test Email Card -->
             <div class="card mb-3">
-                <div class="card-header"><h5 class="mb-0">Email Sending</h5></div>
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0"><i class="bi bi-send"></i> Send Test Email</h5>
+                </div>
                 <div class="card-body">
-                    <div class="alert alert-warning">
-                        EmailJS for testing. AWS SES for production.
+                    <p class="text-muted">Send a test email to verify your EmailJS configuration is working.</p>
+                    <div class="input-group mb-3">
+                        <span class="input-group-text"><i class="bi bi-envelope"></i></span>
+                        <input type="email" class="form-control" id="testEmail" 
+                               placeholder="Enter email to send test">
+                        <button class="btn btn-success" onclick="sendTestEmail()">
+                            <i class="bi bi-send"></i> Send Test
+                        </button>
                     </div>
+                    <div id="testEmailResult"></div>
+                </div>
+            </div>
+
+            <!-- EmailJS Settings Card -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="bi bi-gear"></i> EmailJS Configuration</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle"></i>
+                        Get these from <a href="https://dashboard.emailjs.com" target="_blank">EmailJS Dashboard</a>
+                    </div>
+                    
                     <div class="mb-3">
                         <label class="form-label">EmailJS Service ID</label>
-                        <input type="text" class="form-control" id="service_ogrqrgs">
+                        <input type="text" class="form-control" id="emailjsServiceId" 
+                               placeholder="service_xxxxxxx">
+                        <small class="text-muted">Found in Email Services section</small>
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label">EmailJS Template ID</label>
-                        <input type="text" class="form-control" id="template_2dnmc2h">
+                        <input type="text" class="form-control" id="emailjsTemplateId" 
+                               placeholder="template_xxxxxxx">
+                        <small class="text-muted">Found in Email Templates section</small>
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label">EmailJS Public Key</label>
-                        <input type="text" class="form-control" id="0eRq16_I94xMRC97a">
+                        <input type="text" class="form-control" id="emailjsPublicKey" 
+                               placeholder="Your public key">
+                        <small class="text-muted">Found in Account → API Keys</small>
                     </div>
-                    <button class="btn btn-primary" onclick="saveEmailSettings()">Save Settings</button>
+                    
+                    <button class="btn btn-primary" onclick="saveEmailSettings()">
+                        <i class="bi bi-check-lg"></i> Save Settings
+                    </button>
                 </div>
             </div>
         </div>
+        
         <div class="col-md-4">
-            <div class="card">
+            <!-- Account Info -->
+            <div class="card mb-3">
                 <div class="card-header"><h5 class="mb-0">Account</h5></div>
                 <div class="card-body">
                     <p><strong>Plan:</strong> <span class="badge bg-primary">Free Trial</span></p>
                     <p><strong>Contacts:</strong> <span id="settingsContactCount">0</span> / 500</p>
+                    <p><strong>Email Service:</strong> <span id="emailServiceStatus" class="badge bg-secondary">Not Connected</span></p>
                     <hr>
-                    <button class="btn btn-outline-danger w-100" onclick="handleLogout()">Logout</button>
+                    <button class="btn btn-outline-primary w-100 mb-2" onclick="showUpgradeModal()">
+                        <i class="bi bi-credit-card"></i> Upgrade Plan
+                    </button>
+                    <button class="btn btn-outline-danger w-100" onclick="handleLogout()">
+                        <i class="bi bi-box-arrow-right"></i> Logout
+                    </button>
                 </div>
             </div>
         </div>
@@ -72,8 +115,31 @@
                     <div class="col-md-6 mb-3">
                         <div class="card h-100 border-success">
                             <div class="card-body">
-                                <h6 class="text-success"><i class="bi bi-2-circle"></i> Account Info</h6>
+                                <h6 class="text-success"><i class="bi bi-2-circle"></i> Test Email</h6>
+                                <p class="small">Use the test email feature to verify your configuration before sending campaigns.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-warning">
+                            <div class="card-body">
+                                <h6 class="text-warning"><i class="bi bi-3-circle"></i> Account Info</h6>
                                 <p class="small">View your plan, usage limits, and upgrade options.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-info">
+                            <div class="card-body">
+                                <h6 class="text-info"><i class="bi bi-4-circle"></i> EmailJS Steps</h6>
+                                <ol class="small mb-0">
+                                    <li>Create EmailJS account</li>
+                                    <li>Add email service</li>
+                                    <li>Create template</li>
+                                    <li>Copy all 3 IDs</li>
+                                    <li>Paste in settings</li>
+                                    <li>Send test email</li>
+                                </ol>
                             </div>
                         </div>
                     </div>
@@ -85,44 +151,65 @@
 
 <script>
 function initSettingsModule() {
+    loadEmailSettings();
     loadAccountStats();
+    updateEmailServiceStatus();
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('smtpForm') || document.querySelector('.module-container')) initSettingsModule();
+    if (document.querySelector('.module-container')) {
+        initSettingsModule();
+    }
 });
 
-async function loadAccountStats() {
-    try {
-        const { count } = await gbSupabase.client
-            .from('contacts')
-            .select('*', { count: 'exact', head: true })
-            .eq('user_id', gbApp.currentUser.id);
-        document.getElementById('settingsContactCount').textContent = count || 0;
-    } catch (error) {
-        console.error('Error:', error);
-    }
+// Load saved EmailJS settings
+function loadEmailSettings() {
+    const config = JSON.parse(localStorage.getItem('emailjs_config') || '{}');
+    
+    document.getElementById('emailjsServiceId').value = config.serviceId || '';
+    document.getElementById('emailjsTemplateId').value = config.templateId || '';
+    document.getElementById('emailjsPublicKey').value = config.publicKey || '';
 }
 
-function showSettingsGuide() {
-    new bootstrap.Modal(document.getElementById('settingsGuideModal')).show();
-}
-
+// Save EmailJS settings
 function saveEmailSettings() {
     const serviceId = document.getElementById('emailjsServiceId').value.trim();
     const templateId = document.getElementById('emailjsTemplateId').value.trim();
     const publicKey = document.getElementById('emailjsPublicKey').value.trim();
     
-    if (serviceId && templateId && publicKey) {
-        localStorage.setItem('emailjs_config', JSON.stringify({ serviceId, templateId, publicKey }));
-        showToast('Email settings saved!', 'success');
-    } else {
-        showToast('Fill all EmailJS fields', 'error');
+    if (!serviceId || !templateId || !publicKey) {
+        showToast('Please fill all EmailJS fields', 'error');
+        return;
     }
+    
+    localStorage.setItem('emailjs_config', JSON.stringify({
+        serviceId,
+        templateId,
+        publicKey
+    }));
+    
+    updateEmailServiceStatus();
+    showToast('EmailJS settings saved successfully!', 'success');
+}
 
-    // Send Test Email
+// Update email service status badge
+function updateEmailServiceStatus() {
+    const config = JSON.parse(localStorage.getItem('emailjs_config') || '{}');
+    const statusBadge = document.getElementById('emailServiceStatus');
+    
+    if (config.serviceId && config.templateId && config.publicKey) {
+        statusBadge.textContent = 'Connected';
+        statusBadge.className = 'badge bg-success';
+    } else {
+        statusBadge.textContent = 'Not Connected';
+        statusBadge.className = 'badge bg-secondary';
+    }
+}
+
+// Send test email
 async function sendTestEmail() {
     const testEmail = document.getElementById('testEmail').value.trim();
+    const resultDiv = document.getElementById('testEmailResult');
     
     if (!testEmail || !GBUtils.isValidEmail(testEmail)) {
         showToast('Please enter a valid email address', 'error');
@@ -138,9 +225,9 @@ async function sendTestEmail() {
     }
     
     try {
-        showToast('Sending test email...', 'info');
+        resultDiv.innerHTML = '<div class="alert alert-info">Sending test email...</div>';
         
-        // Load EmailJS script dynamically
+        // Load EmailJS script if not loaded
         if (!window.emailjs) {
             await loadEmailJSScript();
         }
@@ -156,61 +243,64 @@ async function sendTestEmail() {
                 to_email: testEmail,
                 from_name: 'GB Mailer',
                 subject: 'Test Email from GB Mailer',
-                message: 'This is a test email from your GB Mailer account!'
+                message: 'This is a test email from your GB Mailer account! If you received this, your email configuration is working correctly.',
+                reply_to: gbApp.currentUser?.email || ''
             }
         );
         
         if (response.status === 200) {
-            showToast('Test email sent successfully! Check your inbox.', 'success');
+            resultDiv.innerHTML = `
+                <div class="alert alert-success">
+                    <i class="bi bi-check-circle"></i>
+                    Test email sent successfully to ${testEmail}! Check your inbox.
+                </div>
+            `;
+            showToast('Test email sent!', 'success');
         }
         
     } catch (error) {
         console.error('EmailJS error:', error);
+        resultDiv.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-x-circle"></i>
+                Failed to send: ${error.message || 'Unknown error'}
+            </div>
+        `;
         showToast('Failed to send email: ' + error.message, 'error');
     }
 }
 
-// Load EmailJS Script
+// Load EmailJS script dynamically
 function loadEmailJSScript() {
     return new Promise((resolve, reject) => {
         const script = document.createElement('script');
         script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
         script.onload = resolve;
-        script.onerror = reject;
+        script.onerror = () => reject(new Error('Failed to load EmailJS'));
         document.head.appendChild(script);
     });
 }
 
-// Save EmailJS Settings
-function saveEmailSettings() {
-    const serviceId = document.getElementById('emailjsServiceId').value.trim();
-    const templateId = document.getElementById('emailjsTemplateId').value.trim();
-    const publicKey = document.getElementById('emailjsPublicKey').value.trim();
-    
-    if (serviceId && templateId && publicKey) {
-        localStorage.setItem('emailjs_config', JSON.stringify({
-            serviceId,
-            templateId,
-            publicKey
-        }));
-        showToast('EmailJS settings saved!', 'success');
-    } else {
-        showToast('Please fill all EmailJS fields', 'error');
+// Load account stats
+async function loadAccountStats() {
+    try {
+        const { count } = await gbSupabase.client
+            .from('contacts')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', gbApp.currentUser.id);
+        document.getElementById('settingsContactCount').textContent = count || 0;
+    } catch (error) {
+        console.error('Error loading stats:', error);
     }
 }
 
-// Load saved settings on page load
-function loadEmailSettings() {
-    const config = JSON.parse(localStorage.getItem('emailjs_config') || '{}');
-    document.getElementById('emailjsServiceId').value = config.serviceId || '';
-    document.getElementById('emailjsTemplateId').value = config.templateId || '';
-    document.getElementById('emailjsPublicKey').value = config.publicKey || '';
+// Show settings guide
+function showSettingsGuide() {
+    new bootstrap.Modal(document.getElementById('settingsGuideModal')).show();
 }
 
-// Call this in initSettingsModule
-function initSettingsModule() {
-    loadEmailSettings();
-    loadAccountStats();
-}
+// Show upgrade modal (placeholder)
+function showUpgradeModal() {
+    showToast('Pricing plans coming soon!', 'info');
 }
 </script>
