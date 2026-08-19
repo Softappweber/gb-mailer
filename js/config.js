@@ -1,8 +1,8 @@
 // GB Mailer Configuration
 const GB_CONFIG = {
     // Supabase Configuration - UPDATE THESE LATER
-    SUPABASE_URL: 'https://YOUR_PROJECT_ID.supabase.co',
-    SUPABASE_ANON_KEY: 'YOUR_ANON_KEY',
+    SUPABASE_URL: 'https://cqvcdbnkmtgdpnldeejq.supabase.co',
+    SUPABASE_ANON_KEY: 'sb_publishable_Xut2MmJFXb0QJPJgC1lVbg_0206dtlU',
     
     // Backend URL (Render) - UPDATE LATER
     BACKEND_URL: 'https://your-backend.onrender.com',
