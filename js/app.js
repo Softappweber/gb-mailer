@@ -231,6 +231,10 @@ class GBMailerApp {
         if (moduleInitializers[module]) {
             moduleInitializers[module]();
         }
+        'lists': () => {
+    console.log('Lists initialized');
+    if (typeof initListsModule === 'function') initListsModule();
+},
     }
     
     showScreen(screen) {
