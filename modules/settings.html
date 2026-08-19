@@ -1,71 +1,123 @@
 <div class="module-container">
     <div class="module-header">
-        <h2 class="module-title">Settings</h2>
+        <div>
+            <h2 class="module-title">Settings</h2>
+            <p class="text-muted mb-0">Configure your account</p>
+        </div>
+        <div>
+            <button class="btn learn-btn" onclick="showSettingsGuide()">
+                <i class="bi bi-book"></i> Learn Settings
+            </button>
+        </div>
     </div>
-    
+
     <div class="row">
         <div class="col-md-8">
             <div class="card mb-3">
-                <div class="card-header">
-                    <h5 class="mb-0">SMTP Configuration</h5>
-                </div>
+                <div class="card-header"><h5 class="mb-0">Email Sending</h5></div>
                 <div class="card-body">
-                    <p class="text-muted">Configure your SMTP settings for sending emails. Currently supporting AWS SES and other SMTP providers.</p>
-                    
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle"></i>
-                        SMTP setup will be available in the next phase.
+                    <div class="alert alert-warning">
+                        EmailJS for testing. AWS SES for production.
                     </div>
-                    
-                    <form id="smtpForm">
-                        <div class="mb-3">
-                            <label class="form-label">SMTP Host</label>
-                            <input type="text" class="form-control" placeholder="email-smtp.us-east-1.amazonaws.com" disabled>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Port</label>
-                                <input type="number" class="form-control" placeholder="587" disabled>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label class="form-label">Encryption</label>
-                                <select class="form-select" disabled>
-                                    <option>TLS</option>
-                                    <option>SSL</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Username</label>
-                            <input type="text" class="form-control" disabled>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password" class="form-control" disabled>
-                        </div>
-                    </form>
+                    <div class="mb-3">
+                        <label class="form-label">EmailJS Service ID</label>
+                        <input type="text" class="form-control" id="emailjsServiceId">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">EmailJS Template ID</label>
+                        <input type="text" class="form-control" id="emailjsTemplateId">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">EmailJS Public Key</label>
+                        <input type="text" class="form-control" id="emailjsPublicKey">
+                    </div>
+                    <button class="btn btn-primary" onclick="saveEmailSettings()">Save Settings</button>
                 </div>
             </div>
         </div>
-        
         <div class="col-md-4">
             <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">Account Info</h5>
-                </div>
+                <div class="card-header"><h5 class="mb-0">Account</h5></div>
                 <div class="card-body">
-                    <p><strong>Plan:</strong> Free Trial</p>
-                    <p><strong>Contacts:</strong> 0 / 500</p>
-                    <p><strong>Emails Sent:</strong> 0 / 5000</p>
+                    <p><strong>Plan:</strong> <span class="badge bg-primary">Free Trial</span></p>
+                    <p><strong>Contacts:</strong> <span id="settingsContactCount">0</span> / 500</p>
                     <hr>
-                    <button class="btn btn-outline-primary w-100 mb-2">
-                        <i class="bi bi-credit-card"></i> Upgrade Plan
-                    </button>
-                    <button class="btn btn-outline-danger w-100" onclick="handleLogout()">
-                        <i class="bi bi-box-arrow-right"></i> Logout
-                    </button>
+                    <button class="btn btn-outline-danger w-100" onclick="handleLogout()">Logout</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<!-- Settings Guide Modal -->
+<div class="modal fade" id="settingsGuideModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header learn-header">
+                <h5 class="modal-title text-white">
+                    <i class="bi bi-book"></i> Settings Guide
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body">
+                                <h6 class="text-primary"><i class="bi bi-1-circle"></i> Email Setup</h6>
+                                <p class="small">Configure EmailJS for testing. AWS SES will be available for production sending.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-success">
+                            <div class="card-body">
+                                <h6 class="text-success"><i class="bi bi-2-circle"></i> Account Info</h6>
+                                <p class="small">View your plan, usage limits, and upgrade options.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function initSettingsModule() {
+    loadAccountStats();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('smtpForm') || document.querySelector('.module-container')) initSettingsModule();
+});
+
+async function loadAccountStats() {
+    try {
+        const { count } = await gbSupabase.client
+            .from('contacts')
+            .select('*', { count: 'exact', head: true })
+            .eq('user_id', gbApp.currentUser.id);
+        document.getElementById('settingsContactCount').textContent = count || 0;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+function showSettingsGuide() {
+    new bootstrap.Modal(document.getElementById('settingsGuideModal')).show();
+}
+
+function saveEmailSettings() {
+    const serviceId = document.getElementById('emailjsServiceId').value.trim();
+    const templateId = document.getElementById('emailjsTemplateId').value.trim();
+    const publicKey = document.getElementById('emailjsPublicKey').value.trim();
+    
+    if (serviceId && templateId && publicKey) {
+        localStorage.setItem('emailjs_config', JSON.stringify({ serviceId, templateId, publicKey }));
+        showToast('Email settings saved!', 'success');
+    } else {
+        showToast('Fill all EmailJS fields', 'error');
+    }
+}
+</script>
