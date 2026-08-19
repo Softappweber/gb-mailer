@@ -3,6 +3,23 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
 });
 
+async function initializeApp() {
+    try {
+        // Check session
+        const { data: { session }, error } = await gbSupabase.getSession();
+        
+        if (session) {
+            gbApp.currentUser = session.user;
+            await gbApp.loadMainApp();
+        } else {
+            gbApp.showScreen('login');
+        }
+    } catch (error) {
+        console.error('Session check error:', error);
+        gbApp.showScreen('login');
+    }
+}
+
 class GBMailerApp {
     constructor() {
         this.currentUser = null;
@@ -20,12 +37,7 @@ class GBMailerApp {
             sidebarToggle: document.getElementById('sidebarToggle')
         };
         
-        this.initialize();
-    }
-    
-    async initialize() {
         this.setupEventListeners();
-        await this.checkSession();
     }
     
     setupEventListeners() {
@@ -55,30 +67,6 @@ class GBMailerApp {
                 this.navigateToModule(link.dataset.module);
             });
         });
-        
-        // Keyboard shortcuts
-        document.addEventListener('keydown', (e) => {
-            if (e.ctrlKey && e.key === 'b') {
-                e.preventDefault();
-                this.toggleSidebar();
-            }
-        });
-    }
-    
-    async checkSession() {
-        try {
-            const { data: { session }, error } = await gbSupabase.getSession();
-            
-            if (session) {
-                this.currentUser = session.user;
-                await this.loadMainApp();
-            } else {
-                this.showScreen('login');
-            }
-        } catch (error) {
-            console.error('Session check error:', error);
-            this.showScreen('login');
-        }
     }
     
     async handleLogin() {
@@ -177,11 +165,6 @@ class GBMailerApp {
             }
         });
         
-        // Close mobile sidebar if open
-        if (window.innerWidth < 768) {
-            this.toggleSidebar();
-        }
-        
         try {
             this.showLoading(true);
             const response = await fetch(`modules/${module}.html`);
@@ -190,16 +173,16 @@ class GBMailerApp {
             const html = await response.text();
             this.elements.contentArea.innerHTML = html;
             
-            // Initialize module-specific scripts
+            // Execute any scripts in the loaded module
+            this.executeModuleScripts(this.elements.contentArea);
+            
+            // Initialize module
             this.initializeModule(module);
         } catch (error) {
             this.elements.contentArea.innerHTML = `
                 <div class="alert alert-danger">
                     <h4>Error loading module</h4>
                     <p>${error.message}</p>
-                    <button class="btn btn-sm btn-outline-danger" onclick="location.reload()">
-                        Reload Page
-                    </button>
                 </div>
             `;
         } finally {
@@ -207,19 +190,42 @@ class GBMailerApp {
         }
     }
     
+    executeModuleScripts(container) {
+        const scripts = container.querySelectorAll('script');
+        scripts.forEach(script => {
+            const newScript = document.createElement('script');
+            
+            // Copy all attributes
+            Array.from(script.attributes).forEach(attr => {
+                newScript.setAttribute(attr.name, attr.value);
+            });
+            
+            // Copy inline code
+            newScript.textContent = script.textContent;
+            
+            // Replace old script with new one
+            script.parentNode.replaceChild(newScript, script);
+        });
+    }
+    
     initializeModule(module) {
-        // Module-specific initialization
         const moduleInitializers = {
-            'dashboard': () => this.initDashboard(),
-            'contacts': () => this.initContacts(),
-            'templates': () => this.initTemplates(),
-            'campaigns': () => this.initCampaigns(),
-            'automation': () => this.initAutomation(),
-            'analytics': () => this.initAnalytics(),
-            'lists': () => this.initLists(),
-            'scoring': () => this.initScoring(),
-            'reports': () => this.initReports(),
-            'settings': () => this.initSettings()
+            'dashboard': () => {
+                console.log('Dashboard initialized');
+                if (typeof loadDashboardData === 'function') loadDashboardData();
+            },
+            'contacts': () => {
+                console.log('Contacts initialized');
+                if (typeof initContactsModule === 'function') initContactsModule();
+            },
+            'templates': () => console.log('Templates initialized'),
+            'campaigns': () => console.log('Campaigns initialized'),
+            'automation': () => console.log('Automation initialized'),
+            'analytics': () => console.log('Analytics initialized'),
+            'lists': () => console.log('Lists initialized'),
+            'scoring': () => console.log('Scoring initialized'),
+            'reports': () => console.log('Reports initialized'),
+            'settings': () => console.log('Settings initialized')
         };
         
         if (moduleInitializers[module]) {
@@ -308,61 +314,16 @@ class GBMailerApp {
             }, 300);
         }, 3000);
     }
-    
-    // Module Initializers
-    initDashboard() {
-        console.log('Dashboard initialized');
-        // Will be implemented in future steps
-    }
-    
-    initContacts() {
-        console.log('Contacts initialized');
-        // Will be implemented in future steps
-    }
-    
-    initTemplates() {
-        console.log('Templates initialized');
-        // Will be implemented in future steps
-    }
-    
-    initCampaigns() {
-        console.log('Campaigns initialized');
-        // Will be implemented in future steps
-    }
-    
-    initAutomation() {
-        console.log('Automation initialized');
-        // Will be implemented in future steps
-    }
-    
-    initAnalytics() {
-        console.log('Analytics initialized');
-        // Will be implemented in future steps
-    }
-    
-    initLists() {
-        console.log('Lists initialized');
-        // Will be implemented in future steps
-    }
-    
-    initScoring() {
-        console.log('Scoring initialized');
-        // Will be implemented in future steps
-    }
-    
-    initReports() {
-        console.log('Reports initialized');
-        // Will be implemented in future steps
-    }
-    
-    initSettings() {
-        console.log('Settings initialized');
-        // Will be implemented in future steps
-    }
 }
 
-// Initialize the app
+// Create global app instance
 const gbApp = new GBMailerApp();
+
+// Make functions available globally
+window.gbApp = gbApp;
+window.navigateToModule = (module) => gbApp.navigateToModule(module);
+window.showToast = (message, type) => gbApp.showToast(message, type);
+window.handleLogout = () => gbApp.handleLogout();
 
 // Add animation styles
 const style = document.createElement('style');
@@ -376,18 +337,5 @@ style.textContent = `
         from { transform: translateX(0); opacity: 1; }
         to { transform: translateX(100%); opacity: 0; }
     }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; }
-        to { opacity: 1; }
-    }
-    
-    @keyframes slideUp {
-        from { transform: translateY(20px); opacity: 0; }
-        to { transform: translateY(0); opacity: 1; }
-    }
 `;
 document.head.appendChild(style);
-
-// Export for use in modules
-window.gbApp = gbApp;
