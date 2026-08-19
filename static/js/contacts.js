@@ -421,4 +421,56 @@ window.onclick = function(event) {
     if (event.target.classList.contains('modal')) {
         event.target.style.display = 'none';
     }
+// static/js/contacts.js
+
+function sendSelected() {
+    const selected = document.querySelectorAll('.contact-select:checked');
+    const count = selected.length;
+    
+    if (count === 0) {
+        alert('Please select at least one contact');
+        return;
+    }
+    
+    const contactIds = Array.from(selected).map(cb => cb.value);
+    
+    // Open email composer modal
+    openEmailComposer(contactIds, count);
+}
+
+function openEmailComposer(contactIds, count) {
+    // Show modal with email fields
+    const modal = document.getElementById('emailComposerModal');
+    modal.style.display = 'block';
+    
+    document.getElementById('recipientCount').textContent = count;
+    document.getElementById('contactIds').value = JSON.stringify(contactIds);
+}
+
+function sendEmails() {
+    const contactIds = JSON.parse(document.getElementById('contactIds').value);
+    const subject = document.getElementById('emailSubject').value;
+    const body = document.getElementById('emailBody').value;
+    
+    fetch('/api/emails/send-bulk', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            contact_ids: contactIds,
+            subject: subject,
+            body: body
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(`Emails sent to ${data.sent} contacts`);
+            closeModal();
+        }
+    });
+}
+
+
 }
