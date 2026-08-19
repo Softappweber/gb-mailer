@@ -119,5 +119,98 @@ function saveEmailSettings() {
     } else {
         showToast('Fill all EmailJS fields', 'error');
     }
+
+    // Send Test Email
+async function sendTestEmail() {
+    const testEmail = document.getElementById('testEmail').value.trim();
+    
+    if (!testEmail || !GBUtils.isValidEmail(testEmail)) {
+        showToast('Please enter a valid email address', 'error');
+        return;
+    }
+    
+    // Get saved EmailJS config
+    const config = JSON.parse(localStorage.getItem('emailjs_config') || '{}');
+    
+    if (!config.serviceId || !config.templateId || !config.publicKey) {
+        showToast('Please save EmailJS settings first', 'error');
+        return;
+    }
+    
+    try {
+        showToast('Sending test email...', 'info');
+        
+        // Load EmailJS script dynamically
+        if (!window.emailjs) {
+            await loadEmailJSScript();
+        }
+        
+        // Initialize EmailJS
+        emailjs.init(config.publicKey);
+        
+        // Send email
+        const response = await emailjs.send(
+            config.serviceId,
+            config.templateId,
+            {
+                to_email: testEmail,
+                from_name: 'GB Mailer',
+                subject: 'Test Email from GB Mailer',
+                message: 'This is a test email from your GB Mailer account!'
+            }
+        );
+        
+        if (response.status === 200) {
+            showToast('Test email sent successfully! Check your inbox.', 'success');
+        }
+        
+    } catch (error) {
+        console.error('EmailJS error:', error);
+        showToast('Failed to send email: ' + error.message, 'error');
+    }
+}
+
+// Load EmailJS Script
+function loadEmailJSScript() {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+// Save EmailJS Settings
+function saveEmailSettings() {
+    const serviceId = document.getElementById('emailjsServiceId').value.trim();
+    const templateId = document.getElementById('emailjsTemplateId').value.trim();
+    const publicKey = document.getElementById('emailjsPublicKey').value.trim();
+    
+    if (serviceId && templateId && publicKey) {
+        localStorage.setItem('emailjs_config', JSON.stringify({
+            serviceId,
+            templateId,
+            publicKey
+        }));
+        showToast('EmailJS settings saved!', 'success');
+    } else {
+        showToast('Please fill all EmailJS fields', 'error');
+    }
+}
+
+// Load saved settings on page load
+function loadEmailSettings() {
+    const config = JSON.parse(localStorage.getItem('emailjs_config') || '{}');
+    document.getElementById('emailjsServiceId').value = config.serviceId || '';
+    document.getElementById('emailjsTemplateId').value = config.templateId || '';
+    document.getElementById('emailjsPublicKey').value = config.publicKey || '';
+}
+
+// Call this in initSettingsModule
+function initSettingsModule() {
+    loadEmailSettings();
+    loadAccountStats();
+}
 }
 </script>
