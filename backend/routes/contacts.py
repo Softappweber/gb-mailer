@@ -1,41 +1,85 @@
-from flask import Blueprint, request, jsonify, current_app
-from flask_login import login_required, current_user
+from flask import Blueprint, request, jsonify
 import pandas as pd
 import json
 import uuid
 from datetime import datetime
 import os
+from supabase import create_client
 
 contacts_bp = Blueprint('contacts', __name__, url_prefix='/api/contacts')
 
+# Initialize Supabase
+supabase_url = os.getenv('SUPABASE_URL')
+supabase_key = os.getenv('SUPABASE_KEY')
+
+if supabase_url and supabase_key:
+    supabase = create_client(supabase_url, supabase_key)
+else:
+    supabase = None
+    print("⚠️ Supabase not configured - using sample data")
+
 @contacts_bp.route('/', methods=['GET'])
-@login_required
 def get_contacts():
-    """Get contacts with pagination"""
+    """Get contacts from Supabase"""
     try:
         page = int(request.args.get('page', 1))
         limit = int(request.args.get('limit', 50))
         search = request.args.get('search', '')
         
-        # Build query - adjust for your database
-        # This is a placeholder - you need to use your actual DB connection
-        
-        # If using Supabase:
-        # result = supabase.table('contacts').select('*', count='exact')...
-        
-        # Placeholder response
-        return jsonify({
-            'data': [],
-            'total': 0,
-            'page': page,
-            'total_pages': 0
-        }), 200
+        if supabase:
+            # Query Supabase
+            query = supabase.table('contacts').select('*', count='exact')
+            
+            if search:
+                query = query.or_(f"first_name.ilike.%{search}%,email.ilike.%{search}%,company.ilike.%{search}%")
+            
+            start = (page - 1) * limit
+            query = query.range(start, start + limit - 1)
+            
+            result = query.execute()
+            
+            return jsonify({
+                'data': result.data,
+                'total': len(result.data),
+                'page': page,
+                'total_pages': 1
+            }), 200
+        else:
+            # Sample data for testing
+            sample_contacts = [
+                {
+                    'id': str(uuid.uuid4()),
+                    'first_name': 'John',
+                    'last_name': 'Doe',
+                    'email': 'john@example.com',
+                    'phone': '+1234567890',
+                    'company': 'Acme Inc',
+                    'job_title': 'CEO',
+                    'custom_fields': {}
+                },
+                {
+                    'id': str(uuid.uuid4()),
+                    'first_name': 'Jane',
+                    'last_name': 'Smith',
+                    'email': 'jane@example.com',
+                    'phone': '+0987654321',
+                    'company': 'Tech Corp',
+                    'job_title': 'CTO',
+                    'custom_fields': {}
+                }
+            ]
+            
+            return jsonify({
+                'data': sample_contacts,
+                'total': len(sample_contacts),
+                'page': page,
+                'total_pages': 1
+            }), 200
         
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @contacts_bp.route('/upload', methods=['POST'])
-@login_required
 def upload_contacts():
     """Upload contacts from file"""
     try:
@@ -43,47 +87,53 @@ def upload_contacts():
             return jsonify({'error': 'No file uploaded'}), 400
         
         file = request.files['file']
-        mapping = request.form.get('mapping')
+        mapping_data = request.form.get('mapping')
         
-        if not mapping:
+        if not mapping_data:
             return jsonify({'error': 'No mapping provided'}), 400
         
-        # Read file
         if file.filename.endswith('.csv'):
             df = pd.read_csv(file)
         else:
             df = pd.read_excel(file)
         
-        mapping_data = json.loads(mapping)
+        mapping = json.loads(mapping_data)
         
-        # Process each row
         contacts = []
         for _, row in df.iterrows():
             contact = {
                 'id': str(uuid.uuid4()),
-                'user_id': str(current_user.id),
                 'custom_fields': {},
                 'created_at': datetime.now().isoformat(),
                 'updated_at': datetime.now().isoformat()
             }
             
-            # Map standard fields
-            for field in ['first_name', 'last_name', 'email', 'phone', 'company', 'job_title', 'address', 'city', 'country']:
-                if mapping_data.get(field) and mapping_data[field] in df.columns:
-                    value = str(row[mapping_data[field]]) if pd.notna(row[mapping_data[field]]) else ''
-                    contact[field] = value
+            field_mapping = {
+                'first_name': 'first_name',
+                'last_name': 'last_name', 
+                'email': 'email',
+                'phone': 'phone',
+                'company': 'company',
+                'job_title': 'job_title'
+            }
             
-            # Store all other columns as custom fields
+            for field, col_name in field_mapping.items():
+                if mapping.get(col_name) and mapping[col_name] in df.columns:
+                    val = row[mapping[col_name]]
+                    if pd.notna(val):
+                        contact[field] = str(val)
+            
             for col in df.columns:
-                if col not in mapping_data.values():
+                if col not in mapping.values():
                     if pd.notna(row[col]):
                         contact['custom_fields'][col] = str(row[col])
             
             contacts.append(contact)
         
-        # Insert contacts - adjust for your database
-        # If using Supabase:
-        # result = supabase.table('contacts').insert(contacts).execute()
+        # Insert into Supabase if configured
+        if supabase:
+            for contact in contacts:
+                supabase.table('contacts').insert(contact).execute()
         
         return jsonify({
             'success': True,
@@ -95,7 +145,6 @@ def upload_contacts():
         return jsonify({'error': str(e)}), 500
 
 @contacts_bp.route('/preview', methods=['POST'])
-@login_required
 def preview_file():
     """Preview file columns"""
     try:
@@ -104,7 +153,6 @@ def preview_file():
         
         file = request.files['file']
         
-        # Read first few rows
         if file.filename.endswith('.csv'):
             df = pd.read_csv(file, nrows=5)
         else:
@@ -113,7 +161,6 @@ def preview_file():
         columns = df.columns.tolist()
         preview = df.head(3).to_dict('records')
         
-        # Convert NaN to None
         for row in preview:
             for key, value in row.items():
                 if pd.isna(value):
@@ -128,16 +175,12 @@ def preview_file():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@contacts_bp.route('/<uuid:contact_id>', methods=['DELETE'])
-@login_required
+@contacts_bp.route('/<contact_id>', methods=['DELETE'])
 def delete_contact(contact_id):
     """Delete a contact"""
     try:
-        # Delete from database - adjust for your setup
-        # If using Supabase:
-        # result = supabase.table('contacts').delete().eq('id', str(contact_id)).eq('user_id', str(current_user.id)).execute()
-        
+        if supabase:
+            supabase.table('contacts').delete().eq('id', contact_id).execute()
         return jsonify({'success': True}), 200
-        
     except Exception as e:
         return jsonify({'error': str(e)}), 500
