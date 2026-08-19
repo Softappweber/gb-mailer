@@ -1,15 +1,122 @@
 <div class="module-container">
     <div class="module-header">
-        <h2 class="module-title">Automation</h2>
-        <button class="btn btn-primary" onclick="showCreateAutomationModal()">
-            <i class="bi bi-gear-plus"></i> New Automation
-        </button>
+        <div>
+            <h2 class="module-title">Automation</h2>
+            <p class="text-muted mb-0">Automated email workflows</p>
+        </div>
+        <div>
+            <button class="btn learn-btn me-2" onclick="showAutomationGuide()">
+                <i class="bi bi-book"></i> Learn Automation
+            </button>
+            <button class="btn btn-primary" onclick="showCreateAutomationModal()">
+                <i class="bi bi-gear-plus"></i> New Automation
+            </button>
+        </div>
     </div>
-    
-    <div class="card">
-        <div class="card-body text-center text-muted py-5">
-            <i class="bi bi-gear" style="font-size: 3rem;"></i>
-            <p class="mt-2 mb-0">Set up automated email flows like welcome series, drip campaigns, and more.</p>
+
+    <div class="alert alert-success">
+        <i class="bi bi-robot"></i>
+        <strong>Automate your marketing:</strong> Welcome emails, drip campaigns, follow-ups, and more - all on autopilot!
+    </div>
+
+    <div class="row" id="automationContainer">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-gear" style="font-size: 4rem; color: #ccc;"></i>
+                    <h5 class="mt-3">Automation Coming Soon</h5>
+                    <p class="text-muted">Create automated email workflows that run while you sleep!</p>
+                    <button class="btn learn-btn" onclick="showAutomationGuide()">
+                        <i class="bi bi-book"></i> Learn what automation can do for you
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+<!-- Automation Guide Modal -->
+<div class="modal fade" id="automationGuideModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header learn-header">
+                <h5 class="modal-title text-white">
+                    <i class="bi bi-book"></i> Automation Guide
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body">
+                                <h6 class="text-primary"><i class="bi bi-1-circle"></i> What is Automation?</h6>
+                                <p class="small">Automatically send emails based on triggers like new subscriber, purchase, or specific date.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-success">
+                            <div class="card-body">
+                                <h6 class="text-success"><i class="bi bi-2-circle"></i> Common Automations</h6>
+                                <ul class="small mb-0">
+                                    <li><strong>Welcome Series</strong> - 3-5 emails to new subscribers</li>
+                                    <li><strong>Drip Campaign</strong> - Educational content over time</li>
+                                    <li><strong>Abandoned Cart</strong> - Remind customers</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-warning">
+                            <div class="card-body">
+                                <h6 class="text-warning"><i class="bi bi-3-circle"></i> Benefits</h6>
+                                <ul class="small mb-0">
+                                    <li>Save time - set once, run forever</li>
+                                    <li>Consistent communication</li>
+                                    <li>Higher engagement</li>
+                                    <li>Increase sales on autopilot</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-info">
+                            <div class="card-body">
+                                <h6 class="text-info"><i class="bi bi-4-circle"></i> Coming Soon</h6>
+                                <ul class="small mb-0">
+                                    <li>Visual workflow builder</li>
+                                    <li>Multiple trigger types</li>
+                                    <li>Delay scheduling</li>
+                                    <li>Conditional branching</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-success mt-3 mb-0">
+                    <i class="bi bi-graph-up"></i>
+                    <strong>Marketing Tip:</strong> Automated emails generate <strong>320% more revenue</strong> than non-automated emails!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function initAutomationModule() {
+    console.log('Automation loaded');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('automationContainer')) initAutomationModule();
+});
+
+function showAutomationGuide() {
+    new bootstrap.Modal(document.getElementById('automationGuideModal')).show();
+}
+
+function showCreateAutomationModal() {
+    showToast('Automation builder coming soon!', 'info');
+}
+</script>
