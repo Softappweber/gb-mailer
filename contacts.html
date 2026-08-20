@@ -273,6 +273,11 @@
             }
         }
     </style>
+    <!-- Add these BEFORE the main script -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="js/config.js"></script>
+<script src="js/supabase-client.js"></script>
+<script src="js/utils.js"></script>
 </head>
 
 <body>
@@ -477,7 +482,7 @@
  * Example:
  * https://gb-mailer-api.onrender.com
  */
-const API_BASE_URL = "https://YOUR-RENDER-SERVICE.onrender.com";
+const API_BASE_URL = "https://gb-mailer-backend.onrender.com";
 
 const PAGE_SIZE = 50;
 
