@@ -25,6 +25,7 @@ class GBMailerApp {
         this.currentModule = 'dashboard';
         this.sidebarCollapsed = false;
         this.toastContainer = null;
+        this.moduleCache = new Map();
         
         this.elements = {
             loadingScreen: document.getElementById('loadingScreen'),
@@ -56,14 +57,17 @@ class GBMailerApp {
         
         this.elements.sidebarToggle?.addEventListener('click', () => this.toggleSidebar());
         
-        // ✅ CHANGED: Handle direct navigation via page reload
-        // Since we're using direct links to .html files, we don't need data-module listeners
-        // But we keep this for backward compatibility if needed
-        document.querySelectorAll('.nav-link[data-module]').forEach(link => {
-            link.addEventListener('click', (e) => {
+        // Handle navigation clicks
+        document.addEventListener('click', (e) => {
+            const navLink = e.target.closest('.nav-link');
+            if (navLink && navLink.getAttribute('href')) {
                 e.preventDefault();
-                this.navigateToModule(link.dataset.module);
-            });
+                const href = navLink.getAttribute('href');
+                if (href.endsWith('.html')) {
+                    const module = href.replace('.html', '');
+                    this.navigateToModule(module);
+                }
+            }
         });
     }
     
@@ -124,7 +128,9 @@ class GBMailerApp {
             const { error } = await gbSupabase.signOut();
             if (error) throw error;
             this.currentUser = null;
+            this.moduleCache.clear();
             this.showScreen('login');
+            this.showToast('Logged out successfully', 'success');
         } catch (error) {
             this.showToast(error.message, 'error');
         }
@@ -141,7 +147,6 @@ class GBMailerApp {
         }
     }
     
-    // ✅ CHANGED: Load from root instead of modules/ folder
     async navigateToModule(module) {
         this.currentModule = module;
         
@@ -155,23 +160,41 @@ class GBMailerApp {
         });
         
         try {
-            // ✅ CHANGED: Removed 'modules/' from path
             const response = await fetch(`${module}.html`);
             if (!response.ok) throw new Error('Module not found');
             
             const html = await response.text();
-            this.elements.contentArea.innerHTML = html;
             
-            // Execute scripts
-            const scripts = this.elements.contentArea.querySelectorAll('script');
-            scripts.forEach(oldScript => {
-                const newScript = document.createElement('script');
-                newScript.textContent = oldScript.textContent;
-                oldScript.parentNode.replaceChild(newScript, oldScript);
+            // Create a temporary container
+            const tempDiv = document.createElement('div');
+            tempDiv.innerHTML = html;
+            
+            // Extract and remove scripts
+            const scripts = Array.from(tempDiv.querySelectorAll('script'));
+            scripts.forEach(script => script.remove());
+            
+            // Extract and move styles to head
+            const styles = Array.from(tempDiv.querySelectorAll('style'));
+            styles.forEach(style => {
+                const newStyle = document.createElement('style');
+                newStyle.textContent = style.textContent;
+                document.head.appendChild(newStyle);
+                style.remove();
             });
             
+            // Set the cleaned HTML
+            this.elements.contentArea.innerHTML = tempDiv.innerHTML;
+            
+            // Execute scripts in order
+            for (const script of scripts) {
+                await this.executeScript(script);
+            }
+            
+            // Initialize the module
             this.initializeModule(module);
+            
         } catch (error) {
+            console.error('Error loading module:', error);
             this.elements.contentArea.innerHTML = `
                 <div class="alert alert-danger">
                     <h4>Error loading module</h4>
@@ -180,6 +203,32 @@ class GBMailerApp {
                 </div>
             `;
         }
+    }
+    
+    executeScript(scriptElement) {
+        return new Promise((resolve, reject) => {
+            const newScript = document.createElement('script');
+            
+            // Copy all attributes
+            Array.from(scriptElement.attributes).forEach(attr => {
+                newScript.setAttribute(attr.name, attr.value);
+            });
+            
+            // Set the script content
+            if (scriptElement.src) {
+                // External script
+                newScript.onload = resolve;
+                newScript.onerror = reject;
+                newScript.src = scriptElement.src;
+                document.body.appendChild(newScript);
+            } else {
+                // Inline script
+                newScript.textContent = scriptElement.textContent;
+                document.body.appendChild(newScript);
+                document.body.removeChild(newScript);
+                resolve();
+            }
+        });
     }
     
     initializeModule(module) {
@@ -229,15 +278,8 @@ class GBMailerApp {
         this.showLoading(false);
         this.updateUserInfo();
         
-        // ✅ CHANGED: Navigate to dashboard.html directly
-        const currentPath = window.location.pathname.split('/').pop();
-        if (currentPath && currentPath !== 'index.html') {
-            // If we're on a specific page, show that module
-            const moduleName = currentPath.replace('.html', '');
-            await this.navigateToModule(moduleName);
-        } else {
-            await this.navigateToModule('dashboard');
-        }
+        // Load dashboard by default
+        await this.navigateToModule('dashboard');
     }
     
     updateUserInfo() {
