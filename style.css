@@ -4,8 +4,7 @@
     --sidebar-active: #0f3460;
     --primary-color: #e94560;
     --text-light: #ffffff;
-    --text-muted: #cbd5e1; /* Brighter than before */
-    --text-bright: #ffffff;
+    --text-muted: #cbd5e1;
 }
 
 * {
@@ -75,7 +74,7 @@ body {
     height: 100vh;
 }
 
-/* ============ SIDEBAR STYLES ============ */
+/* Sidebar */
 .sidebar {
     width: 260px;
     background: var(--sidebar-bg);
@@ -139,13 +138,12 @@ body {
     margin-bottom: 3px;
 }
 
-/* NAV LINK - Brighter color */
 .nav-link {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 9px 12px;
-    color: #e2e8f0; /* Brighter than before */
+    color: #e2e8f0;
     text-decoration: none;
     border-radius: 6px;
     transition: all 0.3s;
@@ -194,7 +192,7 @@ body {
     color: #ffffff;
 }
 
-/* SUBMENU STYLES */
+/* Submenu */
 .nav-submenu {
     list-style: none;
     padding: 0;
@@ -212,7 +210,6 @@ body {
     font-size: 11.5px;
     padding-top: 7px;
     padding-bottom: 7px;
-    opacity: 1; /* Full opacity */
     color: #d1d5db;
 }
 
@@ -223,7 +220,6 @@ body {
 }
 
 .nav-submenu .nav-link:hover {
-    opacity: 1;
     background: var(--sidebar-hover);
     color: #ffffff;
 }
@@ -233,7 +229,7 @@ body {
     color: #ffffff;
 }
 
-/* Parent Link Styles */
+/* Parent Link */
 .parent-link {
     cursor: pointer;
     position: relative;
@@ -257,7 +253,6 @@ body {
 /* External Link Icon */
 .sub-link .bi-box-arrow-up-right {
     opacity: 0.7;
-    transition: opacity 0.3s;
     font-size: 9px;
     margin-left: auto;
 }
@@ -326,7 +321,7 @@ body {
     color: #e2e8f0;
 }
 
-/* ============ TOGGLE ARROW BUTTON ============ */
+/* Toggle Arrow Button */
 #sidebarToggle {
     width: 36px;
     height: 36px;
@@ -351,10 +346,9 @@ body {
     font-size: 18px;
     color: #333;
     position: absolute;
-    transition: all 0.3s;
 }
 
-/* ============ MAIN CONTENT ============ */
+/* Main Content */
 .main-content {
     flex: 1;
     margin-left: 260px;
@@ -403,7 +397,7 @@ body {
     background: #f5f5f5;
 }
 
-/* Module Content Styles */
+/* Module Content */
 .module-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -422,7 +416,7 @@ body {
     color: #1a1a2e;
 }
 
-/* Learn Button Styling */
+/* Learn Button */
 .learn-btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -460,7 +454,7 @@ body {
     transform: translateY(-5px);
 }
 
-/* Collapse Animation */
+/* Collapse */
 .collapse {
     transition: height 0.3s ease;
 }
