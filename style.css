@@ -297,25 +297,6 @@ body {
     color: #1a1a2e;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 70px;
-    }
-    
-    .sidebar .brand-name,
-    .sidebar .nav-link span,
-    .sidebar .user-details {
-        display: none;
-    }
-    
-    .main-content {
-        margin-left: 70px;
-    }
-    
-    .login-card {
-        padding: 20px;
-    }
 /* Learn Button Styling */
 .learn-btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -354,4 +335,23 @@ body {
     transform: translateY(-5px);
 }
 
+/* Responsive */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 70px;
+    }
+    
+    .sidebar .brand-name,
+    .sidebar .nav-link span,
+    .sidebar .user-details {
+        display: none;
+    }
+    
+    .main-content {
+        margin-left: 70px;
+    }
+    
+    .login-card {
+        padding: 20px;
+    }
 }
