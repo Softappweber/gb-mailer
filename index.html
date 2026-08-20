@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>GB Mailer - Email Marketing Platform</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
     <link href="style.css" rel="stylesheet">
@@ -26,21 +25,17 @@
                     <h2 class="login-title">GB Mailer</h2>
                     <p class="text-muted">Professional Email Marketing Platform</p>
                 </div>
-                
                 <div class="mb-3">
                     <label class="form-label">Email</label>
                     <input type="email" id="loginEmail" class="form-control" placeholder="Enter your email">
                 </div>
-                
                 <div class="mb-3">
                     <label class="form-label">Password</label>
                     <input type="password" id="loginPassword" class="form-control" placeholder="Enter your password">
                 </div>
-                
                 <div class="mb-4">
                     <button id="loginBtn" class="btn btn-primary w-100">Sign In</button>
                 </div>
-                
                 <div class="text-center">
                     <p class="mb-0">Don't have an account? <a href="#" id="showSignup">Sign Up</a></p>
                 </div>
@@ -56,26 +51,21 @@
                     <h2 class="login-title">Create Account</h2>
                     <p class="text-muted">Start your email marketing journey</p>
                 </div>
-                
                 <div class="mb-3">
                     <label class="form-label">Full Name</label>
                     <input type="text" id="signupName" class="form-control" placeholder="Enter your name">
                 </div>
-                
                 <div class="mb-3">
                     <label class="form-label">Email</label>
                     <input type="email" id="signupEmail" class="form-control" placeholder="Enter your email">
                 </div>
-                
                 <div class="mb-3">
                     <label class="form-label">Password</label>
                     <input type="password" id="signupPassword" class="form-control" placeholder="Create a password">
                 </div>
-                
                 <div class="mb-4">
                     <button id="signupBtn" class="btn btn-primary w-100">Sign Up</button>
                 </div>
-                
                 <div class="text-center">
                     <p class="mb-0">Already have an account? <a href="#" id="showLogin">Sign In</a></p>
                 </div>
@@ -96,71 +86,54 @@
                 </div>
                 
                 <ul class="nav-menu">
-                    <!-- Dashboard -->
                     <li class="nav-item">
                         <a href="#" data-module="dashboard" class="nav-link active">
                             <i class="bi bi-speedometer2"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
-                    
-                    <!-- Contacts -->
                     <li class="nav-item">
                         <a href="#" data-module="contacts" class="nav-link">
                             <i class="bi bi-people"></i>
                             <span>Contacts</span>
                         </a>
                     </li>
-                    
-                    <!-- Lists -->
                     <li class="nav-item">
                         <a href="#" data-module="lists" class="nav-link">
                             <i class="bi bi-list-task"></i>
                             <span>Lists</span>
                         </a>
                     </li>
-                    
-                    <!-- Templates -->
                     <li class="nav-item">
                         <a href="#" data-module="templates" class="nav-link">
                             <i class="bi bi-file-earmark-text"></i>
                             <span>Templates</span>
                         </a>
                     </li>
-                    
-                    <!-- Campaigns -->
                     <li class="nav-item">
                         <a href="#" data-module="campaigns" class="nav-link">
                             <i class="bi bi-send"></i>
                             <span>Campaigns</span>
                         </a>
                     </li>
-                    
-                    <!-- Automation -->
                     <li class="nav-item">
                         <a href="#" data-module="automation" class="nav-link">
                             <i class="bi bi-gear"></i>
                             <span>Automation</span>
                         </a>
                     </li>
-                    
-                    <!-- Lead Scoring -->
                     <li class="nav-item">
                         <a href="#" data-module="scoring" class="nav-link">
                             <i class="bi bi-star"></i>
                             <span>Lead Scoring</span>
                         </a>
                     </li>
-                    
-                    <!-- Analytics -->
                     <li class="nav-item">
                         <a href="#" data-module="analytics" class="nav-link">
                             <i class="bi bi-graph-up"></i>
                             <span>Analytics</span>
                         </a>
                     </li>
-                    
-                    <!-- Reports -->
                     <li class="nav-item">
                         <a href="#" data-module="reports" class="nav-link">
                             <i class="bi bi-file-earmark-bar-graph"></i>
@@ -168,15 +141,14 @@
                         </a>
                     </li>
 
-                    <!-- Email Generators Parent -->
+                    <!-- Email Generators -->
                     <li class="nav-item">
-                        <a href="#" class="nav-link parent-link collapsed" data-bs-toggle="collapse" data-bs-target="#emailGeneratorsSubmenu" aria-expanded="false">
+                        <a href="#" class="nav-link parent-link collapsed" data-bs-toggle="collapse" data-bs-target="#emailGeneratorsSubmenu">
                             <i class="bi bi-envelope-gear"></i>
                             <span>Email Generators</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
                         </a>
                     </li>
-                    <!-- Email Generators Submenu -->
                     <li class="collapse" id="emailGeneratorsSubmenu">
                         <ul class="nav-submenu">
                             <li class="nav-item">
@@ -196,15 +168,14 @@
                         </ul>
                     </li>
 
-                    <!-- Email Copywriter Parent -->
+                    <!-- Email Copywriter -->
                     <li class="nav-item">
-                        <a href="#" class="nav-link parent-link collapsed" data-bs-toggle="collapse" data-bs-target="#emailCopywriterSubmenu" aria-expanded="false">
+                        <a href="#" class="nav-link parent-link collapsed" data-bs-toggle="collapse" data-bs-target="#emailCopywriterSubmenu">
                             <i class="bi bi-pencil-square"></i>
                             <span>Email Copywriter</span>
                             <i class="bi bi-chevron-down ms-auto"></i>
                         </a>
                     </li>
-                    <!-- Email Copywriter Submenu -->
                     <li class="collapse" id="emailCopywriterSubmenu">
                         <ul class="nav-submenu">
                             <li class="nav-item">
@@ -248,7 +219,6 @@
             <!-- Main Content -->
             <main class="main-content">
                 <div class="content-header">
-                    <!-- Toggle button with arrows -->
                     <button id="sidebarToggle" class="btn btn-light" title="Toggle Sidebar">
                         <i class="bi bi-arrow-left" id="arrowLeft"></i>
                         <i class="bi bi-arrow-right" id="arrowRight" style="display: none;"></i>
@@ -270,7 +240,6 @@
         </div>
     </div>
 
-    <!-- Supabase JS -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="js/config.js"></script>
