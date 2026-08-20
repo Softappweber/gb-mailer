@@ -4,7 +4,8 @@
     --sidebar-active: #0f3460;
     --primary-color: #e94560;
     --text-light: #ffffff;
-    --text-muted: #8a8a8a;
+    --text-muted: #cbd5e1; /* Brighter than before */
+    --text-bright: #ffffff;
 }
 
 * {
@@ -118,6 +119,7 @@ body {
     white-space: nowrap;
     overflow: hidden;
     transition: opacity 0.3s;
+    color: #ffffff;
 }
 
 .sidebar.collapsed .brand-name {
@@ -137,19 +139,20 @@ body {
     margin-bottom: 3px;
 }
 
-/* ✅ SMALLER NAV LINK FONT */
+/* NAV LINK - Brighter color */
 .nav-link {
     display: flex;
     align-items: center;
     gap: 8px;
     padding: 9px 12px;
-    color: var(--text-muted);
+    color: #e2e8f0; /* Brighter than before */
     text-decoration: none;
     border-radius: 6px;
     transition: all 0.3s;
     white-space: nowrap;
     overflow: hidden;
     font-size: 12.5px;
+    font-weight: 500;
 }
 
 .nav-link i {
@@ -157,10 +160,12 @@ body {
     flex-shrink: 0;
     width: 18px;
     text-align: center;
+    color: #cbd5e1;
 }
 
 .nav-link span {
     transition: opacity 0.3s;
+    color: #e2e8f0;
 }
 
 .sidebar.collapsed .nav-link span {
@@ -171,15 +176,25 @@ body {
 
 .nav-link:hover {
     background: var(--sidebar-hover);
-    color: var(--text-light);
+    color: #ffffff;
+}
+
+.nav-link:hover i,
+.nav-link:hover span {
+    color: #ffffff;
 }
 
 .nav-link.active {
     background: var(--sidebar-active);
-    color: var(--text-light);
+    color: #ffffff;
 }
 
-/* ✅ SUBMENU STYLES */
+.nav-link.active i,
+.nav-link.active span {
+    color: #ffffff;
+}
+
+/* SUBMENU STYLES */
 .nav-submenu {
     list-style: none;
     padding: 0;
@@ -197,23 +212,32 @@ body {
     font-size: 11.5px;
     padding-top: 7px;
     padding-bottom: 7px;
-    opacity: 0.85;
+    opacity: 1; /* Full opacity */
+    color: #d1d5db;
 }
 
 .nav-submenu .nav-link i {
     font-size: 12px;
     width: 15px;
+    color: #cbd5e1;
 }
 
 .nav-submenu .nav-link:hover {
     opacity: 1;
     background: var(--sidebar-hover);
+    color: #ffffff;
+}
+
+.nav-submenu .nav-link:hover i,
+.nav-submenu .nav-link:hover span {
+    color: #ffffff;
 }
 
 /* Parent Link Styles */
 .parent-link {
     cursor: pointer;
     position: relative;
+    color: #e2e8f0;
 }
 
 .parent-link .bi-chevron-down {
@@ -232,7 +256,7 @@ body {
 
 /* External Link Icon */
 .sub-link .bi-box-arrow-up-right {
-    opacity: 0.5;
+    opacity: 0.7;
     transition: opacity 0.3s;
     font-size: 9px;
     margin-left: auto;
@@ -280,11 +304,12 @@ body {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: #ffffff;
 }
 
 .user-details span:last-child {
     font-size: 10.5px;
-    color: var(--text-muted);
+    color: #cbd5e1;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -298,6 +323,7 @@ body {
 .sidebar-actions .nav-link {
     padding: 8px 10px;
     font-size: 12px;
+    color: #e2e8f0;
 }
 
 /* ============ TOGGLE ARROW BUTTON ============ */
@@ -322,30 +348,10 @@ body {
 }
 
 #sidebarToggle i {
-    font-size: 16px;
-    color: #666;
+    font-size: 18px;
+    color: #333;
     position: absolute;
     transition: all 0.3s;
-}
-
-/* Default: Show left arrow (sidebar expanded) */
-#sidebarToggle .bi-arrow-left {
-    display: inline-block;
-}
-
-#sidebarToggle .bi-arrow-right {
-    display: none;
-}
-
-/* When sidebar is collapsed: Show right arrow */
-.sidebar.collapsed ~ .main-content #sidebarToggle .bi-arrow-left,
-.main-content.expanded #sidebarToggle .bi-arrow-left {
-    display: none;
-}
-
-.sidebar.collapsed ~ .main-content #sidebarToggle .bi-arrow-right,
-.main-content.expanded #sidebarToggle .bi-arrow-right {
-    display: inline-block;
 }
 
 /* ============ MAIN CONTENT ============ */
@@ -454,7 +460,7 @@ body {
     transform: translateY(-5px);
 }
 
-/* ============ COLLAPSE ANIMATION ============ */
+/* Collapse Animation */
 .collapse {
     transition: height 0.3s ease;
 }
@@ -463,7 +469,7 @@ body {
     display: none;
 }
 
-/* ============ RESPONSIVE ============ */
+/* Responsive */
 @media (max-width: 768px) {
     .sidebar {
         width: 70px;
