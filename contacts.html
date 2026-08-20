@@ -7,10 +7,10 @@
         </div>
         <div>
             <button class="btn btn-outline-success me-2" onclick="showImportModal()">
-                <i class="bi bi-upload"></i> Import
+                <i class="bi bi-upload me-1"></i> Import
             </button>
             <button class="btn btn-primary" onclick="showAddContactModal()">
-                <i class="bi bi-person-plus"></i> Add Contact
+                <i class="bi bi-person-plus me-1"></i> Add Contact
             </button>
         </div>
     </div>
@@ -54,9 +54,12 @@
     <!-- Search and Filter -->
     <div class="card mb-4">
         <div class="card-body">
-            <div class="row">
+            <div class="row align-items-center">
                 <div class="col-md-5 mb-2">
-                    <input type="text" class="form-control" id="contactSearch" placeholder="Search contacts..." oninput="searchContacts()">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="contactSearch" placeholder="Search contacts..." oninput="searchContacts()">
+                    </div>
                 </div>
                 <div class="col-md-3 mb-2">
                     <select class="form-select" id="contactStatusFilter" onchange="searchContacts()">
@@ -75,29 +78,29 @@
                 </div>
                 <div class="col-md-2 mb-2">
                     <button class="btn btn-outline-danger w-100" onclick="showBulkEmailModal()">
-                        <i class="bi bi-envelope"></i> Send
+                        <i class="bi bi-envelope me-1"></i> Send
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Contacts Table -->
-    <div class="card">
+    <!-- Contacts Table Card -->
+    <div class="card shadow-sm">
         <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover mb-0">
+                <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
                         <tr>
-                            <th style="width: 40px;">
-                                <input type="checkbox" id="selectAllContacts" onchange="toggleSelectAll()">
+                            <th style="width: 40px;" class="ps-3">
+                                <input type="checkbox" class="form-check-input" id="selectAllContacts" onchange="toggleSelectAll()">
                             </th>
                             <th>Name</th>
                             <th>Email</th>
                             <th>Company</th>
                             <th>Phone</th>
                             <th>Status</th>
-                            <th style="width: 100px;">Actions</th>
+                            <th class="text-end pe-3" style="width: 100px;">Actions</th>
                         </tr>
                     </thead>
                     <tbody id="contactsTableBody">
@@ -111,7 +114,7 @@
             </div>
         </div>
         
-        <div class="card-footer bg-white d-flex justify-content-between align-items-center">
+        <div class="card-footer bg-white d-flex justify-content-between align-items-center flex-wrap">
             <small class="text-muted" id="paginationInfo">Loading...</small>
             <nav>
                 <ul class="pagination pagination-sm mb-0" id="pagination"></ul>
@@ -123,41 +126,45 @@
 <!-- Add/Edit Contact Modal -->
 <div class="modal fade" id="contactModal" tabindex="-1">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title" id="contactModalTitle">Add Contact</h5>
+        <div class="modal-content shadow">
+            <div class="modal-header bg-primary text-white py-3">
+                <h5 class="modal-title" id="contactModalTitle">
+                    <i class="bi bi-person-plus me-2"></i>Add Contact
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <input type="hidden" id="contactId">
                 
-                <div class="mb-3">
-                    <label class="form-label">First Name *</label>
-                    <input type="text" class="form-control" id="firstName" required>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">First Name *</label>
+                        <input type="text" class="form-control" id="firstName" placeholder="John" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Last Name</label>
+                        <input type="text" class="form-control" id="lastName" placeholder="Smith">
+                    </div>
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Last Name</label>
-                    <input type="text" class="form-control" id="lastName">
+                    <label class="form-label fw-semibold">Email Address *</label>
+                    <input type="email" class="form-control" id="contactEmail" placeholder="john@example.com" required>
+                </div>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Phone</label>
+                        <input type="tel" class="form-control" id="contactPhone" placeholder="+1 234 567 890">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Company</label>
+                        <input type="text" class="form-control" id="contactCompany" placeholder="Example Ltd">
+                    </div>
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Email Address *</label>
-                    <input type="email" class="form-control" id="contactEmail" required>
-                </div>
-                
-                <div class="mb-3">
-                    <label class="form-label">Phone</label>
-                    <input type="tel" class="form-control" id="contactPhone">
-                </div>
-                
-                <div class="mb-3">
-                    <label class="form-label">Company</label>
-                    <input type="text" class="form-control" id="contactCompany">
-                </div>
-                
-                <div class="mb-3">
-                    <label class="form-label">Status</label>
+                    <label class="form-label fw-semibold">Status</label>
                     <select class="form-select" id="contactStatus">
                         <option value="active">Active</option>
                         <option value="unsubscribed">Unsubscribed</option>
@@ -165,9 +172,11 @@
                     </select>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveContact()">Save</button>
+            <div class="modal-footer py-3">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary px-4" onclick="saveContact()">
+                    <i class="bi bi-check-lg me-1"></i> Save
+                </button>
             </div>
         </div>
     </div>
@@ -176,32 +185,37 @@
 <!-- Import Modal -->
 <div class="modal fade" id="importModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white">
-                <h5 class="modal-title">Import Contacts</h5>
+        <div class="modal-content shadow">
+            <div class="modal-header bg-success text-white py-3">
+                <h5 class="modal-title">
+                    <i class="bi bi-upload me-2"></i>Import Contacts
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label">Upload CSV or Excel File</label>
+            <div class="modal-body p-4">
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Upload CSV or Excel File</label>
                     <input type="file" class="form-control" id="importFile" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(event)">
+                    <small class="text-muted">Supported: .csv, .xlsx, .xls</small>
                 </div>
                 
                 <div id="columnMapping" class="d-none">
-                    <h6 class="mb-3">Map Columns</h6>
+                    <h6 class="fw-bold mb-3">Map Columns</h6>
                     <div class="row" id="columnMappingFields"></div>
                 </div>
                 
                 <div id="importPreview" class="d-none">
-                    <h6 class="mb-3">Preview (First 5 rows)</h6>
+                    <h6 class="fw-bold mb-3">Preview (First 5 rows)</h6>
                     <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                        <table class="table table-sm table-bordered" id="importPreviewTable"></table>
+                        <table class="table table-sm table-bordered table-striped" id="importPreviewTable"></table>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-success" id="importBtn" onclick="importContacts()" disabled>Import</button>
+            <div class="modal-footer py-3">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-success px-4" id="importBtn" onclick="importContacts()" disabled>
+                    <i class="bi bi-upload me-1"></i> Import
+                </button>
             </div>
         </div>
     </div>
@@ -210,40 +224,43 @@
 <!-- Send Email Modal -->
 <div class="modal fade" id="sendEmailModal" tabindex="-1">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">Send Email</h5>
+        <div class="modal-content shadow">
+            <div class="modal-header bg-danger text-white py-3">
+                <h5 class="modal-title">
+                    <i class="bi bi-envelope me-2"></i>Send Email
+                </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body">
-                <div class="alert alert-info">
-                    Sending to <strong id="sendEmailCount">0</strong> contacts
+            <div class="modal-body p-4">
+                <div class="alert alert-info d-flex align-items-center">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Sending to <strong class="ms-1" id="sendEmailCount">0</strong>&nbsp;contacts
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Subject *</label>
-                    <input type="text" class="form-control" id="bulkEmailSubject">
+                    <label class="form-label fw-semibold">Subject *</label>
+                    <input type="text" class="form-control" id="bulkEmailSubject" placeholder="Enter subject line">
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Message *</label>
-                    <textarea class="form-control" id="bulkEmailContent" rows="10"></textarea>
+                    <label class="form-label fw-semibold">Message *</label>
+                    <textarea class="form-control" id="bulkEmailContent" rows="8" placeholder="Write your email content..."></textarea>
                 </div>
                 
                 <div class="mb-3">
-                    <label class="form-label">Insert Variable</label>
+                    <label class="form-label fw-semibold">Insert Variable</label>
                     <div class="d-flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-sm btn-light" onclick="insertBulkVariable('{{first_name}}')">{{first_name}}</button>
-                        <button type="button" class="btn btn-sm btn-light" onclick="insertBulkVariable('{{last_name}}')">{{last_name}}</button>
-                        <button type="button" class="btn btn-sm btn-light" onclick="insertBulkVariable('{{email}}')">{{email}}</button>
-                        <button type="button" class="btn btn-sm btn-light" onclick="insertBulkVariable('{{company}}')">{{company}}</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertBulkVariable('{{first_name}}')">{{first_name}}</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertBulkVariable('{{last_name}}')">{{last_name}}</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertBulkVariable('{{email}}')">{{email}}</button>
+                        <button type="button" class="btn btn-sm btn-outline-secondary" onclick="insertBulkVariable('{{company}}')">{{company}}</button>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-danger" onclick="sendBulkEmail()">
-                    <i class="bi bi-send"></i> Send
+            <div class="modal-footer py-3">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger px-4" onclick="sendBulkEmail()">
+                    <i class="bi bi-send me-1"></i> Send
                 </button>
             </div>
         </div>
@@ -267,6 +284,7 @@
     text-transform: uppercase;
     color: #666;
     font-weight: 600;
+    white-space: nowrap;
 }
 
 .table td {
@@ -282,10 +300,20 @@
     background-color: #4f46e5;
     border-color: #4f46e5;
 }
+
+.modal-content {
+    border: none;
+    border-radius: 12px;
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 0.2rem rgba(79, 70, 229, 0.25);
+}
 </style>
 
 <script>
-// EmailJS Configuration
 emailjs.init('0eRq16_I94xMRC97a');
 
 let contactsState = {
@@ -397,8 +425,8 @@ function renderContacts() {
         const statusBadge = contact.status === 'active' ? 'success' : contact.status === 'bounced' ? 'warning' : 'danger';
         return `
             <tr>
-                <td>
-                    <input type="checkbox" class="contact-checkbox" value="${contact.id}" 
+                <td class="ps-3">
+                    <input type="checkbox" class="form-check-input contact-checkbox" value="${contact.id}" 
                            ${contactsState.selectedContacts.has(contact.id) ? 'checked' : ''}
                            onchange="toggleContactSelection('${contact.id}', this.checked)">
                 </td>
@@ -407,11 +435,11 @@ function renderContacts() {
                 <td>${contact.company || '-'}</td>
                 <td>${contact.phone || '-'}</td>
                 <td><span class="badge bg-${statusBadge}">${contact.status || 'active'}</span></td>
-                <td>
-                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editContact('${contact.id}')">
+                <td class="text-end pe-3">
+                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editContact('${contact.id}')" title="Edit">
                         <i class="bi bi-pencil"></i>
                     </button>
-                    <button class="btn btn-sm btn-outline-danger" onclick="deleteContact('${contact.id}')">
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteContact('${contact.id}')" title="Delete">
                         <i class="bi bi-trash"></i>
                     </button>
                 </td>
@@ -478,7 +506,7 @@ function toggleContactSelection(contactId, isSelected) {
 }
 
 function showAddContactModal() {
-    document.getElementById('contactModalTitle').textContent = 'Add Contact';
+    document.getElementById('contactModalTitle').innerHTML = '<i class="bi bi-person-plus me-2"></i>Add Contact';
     document.getElementById('contactId').value = '';
     document.getElementById('firstName').value = '';
     document.getElementById('lastName').value = '';
@@ -494,7 +522,7 @@ function editContact(contactId) {
     const contact = contactsState.allContacts.find(c => c.id === contactId);
     if (!contact) return;
     
-    document.getElementById('contactModalTitle').textContent = 'Edit Contact';
+    document.getElementById('contactModalTitle').innerHTML = '<i class="bi bi-pencil me-2"></i>Edit Contact';
     document.getElementById('contactId').value = contact.id;
     document.getElementById('firstName').value = contact.first_name || '';
     document.getElementById('lastName').value = contact.last_name || '';
@@ -616,7 +644,7 @@ function showColumnMapping() {
     
     fieldsDiv.innerHTML = fields.map(field => `
         <div class="col-md-4 mb-2">
-            <label class="form-label small">${field.label} ${field.required ? '*' : ''}</label>
+            <label class="form-label small fw-semibold">${field.label} ${field.required ? '*' : ''}</label>
             <select class="form-select form-select-sm column-map" data-field="${field.field}" data-required="${field.required}">
                 <option value="">-- Select --</option>
                 ${contactsState.importColumns.map(col => `<option value="${col}">${col}</option>`).join('')}
@@ -639,7 +667,7 @@ function showColumnMapping() {
     const previewData = contactsState.importData.slice(0, 5);
     
     previewTable.innerHTML = `
-        <thead><tr>${contactsState.importColumns.map(col => `<th>${col}</th>`).join('')}</tr></thead>
+        <thead class="table-light"><tr>${contactsState.importColumns.map(col => `<th>${col}</th>`).join('')}</tr></thead>
         <tbody>${previewData.map(row => `
             <tr>${contactsState.importColumns.map(col => `<td>${row[col] || ''}</td>`).join('')}</tr>
         `).join('')}</tbody>
@@ -764,7 +792,6 @@ async function sendBulkEmail() {
             personalized = personalized.replace(/\{\{company\}\}/g, contact.company || '');
             
             try {
-                // Send via EmailJS
                 const result = await emailjs.send(
                     'service_ogrqrgs',
                     'template_2dnmc2h',
@@ -778,7 +805,6 @@ async function sendBulkEmail() {
                 if (result.status === 200) {
                     sentCount++;
                     
-                    // Log in Supabase
                     await gbSupabase.insert('email_logs', {
                         user_id: gbApp.currentUser.id,
                         contact_id: contact.id,
@@ -797,7 +823,6 @@ async function sendBulkEmail() {
                 console.error('Email send error:', error);
             }
             
-            // 200ms delay
             await new Promise(resolve => setTimeout(resolve, 200));
         }
         
