@@ -40,41 +40,48 @@ class GBMailerApp {
         this.setupEventListeners();
     }
     
-  setupEventListeners() {
-    document.getElementById('loginBtn')?.addEventListener('click', () => this.handleLogin());
-    document.getElementById('signupBtn')?.addEventListener('click', () => this.handleSignup());
-    document.getElementById('logoutBtn')?.addEventListener('click', () => this.handleLogout());
-    
-    document.getElementById('showSignup')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.showScreen('signup');
-    });
-    
-    document.getElementById('showLogin')?.addEventListener('click', (e) => {
-        e.preventDefault();
-        this.showScreen('login');
-    });
-    
-    this.elements.sidebarToggle?.addEventListener('click', () => this.toggleSidebar());
-    
-    // Handle navigation clicks
-    document.addEventListener('click', (e) => {
-        const navLink = e.target.closest('.nav-link');
-        if (!navLink) return;
+    setupEventListeners() {
+        document.getElementById('loginBtn')?.addEventListener('click', () => this.handleLogin());
+        document.getElementById('signupBtn')?.addEventListener('click', () => this.handleSignup());
+        document.getElementById('logoutBtn')?.addEventListener('click', () => this.handleLogout());
         
-        // Only handle internal navigation links
-        const href = navLink.getAttribute('href');
-        const module = navLink.getAttribute('data-module');
+        document.getElementById('showSignup')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showScreen('signup');
+        });
         
-        if (module || (href && href.endsWith('.html'))) {
+        document.getElementById('showLogin')?.addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showScreen('login');
+        });
+        
+        this.elements.sidebarToggle?.addEventListener('click', () => this.toggleSidebar());
+        
+        // Handle internal navigation (data-module links only)
+        document.addEventListener('click', (e) => {
+            const navLink = e.target.closest('[data-module]');
+            if (!navLink) return;
+            
             e.preventDefault();
             e.stopPropagation();
             
-            const moduleName = module || href.replace('.html', '');
-            this.navigateToModule(moduleName);
-        }
-    });
-}
+            const module = navLink.getAttribute('data-module');
+            if (module) {
+                this.navigateToModule(module);
+            }
+        });
+        
+        // IMPORTANT: External links should open in new tab
+        // target="_blank" in HTML handles this automatically
+        // We just need to make sure our click handler doesn't interfere
+        document.querySelectorAll('.external-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                // Let the browser handle it naturally
+                // Don't preventDefault, don't stopPropagation
+                console.log('External link clicked, opening in new tab');
+            });
+        });
+    }
     
     async handleLogin() {
         const email = document.getElementById('loginEmail').value.trim();
@@ -142,34 +149,30 @@ class GBMailerApp {
     }
     
     toggleSidebar() {
-    this.sidebarCollapsed = !this.sidebarCollapsed;
-    if (this.sidebarCollapsed) {
-        this.elements.sidebar.classList.add('collapsed');
-        document.querySelector('.main-content').classList.add('expanded');
-    } else {
-        this.elements.sidebar.classList.remove('collapsed');
-        document.querySelector('.main-content').classList.remove('expanded');
+        this.sidebarCollapsed = !this.sidebarCollapsed;
+        
+        if (this.sidebarCollapsed) {
+            this.elements.sidebar.classList.add('collapsed');
+            document.querySelector('.main-content').classList.add('expanded');
+        } else {
+            this.elements.sidebar.classList.remove('collapsed');
+            document.querySelector('.main-content').classList.remove('expanded');
+        }
+        
+        // Update arrow icons
+        const arrowLeft = document.getElementById('arrowLeft');
+        const arrowRight = document.getElementById('arrowRight');
+        
+        if (this.sidebarCollapsed) {
+            // Sidebar is collapsed - show right arrow
+            if (arrowLeft) arrowLeft.style.display = 'none';
+            if (arrowRight) arrowRight.style.display = 'inline-block';
+        } else {
+            // Sidebar is expanded - show left arrow
+            if (arrowLeft) arrowLeft.style.display = 'inline-block';
+            if (arrowRight) arrowRight.style.display = 'none';
+        }
     }
-    
-    // ✅ UPDATE ARROW ICONS
-    this.updateToggleIcon();
-}
-
-updateToggleIcon() {
-    const toggleBtn = document.getElementById('sidebarToggle');
-    const leftArrow = toggleBtn.querySelector('.bi-arrow-left');
-    const rightArrow = toggleBtn.querySelector('.bi-arrow-right');
-    
-    if (this.sidebarCollapsed) {
-        // Sidebar is collapsed - show right arrow (to expand)
-        leftArrow.style.display = 'none';
-        rightArrow.style.display = 'inline-block';
-    } else {
-        // Sidebar is expanded - show left arrow (to collapse)
-        leftArrow.style.display = 'inline-block';
-        rightArrow.style.display = 'none';
-    }
-}
     
     async navigateToModule(module) {
         this.currentModule = module;
@@ -177,8 +180,7 @@ updateToggleIcon() {
         // Update active state
         document.querySelectorAll('.nav-link').forEach(link => {
             link.classList.remove('active');
-            const href = link.getAttribute('href');
-            if (href && href.includes(`${module}.html`)) {
+            if (link.getAttribute('data-module') === module) {
                 link.classList.add('active');
             }
         });
@@ -189,15 +191,12 @@ updateToggleIcon() {
             
             const html = await response.text();
             
-            // Create a temporary container
             const tempDiv = document.createElement('div');
             tempDiv.innerHTML = html;
             
-            // Extract and remove scripts
             const scripts = Array.from(tempDiv.querySelectorAll('script'));
             scripts.forEach(script => script.remove());
             
-            // Extract and move styles to head
             const styles = Array.from(tempDiv.querySelectorAll('style'));
             styles.forEach(style => {
                 const newStyle = document.createElement('style');
@@ -206,15 +205,12 @@ updateToggleIcon() {
                 style.remove();
             });
             
-            // Set the cleaned HTML
             this.elements.contentArea.innerHTML = tempDiv.innerHTML;
             
-            // Execute scripts in order
             for (const script of scripts) {
                 await this.executeScript(script);
             }
             
-            // Initialize the module
             this.initializeModule(module);
             
         } catch (error) {
@@ -233,20 +229,16 @@ updateToggleIcon() {
         return new Promise((resolve, reject) => {
             const newScript = document.createElement('script');
             
-            // Copy all attributes
             Array.from(scriptElement.attributes).forEach(attr => {
                 newScript.setAttribute(attr.name, attr.value);
             });
             
-            // Set the script content
             if (scriptElement.src) {
-                // External script
                 newScript.onload = resolve;
                 newScript.onerror = reject;
                 newScript.src = scriptElement.src;
                 document.body.appendChild(newScript);
             } else {
-                // Inline script
                 newScript.textContent = scriptElement.textContent;
                 document.body.appendChild(newScript);
                 document.body.removeChild(newScript);
@@ -301,8 +293,6 @@ updateToggleIcon() {
         this.showScreen('main');
         this.showLoading(false);
         this.updateUserInfo();
-        
-        // Load dashboard by default
         await this.navigateToModule('dashboard');
     }
     
