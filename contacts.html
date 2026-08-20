@@ -666,26 +666,72 @@ async function sendBulkEmail() {
         recipients = contactsState.filteredContacts;
     }
     
+    if (recipients.length === 0) {
+        showToast('No recipients found', 'error');
+        return;
+    }
+    
     try {
+        showToast(`Sending to ${recipients.length} contacts...`, 'info');
+        
+        let sentCount = 0;
+        let failCount = 0;
+        
         for (const contact of recipients) {
+            // Personalize
             let personalized = content;
             personalized = personalized.replace(/\{\{first_name\}\}/g, contact.first_name || '');
             personalized = personalized.replace(/\{\{last_name\}\}/g, contact.last_name || '');
             personalized = personalized.replace(/\{\{email\}\}/g, contact.email || '');
             personalized = personalized.replace(/\{\{company\}\}/g, contact.company || '');
             
-            await gbSupabase.insert('email_logs', {
-                user_id: gbApp.currentUser.id,
-                contact_id: contact.id,
-                email: contact.email,
-                subject: subject,
-                content: personalized,
-                status: 'queued'
-            });
+            try {
+                const response = await fetch(
+                    'https://cqvcdbnkmtgdpnldeejq.supabase.co/functions/v1/send-email',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${gbApp.currentUser.id}`
+                        },
+                        body: JSON.stringify({
+                            to: contact.email,
+                            subject: subject,
+                            html: personalized,
+                            fromName: 'GB Mailer'
+                        })
+                    }
+                );
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    sentCount++;
+                    
+                    // Log in Supabase
+                    await gbSupabase.insert('email_logs', {
+                        user_id: gbApp.currentUser.id,
+                        contact_id: contact.id,
+                        email: contact.email,
+                        subject: subject,
+                        content: personalized,
+                        status: 'sent',
+                        sent_at: new Date().toISOString()
+                    });
+                } else {
+                    failCount++;
+                }
+                
+            } catch (error) {
+                failCount++;
+            }
+            
+            // 100ms delay (rate limiting se bachne ke liye)
+            await new Promise(resolve => setTimeout(resolve, 100));
         }
         
         bootstrap.Modal.getInstance(document.getElementById('sendEmailModal')).hide();
-        showToast(`Email queued for ${recipients.length} contacts!`, 'success');
+        showToast(`Sent: ${sentCount}, Failed: ${failCount}`, sentCount > 0 ? 'success' : 'error');
         
         contactsState.selectedContacts.clear();
         document.getElementById('selectAllContacts').checked = false;
