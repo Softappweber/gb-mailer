@@ -1,232 +1,1164 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Contacts - GB Mailer</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
+<div class="module-container">
+    <!-- Header -->
+    <div class="module-header">
+        <div>
+            <h2 class="module-title">Contacts</h2>
+            <p class="text-muted mb-0" id="contactCount">0 contacts</p>
+        </div>
+        <div>
+            <button class="btn learn-btn me-2" onclick="showContactsGuide()">
+                <i class="bi bi-book"></i> Learn Contacts
+            </button>
+            <button class="btn btn-outline-success me-2" onclick="showImportModal()">
+                <i class="bi bi-upload"></i> Import
+            </button>
+            <button class="btn btn-primary" onclick="showAddContactModal()">
+                <i class="bi bi-person-plus"></i> Add Contact
+            </button>
+        </div>
+    </div>
 
-        <link href="style.css" rel="stylesheet">
-        /* ============================================
-           COMPLETE STYLES - COPY ALL
-           ============================================ */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f5f7fa; color: #333; }
-        .container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+    <!-- Quick Tips Banner -->
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="bi bi-lightbulb"></i>
+        <strong>Pro Tip:</strong> Keep your contacts organized with tags and lists. Clean data leads to better engagement!
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
 
-        /* Header */
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    <!-- Stats Overview -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-0">Total Contacts</h6>
+                            <h3 class="mb-0" id="totalContacts">0</h3>
+                        </div>
+                        <i class="bi bi-people" style="font-size: 2rem; color: #667eea;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-0">Active</h6>
+                            <h3 class="mb-0 text-success" id="activeContacts">0</h3>
+                        </div>
+                        <i class="bi bi-check-circle" style="font-size: 2rem; color: #28a745;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-0">Unsubscribed</h6>
+                            <h3 class="mb-0 text-danger" id="unsubscribedContacts">0</h3>
+                        </div>
+                        <i class="bi bi-x-circle" style="font-size: 2rem; color: #dc3545;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-0">Bounced</h6>
+                            <h3 class="mb-0 text-warning" id="bouncedContacts">0</h3>
+                        </div>
+                        <i class="bi bi-arrow-return-left" style="font-size: 2rem; color: #ffc107;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        /* Buttons */
-        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-size: 14px; font-weight: 500; transition: all 0.3s; }
-        .btn-primary { background: #007bff; color: white; }
-        .btn-primary:hover { background: #0056b3; }
-        .btn-success { background: #28a745; color: white; }
-        .btn-success:hover { background: #1e7e34; }
-        .btn-secondary { background: #6c757d; color: white; }
-        .btn-secondary:hover { background: #5a6268; }
-        .btn-danger { background: #dc3545; color: white; }
-        .btn-danger:hover { background: #c82333; }
-        .btn-sm { padding: 5px 10px; font-size: 12px; }
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-2">
+                    <input type="text" class="form-control" id="contactSearch" placeholder="Search contacts..." onkeyup="filterContacts()">
+                </div>
+                <div class="col-md-3 mb-2">
+                    <select class="form-select" id="contactStatusFilter" onchange="filterContacts()">
+                        <option value="all">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="unsubscribed">Unsubscribed</option>
+                        <option value="bounced">Bounced</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-2">
+                    <select class="form-select" id="contactListFilter" onchange="filterContacts()">
+                        <option value="all">All Lists</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-2">
+                    <button class="btn btn-outline-secondary w-100" onclick="resetContactFilters()">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        /* Search */
-        .search-bar { margin-bottom: 20px; }
-        .search-bar input { width: 100%; padding: 12px 20px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+    <!-- Bulk Actions -->
+    <div class="mb-3 d-none" id="bulkActions">
+        <div class="alert alert-primary d-flex justify-content-between align-items-center">
+            <span><span id="selectedCount">0</span> contacts selected</span>
+            <div>
+                <button class="btn btn-sm btn-outline-primary me-2" onclick="bulkAddToList()">
+                    <i class="bi bi-list-plus"></i> Add to List
+                </button>
+                <button class="btn btn-sm btn-outline-success me-2" onclick="bulkSendEmail()">
+                    <i class="bi bi-envelope"></i> Send Email
+                </button>
+                <button class="btn btn-sm btn-outline-danger" onclick="bulkDelete()">
+                    <i class="bi bi-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
 
-        /* Table */
-        .table-container { background: white; border-radius: 10px; overflow: auto; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        table { width: 100%; border-collapse: collapse; min-width: 600px; }
-        thead { background: #f8f9fa; }
-        th { padding: 12px 15px; text-align: left; font-weight: 600; border-bottom: 2px solid #dee2e6; }
-        td { padding: 12px 15px; border-bottom: 1px solid #dee2e6; }
-        tr:hover { background: #f8f9fa; }
+    <!-- Contacts Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">
+                                <input type="checkbox" id="selectAllContacts" onchange="toggleSelectAll()">
+                            </th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Company</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Created</th>
+                            <th style="width: 100px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="contactsTableBody">
+                        <tr>
+                            <td colspan="8" class="text-center py-5">
+                                <div class="spinner-border text-primary" role="status"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="d-flex justify-content-between align-items-center mt-3">
+                <small class="text-muted" id="paginationInfo">Showing 0 of 0 contacts</small>
+                <nav>
+                    <ul class="pagination pagination-sm mb-0" id="pagination">
+                    </ul>
+                </nav>
+            </div>
+        </div>
+    </div>
+</div>
 
-        /* Pagination */
-        .pagination { margin-top: 20px; display: flex; justify-content: center; }
-        .pagination-controls { display: flex; gap: 5px; flex-wrap: wrap; }
-        .pagination-controls button { padding: 8px 15px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 5px; transition: all 0.3s; }
-        .pagination-controls button:hover { background: #007bff; color: white; }
-        .pagination-controls button.active { background: #007bff; color: white; border-color: #007bff; }
-        .pagination-controls button:disabled { opacity: 0.5; cursor: not-allowed; }
-        .pagination-controls span { padding: 8px 10px; }
+<!-- Learning Guide Modal -->
+<div class="modal fade" id="contactsGuideModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header learn-header border-0">
+                <h5 class="modal-title text-white">
+                    <i class="bi bi-book"></i> Contact Management Guide
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body">
+                                <h6 class="text-primary"><i class="bi bi-1-circle"></i> Why Clean Contacts Matter</h6>
+                                <p class="small">Clean contact lists improve deliverability and engagement. Remove invalid emails regularly to maintain a healthy sender reputation.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-success">
+                            <div class="card-body">
+                                <h6 class="text-success"><i class="bi bi-2-circle"></i> Best Practices</h6>
+                                <ul class="small mb-0">
+                                    <li>Always get permission before adding contacts</li>
+                                    <li>Segment contacts by interests and behavior</li>
+                                    <li>Update contact information regularly</li>
+                                    <li>Remove inactive contacts periodically</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-warning">
+                            <div class="card-body">
+                                <h6 class="text-warning"><i class="bi bi-3-circle"></i> Import Tips</h6>
+                                <ul class="small mb-0">
+                                    <li>Use CSV or Excel files</li>
+                                    <li>Map columns correctly</li>
+                                    <li>Check for duplicate emails</li>
+                                    <li>Verify data before importing</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-info">
+                            <div class="card-body">
+                                <h6 class="text-info"><i class="bi bi-4-circle"></i> Engagement Tracking</h6>
+                                <ul class="small mb-0">
+                                    <li><strong>Active</strong> - Opens and clicks emails</li>
+                                    <li><strong>Unsubscribed</strong> - Opted out</li>
+                                    <li><strong>Bounced</strong> - Invalid email address</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-success mt-3 mb-0">
+                    <i class="bi bi-graph-up"></i>
+                    <strong>Marketing Tip:</strong> Personalized emails based on contact data can increase open rates by up to <strong>29%</strong>!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
-        /* Modals */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); overflow: auto; }
-        .modal-content { background: white; margin: 50px auto; padding: 30px; border-radius: 10px; max-width: 800px; width: 90%; position: relative; animation: slideDown 0.3s ease; }
-        .modal-large { max-width: 1000px; }
-        .close { position: absolute; right: 20px; top: 15px; font-size: 28px; font-weight: bold; cursor: pointer; color: #aaa; }
-        .close:hover { color: #333; }
-        @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+<!-- Add/Edit Contact Modal -->
+<div class="modal fade" id="contactModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="contactModalTitle">Add Contact</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="contactForm">
+                    <input type="hidden" id="contactId">
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name *</label>
+                            <input type="text" class="form-control" id="firstName" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="lastName">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Email Address *</label>
+                            <input type="email" class="form-control" id="contactEmail" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="contactPhone">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Company</label>
+                            <input type="text" class="form-control" id="contactCompany">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Job Title</label>
+                            <input type="text" class="form-control" id="contactJobTitle">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Address</label>
+                        <input type="text" class="form-control" id="contactAddress" placeholder="Street address">
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">City</label>
+                            <input type="text" class="form-control" id="contactCity">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">State</label>
+                            <input type="text" class="form-control" id="contactState">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">ZIP Code</label>
+                            <input type="text" class="form-control" id="contactZip">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Country</label>
+                            <input type="text" class="form-control" id="contactCountry" value="United States">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <select class="form-select" id="contactStatus">
+                                <option value="active">Active</option>
+                                <option value="unsubscribed">Unsubscribed</option>
+                                <option value="bounced">Bounced</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Tags</label>
+                        <input type="text" class="form-control" id="contactTags" placeholder="e.g., vip, newsletter, customer (comma separated)">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-control" id="contactNotes" rows="3" placeholder="Additional notes about this contact"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="saveContact()">
+                    <i class="bi bi-check-lg"></i> Save Contact
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        /* Upload Area */
-        .upload-area { border: 2px dashed #ddd; padding: 40px; text-align: center; border-radius: 10px; margin: 20px 0; }
-        .upload-area input[type="file"] { display: block; margin: 15px auto; }
+<!-- Import Contacts Modal -->
+<div class="modal fade" id="importModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Import Contacts</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label">Upload File (CSV or Excel)</label>
+                    <input type="file" class="form-control" id="importFile" accept=".csv,.xlsx,.xls" onchange="handleFileSelect(event)">
+                </div>
+                
+                <div id="columnMapping" class="d-none">
+                    <h6 class="mb-3">Map Columns</h6>
+                    <div class="row" id="columnMappingFields">
+                    </div>
+                </div>
+                
+                <div id="importPreview" class="d-none">
+                    <h6 class="mb-3">Preview (First 5 rows)</h6>
+                    <div class="table-responsive">
+                        <table class="table table-sm" id="importPreviewTable">
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" id="importBtn" onclick="importContacts()" disabled>
+                    <i class="bi bi-upload"></i> Import
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        /* Mapping Table */
-        .mapping-table { width: 100%; margin: 15px 0; }
-        .mapping-table th { background: #f8f9fa; }
-        .mapping-table select { padding: 5px; border-radius: 3px; border: 1px solid #ddd; }
+<!-- Send Email Modal -->
+<div class="modal fade" id="sendEmailModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Email to Selected Contacts</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    Sending to <strong id="sendEmailCount">0</strong> contacts
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Subject *</label>
+                    <input type="text" class="form-control" id="bulkEmailSubject" required>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Message *</label>
+                    <textarea class="form-control" id="bulkEmailContent" rows="10" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Variables (click to insert)</label>
+                    <div class="d-flex flex-wrap gap-2">
+                        <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertBulkVariable('{{first_name}}')">&#123;&#123;first_name&#125;&#125;</span>
+                        <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertBulkVariable('{{last_name}}')">&#123;&#123;last_name&#125;&#125;</span>
+                        <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertBulkVariable('{{email}}')">&#123;&#123;email&#125;&#125;</span>
+                        <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertBulkVariable('{{company}}')">&#123;&#123;company&#125;&#125;</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="sendBulkEmail()">
+                    <i class="bi bi-send"></i> Send Email
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
-        /* Progress Bar */
-        .progress-bar { width: 100%; height: 30px; background: #f0f0f0; border-radius: 15px; overflow: hidden; margin: 20px 0; }
-        #progressBar { height: 100%; background: linear-gradient(90deg, #4CAF50, #45a049); transition: width 0.5s; border-radius: 15px; }
+<style>
+.stat-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
 
-        /* Form */
-        .form-group { margin-bottom: 20px; }
-        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
-        .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; }
-        .form-group textarea { resize: vertical; font-family: inherit; }
-        .form-actions { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+.stat-card:hover {
+    transform: translateY(-5px);
+}
 
-        .mapping-actions { margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
+.learn-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: calc(0.3rem - 1px) calc(0.3rem - 1px) 0 0;
+}
 
-        /* Empty State */
-        .empty-state { text-align: center; padding: 60px 20px; background: white; border-radius: 10px; }
-        .empty-state p { color: #6c757d; margin: 15px 0; }
+.learn-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .header { flex-direction: column; gap: 15px; }
-            .header-actions { flex-wrap: wrap; justify-content: center; }
-            .modal-content { margin: 20px auto; padding: 20px; }
-            .form-actions { flex-direction: column; }
-            .form-actions button { width: 100%; }
+.learn-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    color: white;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.status-badge {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+}
+
+.status-active {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-unsubscribed {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-bounced {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.table th {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #666;
+    font-weight: 600;
+    border-top: none;
+}
+
+.table td {
+    font-size: 13px;
+    vertical-align: middle;
+}
+</style>
+
+<script>
+let contactsState = {
+    contacts: [],
+    filteredContacts: [],
+    selectedContacts: new Set(),
+    currentPage: 1,
+    pageSize: 10,
+    totalPages: 1,
+    importData: [],
+    importColumns: []
+};
+
+function initContactsModule() {
+    loadContacts();
+    loadContactLists();
+}
+
+async function loadContacts() {
+    try {
+        const { data, error } = await gbSupabase.client
+            .from('contacts')
+            .select('*')
+            .eq('user_id', gbApp.currentUser.id)
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        contactsState.contacts = data || [];
+        contactsState.filteredContacts = contactsState.contacts;
+        updateContactStats();
+        renderContacts();
+        
+    } catch (error) {
+        console.error('Error loading contacts:', error);
+        showToast('Error loading contacts: ' + error.message, 'error');
+    }
+}
+
+async function loadContactLists() {
+    try {
+        const { data, error } = await gbSupabase.client
+            .from('lists')
+            .select('*')
+            .eq('user_id', gbApp.currentUser.id);
+        
+        if (!error && data) {
+            const filter = document.getElementById('contactListFilter');
+            filter.innerHTML = '<option value="all">All Lists</option>' +
+                data.map(list => `<option value="${list.id}">${list.name}</option>`).join('');
         }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- Header -->
-        <div class="header">
-            <h1><i class="fas fa-address-book"></i> Contacts</h1>
-            <div class="header-actions">
-                <button onclick="showUploadModal()" class="btn btn-primary">
-                    <i class="fas fa-upload"></i> Upload Contacts
-                </button>
-                <button onclick="sendSelected()" class="btn btn-success" id="sendSelectedBtn">
-                    <i class="fas fa-envelope"></i> Send Selected (<span id="selectedCount">0</span>)
-                </button>
-                <button onclick="loadContacts()" class="btn btn-secondary">
-                    <i class="fas fa-refresh"></i> Refresh
-                </button>
-            </div>
-        </div>
+    } catch (error) {
+        console.error('Error loading lists:', error);
+    }
+}
 
-        <!-- Search Bar -->
-        <div class="search-bar">
-            <input type="text" id="searchInput" placeholder="Search contacts..." onkeyup="searchContacts()">
-        </div>
+function updateContactStats() {
+    const contacts = contactsState.contacts;
+    document.getElementById('totalContacts').textContent = contacts.length;
+    document.getElementById('activeContacts').textContent = contacts.filter(c => c.status === 'active').length;
+    document.getElementById('unsubscribedContacts').textContent = contacts.filter(c => c.status === 'unsubscribed').length;
+    document.getElementById('bouncedContacts').textContent = contacts.filter(c => c.status === 'bounced').length;
+    document.getElementById('contactCount').textContent = `${contacts.length} contacts`;
+}
 
-        <!-- Contacts Table -->
-        <div class="table-container">
-            <table id="contactsTable">
-                <thead>
-                    <tr>
-                        <th style="width:40px;"><input type="checkbox" id="selectAll" onchange="toggleAll()"></th>
-                        <th style="width:50px;">#</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Phone</th>
-                        <th>Company</th>
-                        <th style="width:120px;">Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="contactsBody">
-                    <tr><td colspan="7" style="text-align:center;padding:40px;">Loading contacts...</td></tr>
-                </tbody>
-            </table>
-        </div>
-
-        <!-- Pagination -->
-        <div class="pagination" id="pagination"></div>
-    </div>
-
-    <!-- ============================================ -->
-    <!-- UPLOAD MODAL -->
-    <!-- ============================================ -->
-    <div id="uploadModal" class="modal">
-        <div class="modal-content modal-large">
-            <span class="close" onclick="closeModal('uploadModal')">&times;</span>
-            <h2><i class="fas fa-upload"></i> Upload Contacts</h2>
-
-            <div id="step1">
-                <div class="upload-area">
-                    <p><i class="fas fa-file-excel" style="font-size:48px;color:#217346;"></i></p>
-                    <p><strong>Upload Excel or CSV file</strong></p>
-                    <p style="color:#6c757d;font-size:14px;">Supports .xlsx, .xls, .csv</p>
-                    <input type="file" id="fileInput" accept=".xlsx,.xls,.csv">
-                    <button onclick="previewFile()" class="btn btn-primary">
-                        <i class="fas fa-eye"></i> Preview Columns
+function renderContacts() {
+    const tbody = document.getElementById('contactsTableBody');
+    const contacts = contactsState.filteredContacts;
+    
+    if (contacts.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="8" class="text-center py-5">
+                    <i class="bi bi-people" style="font-size: 3rem; color: #ccc;"></i>
+                    <h5 class="mt-3">No Contacts Found</h5>
+                    <p class="text-muted">Add your first contact or import a list to get started</p>
+                    <button class="btn btn-primary" onclick="showAddContactModal()">
+                        <i class="bi bi-person-plus"></i> Add Contact
                     </button>
-                </div>
-            </div>
-
-            <div id="step2" style="display:none;">
-                <h3>Map Your Columns</h3>
-                <p>Select columns to display. All other columns will be stored as custom fields.</p>
-                <div id="columnMapping"></div>
-                <div class="mapping-actions">
-                    <button onclick="confirmMapping()" class="btn btn-success">
-                        <i class="fas fa-check"></i> Confirm & Import
+                </td>
+            </tr>
+        `;
+        document.getElementById('paginationInfo').textContent = 'Showing 0 of 0 contacts';
+        document.getElementById('pagination').innerHTML = '';
+        return;
+    }
+    
+    // Calculate pagination
+    contactsState.totalPages = Math.ceil(contacts.length / contactsState.pageSize);
+    const start = (contactsState.currentPage - 1) * contactsState.pageSize;
+    const end = start + contactsState.pageSize;
+    const pageContacts = contacts.slice(start, end);
+    
+    tbody.innerHTML = pageContacts.map(contact => {
+        const statusClass = `status-${contact.status || 'active'}`;
+        return `
+            <tr>
+                <td>
+                    <input type="checkbox" class="contact-checkbox" value="${contact.id}" 
+                           ${contactsState.selectedContacts.has(contact.id) ? 'checked' : ''}
+                           onchange="toggleContactSelection('${contact.id}', this.checked)">
+                </td>
+                <td>
+                    <strong>${contact.first_name || ''} ${contact.last_name || ''}</strong>
+                </td>
+                <td>${contact.email || '-'}</td>
+                <td>${contact.company || '-'}</td>
+                <td>${contact.phone || '-'}</td>
+                <td>
+                    <span class="status-badge ${statusClass}">${contact.status || 'active'}</span>
+                </td>
+                <td>${GBUtils.formatDate(contact.created_at, 'date')}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="editContact('${contact.id}')" title="Edit">
+                        <i class="bi bi-pencil"></i>
                     </button>
-                    <button onclick="goBack()" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Back
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteContact('${contact.id}')" title="Delete">
+                        <i class="bi bi-trash"></i>
                     </button>
-                </div>
-            </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+    
+    // Update pagination info
+    document.getElementById('paginationInfo').textContent = 
+        `Showing ${start + 1}-${Math.min(end, contacts.length)} of ${contacts.length} contacts`;
+    
+    // Render pagination
+    renderPagination();
+}
 
-            <div id="step3" style="display:none;">
-                <h3>Importing...</h3>
-                <div class="progress-bar">
-                    <div id="progressBar" style="width:0%;"></div>
-                </div>
-                <p id="importStatus">Processing...</p>
-            </div>
+function renderPagination() {
+    const pagination = document.getElementById('pagination');
+    let html = '';
+    
+    // Previous button
+    html += `
+        <li class="page-item ${contactsState.currentPage === 1 ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${contactsState.currentPage - 1})">Previous</a>
+        </li>
+    `;
+    
+    // Page numbers
+    for (let i = 1; i <= contactsState.totalPages; i++) {
+        html += `
+            <li class="page-item ${contactsState.currentPage === i ? 'active' : ''}">
+                <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+            </li>
+        `;
+    }
+    
+    // Next button
+    html += `
+        <li class="page-item ${contactsState.currentPage === contactsState.totalPages ? 'disabled' : ''}">
+            <a class="page-link" href="#" onclick="changePage(${contactsState.currentPage + 1})">Next</a>
+        </li>
+    `;
+    
+    pagination.innerHTML = html;
+}
+
+function changePage(page) {
+    if (page < 1 || page > contactsState.totalPages) return;
+    contactsState.currentPage = page;
+    renderContacts();
+}
+
+function filterContacts() {
+    const search = document.getElementById('contactSearch').value.toLowerCase();
+    const statusFilter = document.getElementById('contactStatusFilter').value;
+    const listFilter = document.getElementById('contactListFilter').value;
+    
+    contactsState.filteredContacts = contactsState.contacts.filter(contact => {
+        const matchesSearch = 
+            (contact.first_name || '').toLowerCase().includes(search) ||
+            (contact.last_name || '').toLowerCase().includes(search) ||
+            (contact.email || '').toLowerCase().includes(search) ||
+            (contact.company || '').toLowerCase().includes(search);
+        
+        const matchesStatus = statusFilter === 'all' || contact.status === statusFilter;
+        
+        return matchesSearch && matchesStatus;
+    });
+    
+    contactsState.currentPage = 1;
+    renderContacts();
+}
+
+function resetContactFilters() {
+    document.getElementById('contactSearch').value = '';
+    document.getElementById('contactStatusFilter').value = 'all';
+    document.getElementById('contactListFilter').value = 'all';
+    contactsState.filteredContacts = contactsState.contacts;
+    contactsState.currentPage = 1;
+    renderContacts();
+}
+
+function toggleSelectAll() {
+    const selectAll = document.getElementById('selectAllContacts');
+    const checkboxes = document.querySelectorAll('.contact-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+        if (selectAll.checked) {
+            contactsState.selectedContacts.add(checkbox.value);
+        } else {
+            contactsState.selectedContacts.delete(checkbox.value);
+        }
+    });
+    
+    updateBulkActions();
+}
+
+function toggleContactSelection(contactId, isSelected) {
+    if (isSelected) {
+        contactsState.selectedContacts.add(contactId);
+    } else {
+        contactsState.selectedContacts.delete(contactId);
+    }
+    updateBulkActions();
+}
+
+function updateBulkActions() {
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selectedCount');
+    
+    if (contactsState.selectedContacts.size > 0) {
+        bulkActions.classList.remove('d-none');
+        selectedCount.textContent = contactsState.selectedContacts.size;
+    } else {
+        bulkActions.classList.add('d-none');
+    }
+}
+
+function showContactsGuide() {
+    const modal = new bootstrap.Modal(document.getElementById('contactsGuideModal'));
+    modal.show();
+}
+
+function showAddContactModal() {
+    document.getElementById('contactModalTitle').textContent = 'Add Contact';
+    document.getElementById('contactForm').reset();
+    document.getElementById('contactId').value = '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('contactModal'));
+    modal.show();
+}
+
+function editContact(contactId) {
+    const contact = contactsState.contacts.find(c => c.id === contactId);
+    if (!contact) return;
+    
+    document.getElementById('contactModalTitle').textContent = 'Edit Contact';
+    document.getElementById('contactId').value = contact.id;
+    document.getElementById('firstName').value = contact.first_name || '';
+    document.getElementById('lastName').value = contact.last_name || '';
+    document.getElementById('contactEmail').value = contact.email || '';
+    document.getElementById('contactPhone').value = contact.phone || '';
+    document.getElementById('contactCompany').value = contact.company || '';
+    document.getElementById('contactJobTitle').value = contact.job_title || '';
+    document.getElementById('contactAddress').value = contact.address || '';
+    document.getElementById('contactCity').value = contact.city || '';
+    document.getElementById('contactState').value = contact.state || '';
+    document.getElementById('contactZip').value = contact.zip || '';
+    document.getElementById('contactCountry').value = contact.country || 'United States';
+    document.getElementById('contactStatus').value = contact.status || 'active';
+    document.getElementById('contactTags').value = contact.tags || '';
+    document.getElementById('contactNotes').value = contact.notes || '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('contactModal'));
+    modal.show();
+}
+
+async function saveContact() {
+    const contactId = document.getElementById('contactId').value;
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const email = document.getElementById('contactEmail').value.trim();
+    const phone = document.getElementById('contactPhone').value.trim();
+    const company = document.getElementById('contactCompany').value.trim();
+    const jobTitle = document.getElementById('contactJobTitle').value.trim();
+    const address = document.getElementById('contactAddress').value.trim();
+    const city = document.getElementById('contactCity').value.trim();
+    const state = document.getElementById('contactState').value.trim();
+    const zip = document.getElementById('contactZip').value.trim();
+    const country = document.getElementById('contactCountry').value.trim();
+    const status = document.getElementById('contactStatus').value;
+    const tags = document.getElementById('contactTags').value.trim();
+    const notes = document.getElementById('contactNotes').value.trim();
+    
+    if (!firstName || !email) {
+        showToast('Please enter first name and email', 'error');
+        return;
+    }
+    
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showToast('Please enter a valid email address', 'error');
+        return;
+    }
+    
+    try {
+        const contactData = {
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
+            phone: phone,
+            company: company,
+            job_title: jobTitle,
+            address: address,
+            city: city,
+            state: state,
+            zip: zip,
+            country: country,
+            status: status,
+            tags: tags,
+            notes: notes
+        };
+        
+        if (contactId) {
+            // Update existing contact
+            const { error } = await gbSupabase.update('contacts', {
+                ...contactData,
+                updated_at: new Date().toISOString()
+            }, { id: contactId });
+            
+            if (error) throw error;
+            showToast('Contact updated successfully!', 'success');
+        } else {
+            // Check for duplicate email
+            const { data: existing } = await gbSupabase.client
+                .from('contacts')
+                .select('id')
+                .eq('email', email)
+                .eq('user_id', gbApp.currentUser.id)
+                .single();
+            
+            if (existing) {
+                showToast('A contact with this email already exists', 'error');
+                return;
+            }
+            
+            // Create new contact
+            const { error } = await gbSupabase.insert('contacts', {
+                ...contactData,
+                user_id: gbApp.currentUser.id
+            });
+            
+            if (error) throw error;
+            showToast('Contact added successfully!', 'success');
+        }
+        
+        bootstrap.Modal.getInstance(document.getElementById('contactModal')).hide();
+        loadContacts();
+        
+    } catch (error) {
+        showToast('Error saving contact: ' + error.message, 'error');
+    }
+}
+
+async function deleteContact(contactId) {
+    if (!confirm('Are you sure you want to delete this contact?')) return;
+    
+    try {
+        const { error } = await gbSupabase.delete('contacts', { id: contactId });
+        if (error) throw error;
+        
+        contactsState.selectedContacts.delete(contactId);
+        showToast('Contact deleted', 'success');
+        loadContacts();
+        
+    } catch (error) {
+        showToast('Error deleting contact: ' + error.message, 'error');
+    }
+}
+
+function showImportModal() {
+    document.getElementById('importFile').value = '';
+    document.getElementById('columnMapping').classList.add('d-none');
+    document.getElementById('importPreview').classList.add('d-none');
+    document.getElementById('importBtn').disabled = true;
+    
+    const modal = new bootstrap.Modal(document.getElementById('importModal'));
+    modal.show();
+}
+
+function handleFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const data = new Uint8Array(e.target.result);
+            const workbook = XLSX.read(data, { type: 'array' });
+            const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+            const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+            
+            if (jsonData.length === 0) {
+                showToast('No data found in file', 'error');
+                return;
+            }
+            
+            contactsState.importData = jsonData;
+            contactsState.importColumns = Object.keys(jsonData[0]);
+            
+            showColumnMapping();
+            
+        } catch (error) {
+            showToast('Error reading file: ' + error.message, 'error');
+        }
+    };
+    reader.readAsArrayBuffer(file);
+}
+
+function showColumnMapping() {
+    const mappingDiv = document.getElementById('columnMapping');
+    const fieldsDiv = document.getElementById('columnMappingFields');
+    
+    const requiredFields = [
+        { field: 'first_name', label: 'First Name' },
+        { field: 'email', label: 'Email' },
+        { field: 'last_name', label: 'Last Name' },
+        { field: 'phone', label: 'Phone' },
+        { field: 'company', label: 'Company' },
+        { field: 'job_title', label: 'Job Title' },
+        { field: 'address', label: 'Address' },
+        { field: 'city', label: 'City' },
+        { field: 'state', label: 'State' },
+        { field: 'zip', label: 'ZIP' },
+        { field: 'country', label: 'Country' }
+    ];
+    
+    fieldsDiv.innerHTML = requiredFields.map(field => `
+        <div class="col-md-4 mb-2">
+            <label class="form-label small">${field.label}</label>
+            <select class="form-select form-select-sm column-map" data-field="${field.field}">
+                <option value="">-- Ignore --</option>
+                ${contactsState.importColumns.map(col => 
+                    `<option value="${col}">${col}</option>`
+                ).join('')}
+            </select>
         </div>
-    </div>
+    `).join('');
+    
+    // Auto-map columns
+    document.querySelectorAll('.column-map').forEach(select => {
+        const field = select.dataset.field;
+        const match = contactsState.importColumns.find(col => 
+            col.toLowerCase().includes(field.toLowerCase())
+        );
+        if (match) {
+            select.value = match;
+        }
+    });
+    
+    mappingDiv.classList.remove('d-none');
+    showImportPreview();
+}
 
-    <!-- ============================================ -->
-    <!-- EMAIL COMPOSER MODAL -->
-    <!-- ============================================ -->
-    <div id="emailModal" class="modal">
-        <div class="modal-content modal-large">
-            <span class="close" onclick="closeModal('emailModal')">&times;</span>
-            <h2><i class="fas fa-paper-plane"></i> Send Email</h2>
-            <p>Sending to <strong><span id="recipientCount">0</span></strong> contacts</p>
+function showImportPreview() {
+    const previewDiv = document.getElementById('importPreview');
+    const previewTable = document.getElementById('importPreviewTable');
+    
+    const previewData = contactsState.importData.slice(0, 5);
+    
+    let html = `
+        <thead>
+            <tr>
+                ${contactsState.importColumns.map(col => `<th>${col}</th>`).join('')}
+            </tr>
+        </thead>
+        <tbody>
+            ${previewData.map(row => `
+                <tr>
+                    ${contactsState.importColumns.map(col => `<td>${row[col] || ''}</td>`).join('')}
+                </tr>
+            `).join('')}
+        </tbody>
+    `;
+    
+    previewTable.innerHTML = html;
+    previewDiv.classList.remove('d-none');
+    document.getElementById('importBtn').disabled = false;
+}
 
-            <form id="emailForm">
-                <input type="hidden" id="contactIds" value="[]">
+async function importContacts() {
+    const mappings = {};
+    document.querySelectorAll('.column-map').forEach(select => {
+        if (select.value) {
+            mappings[select.dataset.field] = select.value;
+        }
+    });
+    
+    if (!mappings.email || !mappings.first_name) {
+        showToast('Email and First Name mapping are required', 'error');
+        return;
+    }
+    
+    try {
+        let importCount = 0;
+        let skipCount = 0;
+        
+        for (const row of contactsState.importData) {
+            const email = row[mappings.email];
+            
+            if (!email) {
+                skipCount++;
+                continue;
+            }
+            
+            // Check for duplicate
+            const { data: existing } = await gbSupabase.client
+                .from('contacts')
+                .select('id')
+                .eq('email', email)
+                .eq('user_id', gbApp.currentUser.id)
+                .single();
+            
+            if (existing) {
+                skipCount++;
+                continue;
+            }
+            
+            const contactData = {
+                user_id: gbApp.currentUser.id,
+                email: email,
+                status: 'active'
+            };
+            
+            // Map all other fields
+            for (const field in mappings) {
+                if (field !== 'email' && mappings[field]) {
+                    contactData[field] = row[mappings[field]] || '';
+                }
+            }
+            
+            const { error } = await gbSupabase.insert('contacts', contactData);
+            if (!error) {
+                importCount++;
+            } else {
+                skipCount++;
+            }
+        }
+        
+        bootstrap.Modal.getInstance(document.getElementById('importModal')).hide();
+        showToast(`Imported ${importCount} contacts. Skipped ${skipCount} duplicates.`, 'success');
+        loadContacts();
+        
+    } catch (error) {
+        showToast('Error importing contacts: ' + error.message, 'error');
+    }
+}
 
-                <div class="form-group">
-                    <label>Subject *</label>
-                    <input type="text" id="emailSubject" placeholder="Email subject..." required>
-                </div>
+function bulkAddToList() {
+    if (contactsState.selectedContacts.size === 0) return;
+    
+    // Simple prompt for now - can be enhanced with modal
+    const listName = prompt('Enter list name to add contacts to:');
+    if (!listName) return;
+    
+    // Implementation would add selected contacts to the list
+    showToast(`Adding ${contactsState.selectedContacts.size} contacts to "${listName}"`, 'info');
+}
 
-                <div class="form-group">
-                    <label>Body * <small>(Use {{first_name}}, {{company}}, etc.)</small></label>
-                    <textarea id="emailBody" rows="8" placeholder="Write your email..." required></textarea>
-                </div>
+function bulkSendEmail() {
+    if (contactsState.selectedContacts.size === 0) return;
+    
+    document.getElementById('sendEmailCount').textContent = contactsState.selectedContacts.size;
+    const modal = new bootstrap.Modal(document.getElementById('sendEmailModal'));
+    modal.show();
+}
 
-                <div class="form-group">
-                    <label>Save as Template (optional)</label>
-                    <input type="text" id="templateName" placeholder="Template name...">
-                </div>
+async function sendBulkEmail() {
+    const subject = document.getElementById('bulkEmailSubject').value.trim();
+    const content = document.getElementById('bulkEmailContent').value.trim();
+    
+    if (!subject || !content) {
+        showToast('Please enter subject and message', 'error');
+        return;
+    }
+    
+    try {
+        const selectedContacts = contactsState.contacts.filter(c => 
+            contactsState.selectedContacts.has(c.id)
+        );
+        
+        for (const contact of selectedContacts) {
+            // Personalize content
+            let personalizedContent = content;
+            personalizedContent = personalizedContent.replace('{{first_name}}', contact.first_name || '');
+            personalizedContent = personalizedContent.replace('{{last_name}}', contact.last_name || '');
+            personalizedContent = personalizedContent.replace('{{email}}', contact.email || '');
+            personalizedContent = personalizedContent.replace('{{company}}', contact.company || '');
+            
+            // Log email
+            await gbSupabase.insert('email_logs', {
+                user_id: gbApp.currentUser.id,
+                contact_id: contact.id,
+                email: contact.email,
+                subject: subject,
+                status: 'sent',
+                sent_at: new Date().toISOString()
+            });
+        }
+        
+        bootstrap.Modal.getInstance(document.getElementById('sendEmailModal')).hide();
+        showToast(`Email sent to ${selectedContacts.length} contacts!`, 'success');
+        
+        // Clear selection
+        contactsState.selectedContacts.clear();
+        updateBulkActions();
+        renderContacts();
+        
+    } catch (error) {
+        showToast('Error sending email: ' + error.message, 'error');
+    }
+}
 
-                <div class="form-actions">
-                    <button type="button" onclick="sendEmails()" class="btn btn-success">
-                        <i class="fas fa-paper-plane"></i> Send Now
-                    </button>
-                    <button type="button" onclick="closeModal('emailModal')" class="btn btn-secondary">
-                        <i class="fas fa-times"></i> Cancel
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+async function bulkDelete() {
+    if (contactsState.selectedContacts.size === 0) return;
+    
+    if (!confirm(`Delete ${contactsState.selectedContacts.size} contacts? This cannot be undone.`)) return;
+    
+    try {
+        for (const contactId of contactsState.selectedContacts) {
+            const { error } = await gbSupabase.delete('contacts', { id: contactId });
+            if (error) throw error;
+        }
+        
+        contactsState.selectedContacts.clear();
+        updateBulkActions();
+        showToast('Contacts deleted successfully', 'success');
+        loadContacts();
+        
+    } catch (error) {
+        showToast('Error deleting contacts: ' + error.message, 'error');
+    }
+}
 
-    <!-- ============================================ -->
-    <!-- JAVASCRIPT -->
-    <!-- ============================================ -->
-    <script src="js/contacts.js"></script>
-</body>
-</html>
+function insertBulkVariable(variable) {
+    const textarea = document.getElementById('bulkEmailContent');
+    const cursorPos = textarea.selectionStart;
+    const textBefore = textarea.value.substring(0, cursorPos);
+    const textAfter = textarea.value.substring(cursorPos);
+    textarea.value = textBefore + variable + textAfter;
+    textarea.focus();
+    textarea.selectionStart = cursorPos + variable.length;
+    textarea.selectionEnd = cursorPos + variable.length;
+}
+
+// Make functions globally accessible
+window.initContactsModule = initContactsModule;
+window.loadContacts = loadContacts;
+window.showContactsGuide = showContactsGuide;
+window.showAddContactModal = showAddContactModal;
+window.editContact = editContact;
+window.saveContact = saveContact;
+window.deleteContact = deleteContact;
+window.showImportModal = showImportModal;
+window.handleFileSelect = handleFileSelect;
+window.importContacts = importContacts;
+window.toggleSelectAll = toggleSelectAll;
+window.toggleContactSelection = toggleContactSelection;
+window.filterContacts = filterContacts;
+window.resetContactFilters = resetContactFilters;
+window.changePage = changePage;
+window.bulkAddToList = bulkAddToList;
+window.bulkSendEmail = bulkSendEmail;
+window.sendBulkEmail = sendBulkEmail;
+window.bulkDelete = bulkDelete;
+window.insertBulkVariable = insertBulkVariable;
+</script>
