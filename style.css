@@ -354,4 +354,65 @@ body {
     .login-card {
         padding: 20px;
     }
+
+    /* ============ SUBMENU STYLES ============ */
+.nav-submenu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.nav-submenu .nav-item {
+    margin: 0;
+}
+
+.nav-submenu .nav-link {
+    padding-left: 55px;
+    font-size: 13px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    opacity: 0.85;
+}
+
+.nav-submenu .nav-link:hover {
+    opacity: 1;
+    background: var(--sidebar-hover);
+}
+
+.parent-link {
+    cursor: pointer;
+    position: relative;
+}
+
+.parent-link .bi-chevron-down {
+    transition: transform 0.3s ease;
+    font-size: 12px;
+}
+
+.parent-link.collapsed .bi-chevron-down {
+    transform: rotate(-90deg);
+}
+
+.parent-link:not(.collapsed) .bi-chevron-down {
+    transform: rotate(0deg);
+}
+
+.sub-link .bi-box-arrow-up-right {
+    opacity: 0.6;
+    transition: opacity 0.3s;
+}
+
+.sub-link:hover .bi-box-arrow-up-right {
+    opacity: 1;
+}
+
+/* Collapse animation */
+.collapse {
+    transition: height 0.3s ease;
+}
+
+.collapse:not(.show) {
+    display: none;
+}
 }
