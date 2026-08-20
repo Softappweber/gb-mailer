@@ -40,36 +40,41 @@ class GBMailerApp {
         this.setupEventListeners();
     }
     
-    setupEventListeners() {
-        document.getElementById('loginBtn')?.addEventListener('click', () => this.handleLogin());
-        document.getElementById('signupBtn')?.addEventListener('click', () => this.handleSignup());
-        document.getElementById('logoutBtn')?.addEventListener('click', () => this.handleLogout());
+  setupEventListeners() {
+    document.getElementById('loginBtn')?.addEventListener('click', () => this.handleLogin());
+    document.getElementById('signupBtn')?.addEventListener('click', () => this.handleSignup());
+    document.getElementById('logoutBtn')?.addEventListener('click', () => this.handleLogout());
+    
+    document.getElementById('showSignup')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.showScreen('signup');
+    });
+    
+    document.getElementById('showLogin')?.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.showScreen('login');
+    });
+    
+    this.elements.sidebarToggle?.addEventListener('click', () => this.toggleSidebar());
+    
+    // Handle navigation clicks
+    document.addEventListener('click', (e) => {
+        const navLink = e.target.closest('.nav-link');
+        if (!navLink) return;
         
-        document.getElementById('showSignup')?.addEventListener('click', (e) => {
+        // Only handle internal navigation links
+        const href = navLink.getAttribute('href');
+        const module = navLink.getAttribute('data-module');
+        
+        if (module || (href && href.endsWith('.html'))) {
             e.preventDefault();
-            this.showScreen('signup');
-        });
-        
-        document.getElementById('showLogin')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.showScreen('login');
-        });
-        
-        this.elements.sidebarToggle?.addEventListener('click', () => this.toggleSidebar());
-        
-        // Handle navigation clicks
-        document.addEventListener('click', (e) => {
-            const navLink = e.target.closest('.nav-link');
-            if (navLink && navLink.getAttribute('href')) {
-                e.preventDefault();
-                const href = navLink.getAttribute('href');
-                if (href.endsWith('.html')) {
-                    const module = href.replace('.html', '');
-                    this.navigateToModule(module);
-                }
-            }
-        });
-    }
+            e.stopPropagation();
+            
+            const moduleName = module || href.replace('.html', '');
+            this.navigateToModule(moduleName);
+        }
+    });
+}
     
     async handleLogin() {
         const email = document.getElementById('loginEmail').value.trim();
