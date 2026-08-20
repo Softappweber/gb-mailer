@@ -142,15 +142,34 @@ class GBMailerApp {
     }
     
     toggleSidebar() {
-        this.sidebarCollapsed = !this.sidebarCollapsed;
-        if (this.sidebarCollapsed) {
-            this.elements.sidebar.classList.add('collapsed');
-            document.querySelector('.main-content').classList.add('expanded');
-        } else {
-            this.elements.sidebar.classList.remove('collapsed');
-            document.querySelector('.main-content').classList.remove('expanded');
-        }
+    this.sidebarCollapsed = !this.sidebarCollapsed;
+    if (this.sidebarCollapsed) {
+        this.elements.sidebar.classList.add('collapsed');
+        document.querySelector('.main-content').classList.add('expanded');
+    } else {
+        this.elements.sidebar.classList.remove('collapsed');
+        document.querySelector('.main-content').classList.remove('expanded');
     }
+    
+    // ✅ UPDATE ARROW ICONS
+    this.updateToggleIcon();
+}
+
+updateToggleIcon() {
+    const toggleBtn = document.getElementById('sidebarToggle');
+    const leftArrow = toggleBtn.querySelector('.bi-arrow-left');
+    const rightArrow = toggleBtn.querySelector('.bi-arrow-right');
+    
+    if (this.sidebarCollapsed) {
+        // Sidebar is collapsed - show right arrow (to expand)
+        leftArrow.style.display = 'none';
+        rightArrow.style.display = 'inline-block';
+    } else {
+        // Sidebar is expanded - show left arrow (to collapse)
+        leftArrow.style.display = 'inline-block';
+        rightArrow.style.display = 'none';
+    }
+}
     
     async navigateToModule(module) {
         this.currentModule = module;
