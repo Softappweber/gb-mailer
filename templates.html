@@ -30,14 +30,14 @@
 </div>
 
 <!-- Learning Guide Modal -->
-<div class="modal fade" id="templatesGuideModal" tabindex="-1">
-    <div class="modal-dialog modal-lg">
+<div class="modal fade" id="templatesGuideModal" tabindex="-1" aria-labelledby="templatesGuideModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
-            <div class="modal-header learn-header">
-                <h5 class="modal-title text-white">
+            <div class="modal-header learn-header border-0">
+                <h5 class="modal-title text-white" id="templatesGuideModalLabel">
                     <i class="bi bi-book"></i> Email Templates Guide
                 </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="row">
@@ -93,13 +93,13 @@
     </div>
 </div>
 
-<!-- Create Template Modal -->
-<div class="modal fade" id="templateModal" tabindex="-1">
-    <div class="modal-dialog modal-xl">
+<!-- Create/Edit Template Modal -->
+<div class="modal fade" id="templateModal" tabindex="-1" aria-labelledby="templateModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="templateModalTitle">Create Template</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                <h5 class="modal-title" id="templateModalLabel">Create Template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <form id="templateForm">
@@ -130,36 +130,82 @@
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Email Content *</label>
-                        <textarea class="form-control" id="templateContent" rows="15"></textarea>
+                        <textarea class="form-control" id="templateContent" rows="15" placeholder="Write your email content here..."></textarea>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Available Variables</label>
+                        <label class="form-label">Available Variables (click to insert)</label>
                         <div class="d-flex flex-wrap gap-2">
-                            <span class="badge bg-light text-dark" onclick="insertVariable('{{first_name}}')">&#123;&#123;first_name&#125;&#125;</span>
-                            <span class="badge bg-light text-dark" onclick="insertVariable('{{last_name}}')">&#123;&#123;last_name&#125;&#125;</span>
-                            <span class="badge bg-light text-dark" onclick="insertVariable('{{email}}')">&#123;&#123;email&#125;&#125;</span>
-                            <span class="badge bg-light text-dark" onclick="insertVariable('{{company}}')">&#123;&#123;company&#125;&#125;</span>
-                            <span class="badge bg-light text-dark" onclick="insertVariable('{{unsubscribe_link}}')">&#123;&#123;unsubscribe_link&#125;&#125;</span>
+                            <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertVariable('{{first_name}}')">&#123;&#123;first_name&#125;&#125;</span>
+                            <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertVariable('{{last_name}}')">&#123;&#123;last_name&#125;&#125;</span>
+                            <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertVariable('{{email}}')">&#123;&#123;email&#125;&#125;</span>
+                            <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertVariable('{{company}}')">&#123;&#123;company&#125;&#125;</span>
+                            <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertVariable('{{unsubscribe_link}}')">&#123;&#123;unsubscribe_link&#125;&#125;</span>
                         </div>
                     </div>
                 </form>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-primary" onclick="saveTemplate()">Save Template</button>
+                <button type="button" class="btn btn-primary" onclick="saveTemplate()">
+                    <i class="bi bi-check-lg"></i> Save Template
+                </button>
             </div>
         </div>
     </div>
 </div>
 
+<style>
+.learn-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: calc(0.3rem - 1px) calc(0.3rem - 1px) 0 0;
+}
+
+.learn-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.learn-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    color: white;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+.preview-box {
+    background: #f8f9fa;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 10px;
+    margin: 10px 0;
+    max-height: 100px;
+    overflow: hidden;
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.badge {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.badge:hover {
+    background: #667eea !important;
+    color: white !important;
+    transform: translateY(-2px);
+}
+</style>
+
 <script>
 function initTemplatesModule() {
     loadTemplates();
 }
-
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('templatesContainer')) initTemplatesModule();
-});
 
 async function loadTemplates() {
     try {
@@ -189,7 +235,9 @@ function renderTemplates(templates) {
                         <i class="bi bi-file-earmark-text" style="font-size: 4rem; color: #ccc;"></i>
                         <h5 class="mt-3">No Templates Yet</h5>
                         <p class="text-muted">Create your first email template or use AI to generate one</p>
-                        <button class="btn btn-primary" onclick="showCreateTemplateModal()">Create Template</button>
+                        <button class="btn btn-primary" onclick="showCreateTemplateModal()">
+                            <i class="bi bi-file-earmark-plus"></i> Create Template
+                        </button>
                         <br><br>
                         <button class="btn learn-btn" onclick="showTemplatesGuide()">
                             <i class="bi bi-book"></i> Learn how to create effective emails
@@ -211,17 +259,23 @@ function renderTemplates(templates) {
                             <span class="badge bg-light text-dark">${template.category || 'general'}</span>
                         </div>
                         <div class="dropdown">
-                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">⋮</button>
+                            <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                                <i class="bi bi-three-dots-vertical"></i>
+                            </button>
                             <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" href="#" onclick="editTemplate('${template.id}')">Edit</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="editTemplate('${template.id}')">
+                                    <i class="bi bi-pencil"></i> Edit
+                                </a></li>
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteTemplate('${template.id}')">Delete</a></li>
+                                <li><a class="dropdown-item text-danger" href="#" onclick="deleteTemplate('${template.id}')">
+                                    <i class="bi bi-trash"></i> Delete
+                                </a></li>
                             </ul>
                         </div>
                     </div>
                     <h6 class="text-muted">Subject: ${template.subject}</h6>
-                    <div class="preview-box bg-light p-3 rounded" style="max-height: 100px; overflow: hidden;">
-                        ${template.content_html.substring(0, 150)}...
+                    <div class="preview-box">
+                        ${template.content_html ? template.content_html.substring(0, 150) : 'No content'}...
                     </div>
                     <small class="text-muted">Created ${GBUtils.formatDate(template.created_at, 'relative')}</small>
                 </div>
@@ -231,17 +285,40 @@ function renderTemplates(templates) {
 }
 
 function showTemplatesGuide() {
-    new bootstrap.Modal(document.getElementById('templatesGuideModal')).show();
+    const modal = new bootstrap.Modal(document.getElementById('templatesGuideModal'));
+    modal.show();
 }
 
 function showCreateTemplateModal() {
-    document.getElementById('templateModalTitle').textContent = 'Create Template';
+    document.getElementById('templateModalLabel').textContent = 'Create Template';
     document.getElementById('templateForm').reset();
     document.getElementById('templateId').value = '';
-    new bootstrap.Modal(document.getElementById('templateModal')).show();
+    const modal = new bootstrap.Modal(document.getElementById('templateModal'));
+    modal.show();
+}
+
+function editTemplate(templateId) {
+    // Find the template from loaded data
+    const template = templatesData.find(t => t.id === templateId);
+    if (!template) {
+        showToast('Template not found', 'error');
+        return;
+    }
+    
+    document.getElementById('templateModalLabel').textContent = 'Edit Template';
+    document.getElementById('templateId').value = template.id;
+    document.getElementById('templateName').value = template.name;
+    document.getElementById('templateSubject').value = template.subject;
+    document.getElementById('templateCategory').value = template.category || 'general';
+    document.getElementById('templatePreheader').value = template.preheader_text || '';
+    document.getElementById('templateContent').value = template.content_html || '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('templateModal'));
+    modal.show();
 }
 
 async function saveTemplate() {
+    const templateId = document.getElementById('templateId').value;
     const name = document.getElementById('templateName').value.trim();
     const subject = document.getElementById('templateSubject').value.trim();
     const content = document.getElementById('templateContent').value;
@@ -253,29 +330,80 @@ async function saveTemplate() {
         return;
     }
     
-    const { error } = await gbSupabase.insert('email_templates', {
-        user_id: gbApp.currentUser.id,
-        name, subject,
-        content_html: content,
-        preheader_text: preheader,
-        category,
-        variables: ['first_name', 'last_name', 'email', 'company']
-    });
-    
-    if (!error) {
+    try {
+        if (templateId) {
+            // Update existing template
+            const { error } = await gbSupabase.update('email_templates', {
+                name,
+                subject,
+                content_html: content,
+                preheader_text: preheader,
+                category,
+                updated_at: new Date().toISOString()
+            }, { id: templateId });
+            
+            if (error) throw error;
+            showToast('Template updated successfully!', 'success');
+        } else {
+            // Create new template
+            const { error } = await gbSupabase.insert('email_templates', {
+                user_id: gbApp.currentUser.id,
+                name,
+                subject,
+                content_html: content,
+                preheader_text: preheader,
+                category,
+                variables: ['first_name', 'last_name', 'email', 'company']
+            });
+            
+            if (error) throw error;
+            showToast('Template created successfully!', 'success');
+        }
+        
         bootstrap.Modal.getInstance(document.getElementById('templateModal')).hide();
-        showToast('Template created!', 'success');
         loadTemplates();
+        
+    } catch (error) {
+        showToast('Error saving template: ' + error.message, 'error');
     }
 }
 
 async function deleteTemplate(id) {
     if (!confirm('Delete this template?')) return;
-    const { error } = await gbSupabase.delete('email_templates', { id });
-    if (!error) { showToast('Template deleted', 'success'); loadTemplates(); }
+    
+    try {
+        const { error } = await gbSupabase.delete('email_templates', { id });
+        if (error) throw error;
+        
+        showToast('Template deleted', 'success');
+        loadTemplates();
+        
+    } catch (error) {
+        showToast('Error deleting template: ' + error.message, 'error');
+    }
 }
 
 function insertVariable(variable) {
-    document.getElementById('templateContent').value += variable;
+    const textarea = document.getElementById('templateContent');
+    const cursorPos = textarea.selectionStart;
+    const textBefore = textarea.value.substring(0, cursorPos);
+    const textAfter = textarea.value.substring(cursorPos);
+    textarea.value = textBefore + variable + textAfter;
+    textarea.focus();
+    textarea.selectionStart = cursorPos + variable.length;
+    textarea.selectionEnd = cursorPos + variable.length;
 }
+
+// Store templates data globally for editing
+let templatesData = [];
+
+// Make functions globally accessible
+window.initTemplatesModule = initTemplatesModule;
+window.loadTemplates = loadTemplates;
+window.showTemplatesGuide = showTemplatesGuide;
+window.showCreateTemplateModal = showCreateTemplateModal;
+window.editTemplate = editTemplate;
+window.saveTemplate = saveTemplate;
+window.deleteTemplate = deleteTemplate;
+window.insertVariable = insertVariable;
 </script>
