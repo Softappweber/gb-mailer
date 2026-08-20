@@ -56,6 +56,9 @@ class GBMailerApp {
         
         this.elements.sidebarToggle?.addEventListener('click', () => this.toggleSidebar());
         
+        // ✅ CHANGED: Handle direct navigation via page reload
+        // Since we're using direct links to .html files, we don't need data-module listeners
+        // But we keep this for backward compatibility if needed
         document.querySelectorAll('.nav-link[data-module]').forEach(link => {
             link.addEventListener('click', (e) => {
                 e.preventDefault();
@@ -138,18 +141,22 @@ class GBMailerApp {
         }
     }
     
+    // ✅ CHANGED: Load from root instead of modules/ folder
     async navigateToModule(module) {
         this.currentModule = module;
         
-        document.querySelectorAll('.nav-link[data-module]').forEach(link => {
+        // Update active state
+        document.querySelectorAll('.nav-link').forEach(link => {
             link.classList.remove('active');
-            if (link.dataset.module === module) {
+            const href = link.getAttribute('href');
+            if (href && href.includes(`${module}.html`)) {
                 link.classList.add('active');
             }
         });
         
         try {
-            const response = await fetch(`modules/${module}.html`);
+            // ✅ CHANGED: Removed 'modules/' from path
+            const response = await fetch(`${module}.html`);
             if (!response.ok) throw new Error('Module not found');
             
             const html = await response.text();
@@ -169,6 +176,7 @@ class GBMailerApp {
                 <div class="alert alert-danger">
                     <h4>Error loading module</h4>
                     <p>${error.message}</p>
+                    <p class="mt-2">Make sure <strong>${module}.html</strong> exists in the root directory.</p>
                 </div>
             `;
         }
@@ -220,7 +228,16 @@ class GBMailerApp {
         this.showScreen('main');
         this.showLoading(false);
         this.updateUserInfo();
-        await this.navigateToModule('dashboard');
+        
+        // ✅ CHANGED: Navigate to dashboard.html directly
+        const currentPath = window.location.pathname.split('/').pop();
+        if (currentPath && currentPath !== 'index.html') {
+            // If we're on a specific page, show that module
+            const moduleName = currentPath.replace('.html', '');
+            await this.navigateToModule(moduleName);
+        } else {
+            await this.navigateToModule('dashboard');
+        }
     }
     
     updateUserInfo() {
