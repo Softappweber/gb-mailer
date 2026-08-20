@@ -1,8 +1,0 @@
-flask
-flask-cors
-pandas
-openpyxl
-supabase
-python-dotenv
-psycopg2-binary
-gunicorn
