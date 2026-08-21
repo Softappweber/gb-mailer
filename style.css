@@ -20,7 +20,6 @@ body {
     overflow: hidden;
 }
 
-/* Loading Screen */
 .loading-screen {
     position: fixed;
     top: 0;
@@ -35,7 +34,6 @@ body {
     z-index: 9999;
 }
 
-/* Login/Signup Screens */
 .login-screen {
     position: fixed;
     top: 0;
@@ -68,13 +66,11 @@ body {
     margin-bottom: 5px;
 }
 
-/* App Container */
 .app-container {
     display: flex;
     height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
     width: 260px;
     background: var(--sidebar-bg);
@@ -126,7 +122,6 @@ body {
     width: 0;
 }
 
-/* Navigation Menu */
 .nav-menu {
     list-style: none;
     padding: 15px 8px;
@@ -192,7 +187,6 @@ body {
     color: #ffffff;
 }
 
-/* Submenu */
 .nav-submenu {
     list-style: none;
     padding: 0;
@@ -224,12 +218,6 @@ body {
     color: #ffffff;
 }
 
-.nav-submenu .nav-link:hover i,
-.nav-submenu .nav-link:hover span {
-    color: #ffffff;
-}
-
-/* Parent Link */
 .parent-link {
     cursor: pointer;
     position: relative;
@@ -250,7 +238,6 @@ body {
     transform: rotate(0deg);
 }
 
-/* External Link Icon */
 .sub-link .bi-box-arrow-up-right {
     opacity: 0.7;
     font-size: 9px;
@@ -261,7 +248,6 @@ body {
     opacity: 1;
 }
 
-/* Sidebar Footer */
 .sidebar-footer {
     padding: 15px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
@@ -321,7 +307,6 @@ body {
     color: #e2e8f0;
 }
 
-/* Toggle Arrow Button */
 #sidebarToggle {
     width: 36px;
     height: 36px;
@@ -348,7 +333,6 @@ body {
     position: absolute;
 }
 
-/* Main Content */
 .main-content {
     flex: 1;
     margin-left: 260px;
@@ -397,7 +381,6 @@ body {
     background: #f5f5f5;
 }
 
-/* Module Content */
 .module-container {
     max-width: 1400px;
     margin: 0 auto;
@@ -408,15 +391,17 @@ body {
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .module-title {
     font-size: 24px;
     font-weight: bold;
     color: #1a1a2e;
+    margin: 0;
 }
 
-/* Learn Button */
 .learn-btn {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     color: white;
@@ -454,7 +439,6 @@ body {
     transform: translateY(-5px);
 }
 
-/* Collapse */
 .collapse {
     transition: height 0.3s ease;
 }
@@ -463,7 +447,6 @@ body {
     display: none;
 }
 
-/* Responsive */
 @media (max-width: 768px) {
     .sidebar {
         width: 70px;
