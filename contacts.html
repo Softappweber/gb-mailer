@@ -387,43 +387,57 @@ tr:hover { background: #f8f9fa; }
         $("addContactModal").style.display = "block";
     }
 
-    async function saveNewContact() {
-        const firstName = $("addFirstName").value.trim();
-        const lastName = $("addLastName").value.trim();
-        const email = $("addEmail").value.trim();
-        const phone = $("addPhone").value.trim();
-        const company = $("addCompany").value.trim();
+   async function saveNewContact() {
+    const firstName = $("addFirstName").value.trim();
+    const lastName = $("addLastName").value.trim();
+    const email = $("addEmail").value.trim().toLowerCase();
+    const phone = $("addPhone").value.trim();
+    const company = $("addCompany").value.trim();
 
-        if (!firstName || !email) {
-            alert('First Name and Email are required');
-            return;
-        }
-
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-            alert('Invalid email');
-            return;
-        }
-
-        try {
-            const { error } = await gbSupabase.insert('contacts', {
-                user_id: gbApp.currentUser.id,
-                first_name: firstName,
-                last_name: lastName,
-                email: email.toLowerCase(),
-                phone: phone,
-                company: company,
-                status: 'active'
-            });
-
-            if (error) throw error;
-
-            closeModal('addContactModal');
-            loadContacts();
-            alert('Contact added!');
-        } catch(e) {
-            alert('Error: ' + e.message);
-        }
+    if (!firstName || !email) {
+        alert('First Name and Email are required');
+        return;
     }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Invalid email');
+        return;
+    }
+
+    try {
+        // ✅ Check if email already exists
+        const { data: existing } = await gbSupabase.client
+            .from('contacts')
+            .select('id')
+            .eq('user_id', gbApp.currentUser.id)
+            .eq('email', email)
+            .single();
+
+        if (existing) {
+            alert('⚠️ This email already exists!');
+            return;
+        }
+
+        // Insert new contact
+        const { error } = await gbSupabase.insert('contacts', {
+            user_id: gbApp.currentUser.id,
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
+            phone: phone,
+            company: company,
+            status: 'active'
+        });
+
+        if (error) throw error;
+
+        closeModal('addContactModal');
+        loadContacts();
+        alert('✅ Contact added successfully!');
+    } catch(e) {
+        alert('Error: ' + e.message);
+    }
+}
 
     // Reset All Leads
     async function resetAllLeads() {
