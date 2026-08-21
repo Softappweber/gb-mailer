@@ -1,42 +1,42 @@
-<div class="module-container" style="max-width: 1400px; margin: 0 auto; padding: 20px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
+<div class="module-container">
+    <div class="module-header">
         <div>
-            <h2 style="font-size: 24px; font-weight: bold; color: #1a1a2e; margin: 0;">Contacts</h2>
-            <p style="margin: 5px 0 0; color: #666;" id="contactCount">0 contacts</p>
+            <h2 class="module-title">Contacts</h2>
+            <p class="text-muted mb-0" id="contactCount">0 contacts</p>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <button class="btn btn-outline-success" onclick="showImportModal()" style="padding: 10px 20px; border-radius: 8px;">
+        <div>
+            <button class="btn btn-outline-success me-2" onclick="showImportModal()">
                 <i class="bi bi-upload"></i> Import
             </button>
-            <button class="btn btn-primary" onclick="showAddContactModal()" style="padding: 10px 20px; border-radius: 8px; background: #4f46e5; border: none;">
+            <button class="btn btn-primary" onclick="showAddContactModal()">
                 <i class="bi bi-person-plus"></i> Add Contact
             </button>
         </div>
     </div>
 
-    <div class="card" style="margin-bottom: 20px; border: none; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.08);">
-        <div class="card-body" style="padding: 15px;">
+    <div class="card mb-3">
+        <div class="card-body py-3">
             <div class="row g-2">
                 <div class="col-md-4">
-                    <input type="text" class="form-control" id="contactSearch" placeholder="Search..." onkeyup="filterContacts()" style="padding: 10px 15px; border-radius: 8px; border: 1px solid #ddd;">
+                    <input type="text" class="form-control" id="contactSearch" placeholder="Search..." onkeyup="filterContacts()">
                 </div>
                 <div class="col-md-3">
-                    <select class="form-select" id="statusFilter" onchange="filterContacts()" style="padding: 10px 15px; border-radius: 8px; border: 1px solid #ddd;">
-                        <option value="all">All Status</option>
+                    <select class="form-select" id="statusFilter" onchange="filterContacts()">
+                        <option value="all">All</option>
                         <option value="active">Active</option>
                         <option value="unsubscribed">Unsubscribed</option>
                         <option value="bounced">Bounced</option>
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <select class="form-select" id="pageSizeSelect" onchange="changePageSize()" style="padding: 10px 15px; border-radius: 8px; border: 1px solid #ddd;">
-                        <option value="10">10 / page</option>
-                        <option value="25">25 / page</option>
-                        <option value="50">50 / page</option>
+                    <select class="form-select" id="pageSizeSelect" onchange="changePageSize()">
+                        <option value="10">10/page</option>
+                        <option value="25">25/page</option>
+                        <option value="50">50/page</option>
                     </select>
                 </div>
                 <div class="col-md-2">
-                    <button class="btn btn-danger w-100" onclick="showSendEmailModal()" style="padding: 10px 15px; border-radius: 8px;">
+                    <button class="btn btn-danger w-100" onclick="showSendEmailModal()">
                         <i class="bi bi-envelope"></i> Send
                     </button>
                 </div>
@@ -44,27 +44,27 @@
         </div>
     </div>
 
-    <div class="card" style="border: none; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); overflow: hidden;">
+    <div class="card">
         <div class="table-responsive">
-            <table class="table table-hover mb-0" style="margin: 0;">
-                <thead style="background: #f8f9fa;">
+            <table class="table table-hover mb-0">
+                <thead class="table-light">
                     <tr>
-                        <th style="width: 40px; padding: 15px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
-                        <th style="padding: 15px; font-size: 12px; text-transform: uppercase; color: #666;">Name</th>
-                        <th style="padding: 15px; font-size: 12px; text-transform: uppercase; color: #666;">Email</th>
-                        <th style="padding: 15px; font-size: 12px; text-transform: uppercase; color: #666;">Company</th>
-                        <th style="padding: 15px; font-size: 12px; text-transform: uppercase; color: #666;">Phone</th>
-                        <th style="padding: 15px; font-size: 12px; text-transform: uppercase; color: #666;">Status</th>
-                        <th style="padding: 15px; font-size: 12px; text-transform: uppercase; color: #666;">Actions</th>
+                        <th style="width:40px"><input type="checkbox" id="selectAll" onchange="toggleSelectAll()"></th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Company</th>
+                        <th>Phone</th>
+                        <th>Status</th>
+                        <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="contactsTableBody">
-                    <tr><td colspan="7" style="text-align: center; padding: 50px;"><div class="spinner-border text-primary"></div></td></tr>
+                    <tr><td colspan="7" class="text-center py-5"><div class="spinner-border text-primary"></div></td></tr>
                 </tbody>
             </table>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; padding: 15px; background: white; border-top: 1px solid #eee;">
-            <small style="color: #666;" id="pageInfo">Loading...</small>
+        <div class="card-footer d-flex justify-content-between align-items-center bg-white">
+            <small class="text-muted" id="pageInfo">Loading...</small>
             <ul class="pagination pagination-sm mb-0" id="pagination"></ul>
         </div>
     </div>
@@ -72,23 +72,23 @@
 
 <div class="modal fade" id="contactModal">
     <div class="modal-dialog">
-        <div class="modal-content" style="border: none; border-radius: 12px;">
-            <div class="modal-header" style="background: #4f46e5; color: white; border-radius: 12px 12px 0 0;">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h5 class="modal-title" id="contactModalTitle">Add Contact</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" style="padding: 25px;">
+            <div class="modal-body">
                 <input type="hidden" id="contactId">
-                <div style="margin-bottom: 15px;"><label style="font-weight: 600;">First Name *</label><input class="form-control" id="firstName"></div>
-                <div style="margin-bottom: 15px;"><label style="font-weight: 600;">Last Name</label><input class="form-control" id="lastName"></div>
-                <div style="margin-bottom: 15px;"><label style="font-weight: 600;">Email *</label><input type="email" class="form-control" id="contactEmail"></div>
-                <div style="margin-bottom: 15px;"><label style="font-weight: 600;">Phone</label><input class="form-control" id="contactPhone"></div>
-                <div style="margin-bottom: 15px;"><label style="font-weight: 600;">Company</label><input class="form-control" id="contactCompany"></div>
-                <div style="margin-bottom: 15px;"><label style="font-weight: 600;">Status</label><select class="form-select" id="contactStatus"><option value="active">Active</option><option value="unsubscribed">Unsubscribed</option><option value="bounced">Bounced</option></select></div>
+                <div class="mb-3"><label class="form-label">First Name *</label><input class="form-control" id="firstName"></div>
+                <div class="mb-3"><label class="form-label">Last Name</label><input class="form-control" id="lastName"></div>
+                <div class="mb-3"><label class="form-label">Email *</label><input type="email" class="form-control" id="contactEmail"></div>
+                <div class="mb-3"><label class="form-label">Phone</label><input class="form-control" id="contactPhone"></div>
+                <div class="mb-3"><label class="form-label">Company</label><input class="form-control" id="contactCompany"></div>
+                <div class="mb-3"><label class="form-label">Status</label><select class="form-select" id="contactStatus"><option value="active">Active</option><option value="unsubscribed">Unsubscribed</option><option value="bounced">Bounced</option></select></div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                <button class="btn btn-primary" onclick="saveContact()" style="background: #4f46e5; border: none;">Save</button>
+                <button class="btn btn-primary" onclick="saveContact()">Save</button>
             </div>
         </div>
     </div>
@@ -96,12 +96,12 @@
 
 <div class="modal fade" id="importModal">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="border: none; border-radius: 12px;">
-            <div class="modal-header" style="background: #28a745; color: white; border-radius: 12px 12px 0 0;">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h5 class="modal-title">Import Contacts</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" style="padding: 25px;">
+            <div class="modal-body">
                 <input type="file" class="form-control mb-3" id="importFile" accept=".csv,.xlsx,.xls" onchange="handleFileUpload(event)">
                 <div id="mappingSection" class="d-none">
                     <h6>Map Columns</h6>
@@ -122,17 +122,18 @@
 
 <div class="modal fade" id="sendEmailModal">
     <div class="modal-dialog modal-lg">
-        <div class="modal-content" style="border: none; border-radius: 12px;">
-            <div class="modal-header" style="background: #dc3545; color: white; border-radius: 12px 12px 0 0;">
+        <div class="modal-content">
+            <div class="modal-header">
                 <h5 class="modal-title">Send Email</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body" style="padding: 25px;">
+            <div class="modal-body">
                 <div class="alert alert-info">Sending to <strong id="selectedCount">0</strong> contacts</div>
-                <div style="margin-bottom: 15px;"><label style="font-weight: 600;">Subject</label><input class="form-control" id="emailSubject"></div>
-                <div style="margin-bottom: 15px;"><label style="font-weight: 600;">Message</label><textarea class="form-control" id="emailContent" rows="8"></textarea></div>
-                <div style="display: flex; gap: 10px;">
+                <div class="mb-3"><label class="form-label">Subject</label><input class="form-control" id="emailSubject"></div>
+                <div class="mb-3"><label class="form-label">Message</label><textarea class="form-control" id="emailContent" rows="8"></textarea></div>
+                <div class="d-flex gap-2">
                     <button class="btn btn-sm btn-light" onclick="insertVar('{{first_name}}')">{{first_name}}</button>
+                    <button class="btn btn-sm btn-light" onclick="insertVar('{{last_name}}')">{{last_name}}</button>
                     <button class="btn btn-sm btn-light" onclick="insertVar('{{company}}')">{{company}}</button>
                 </div>
             </div>
@@ -145,284 +146,300 @@
 </div>
 
 <script>
-var contactsData = [];
-var filteredData = [];
-var selectedContacts = new Set();
-var currentPage = 1;
-var pageSize = 10;
-var importData = [];
-var importColumns = [];
+(function() {
+    emailjs.init('0eRq16_I94xMRC97a');
 
-function initContactsModule() {
-    loadContacts();
-}
+    let contactsData = [];
+    let filteredData = [];
+    let selectedContacts = new Set();
+    let currentPage = 1;
+    let pageSize = 10;
+    let importData = [];
+    let importColumns = [];
 
-async function loadContacts() {
-    try {
-        const { data, error } = await gbSupabase.client
-            .from('contacts')
-            .select('*')
-            .eq('user_id', gbApp.currentUser.id)
-            .order('created_at', { ascending: false });
+    function initContactsModule() {
+        loadContacts();
+    }
+
+    async function loadContacts() {
+        try {
+            const { data, error } = await gbSupabase.client
+                .from('contacts')
+                .select('*')
+                .eq('user_id', gbApp.currentUser.id)
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            contactsData = data || [];
+            filteredData = [...contactsData];
+            document.getElementById('contactCount').textContent = contactsData.length + ' contacts';
+            filterContacts();
+        } catch(e) {
+            console.error('Load error:', e);
+        }
+    }
+
+    function filterContacts() {
+        const search = document.getElementById('contactSearch').value.toLowerCase();
+        const status = document.getElementById('statusFilter').value;
         
-        if (error) throw error;
+        filteredData = contactsData.filter(c => {
+            const matchSearch = !search || 
+                (c.first_name || '').toLowerCase().includes(search) ||
+                (c.last_name || '').toLowerCase().includes(search) ||
+                (c.email || '').toLowerCase().includes(search) ||
+                (c.company || '').toLowerCase().includes(search);
+            const matchStatus = status === 'all' || c.status === status;
+            return matchSearch && matchStatus;
+        });
         
-        contactsData = data || [];
-        filteredData = [...contactsData];
-        document.getElementById('contactCount').textContent = contactsData.length + ' contacts';
-        filterContacts();
-    } catch(e) {
-        console.error('Load error:', e);
+        currentPage = 1;
+        renderTable();
     }
-}
 
-function filterContacts() {
-    const search = document.getElementById('contactSearch').value.toLowerCase();
-    const status = document.getElementById('statusFilter').value;
-    
-    filteredData = contactsData.filter(c => {
-        const matchSearch = !search || 
-            (c.first_name || '').toLowerCase().includes(search) ||
-            (c.last_name || '').toLowerCase().includes(search) ||
-            (c.email || '').toLowerCase().includes(search) ||
-            (c.company || '').toLowerCase().includes(search);
-        const matchStatus = status === 'all' || c.status === status;
-        return matchSearch && matchStatus;
-    });
-    
-    currentPage = 1;
-    renderTable();
-}
-
-function changePageSize() {
-    pageSize = parseInt(document.getElementById('pageSizeSelect').value);
-    currentPage = 1;
-    renderTable();
-}
-
-function renderTable() {
-    const tbody = document.getElementById('contactsTableBody');
-    const totalPages = Math.ceil(filteredData.length / pageSize);
-    const start = (currentPage - 1) * pageSize;
-    const end = Math.min(start + pageSize, filteredData.length);
-    const pageData = filteredData.slice(start, end);
-    
-    if (pageData.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:50px;">No contacts found</td></tr>';
-        document.getElementById('pagination').innerHTML = '';
-        document.getElementById('pageInfo').textContent = 'No contacts';
-        return;
+    function changePageSize() {
+        pageSize = parseInt(document.getElementById('pageSizeSelect').value);
+        currentPage = 1;
+        renderTable();
     }
-    
-    tbody.innerHTML = pageData.map(c => `
-        <tr>
-            <td style="padding:12px 15px;"><input type="checkbox" class="contact-check" value="${c.id}" ${selectedContacts.has(c.id) ? 'checked' : ''} onchange="toggleSelect('${c.id}', this.checked)"></td>
-            <td style="padding:12px 15px;font-weight:500;">${c.first_name || ''} ${c.last_name || ''}</td>
-            <td style="padding:12px 15px;">${c.email}</td>
-            <td style="padding:12px 15px;">${c.company || '-'}</td>
-            <td style="padding:12px 15px;">${c.phone || '-'}</td>
-            <td style="padding:12px 15px;"><span class="badge" style="background:${c.status === 'active' ? '#d4edda' : '#f8d7da'};color:${c.status === 'active' ? '#155724' : '#721c24'};padding:5px 12px;border-radius:20px;">${c.status || 'active'}</span></td>
-            <td style="padding:12px 15px;">
-                <button class="btn btn-sm btn-outline-primary" onclick="editContact('${c.id}')"><i class="bi bi-pencil"></i></button>
-                <button class="btn btn-sm btn-outline-danger" onclick="deleteContact('${c.id}')"><i class="bi bi-trash"></i></button>
-            </td>
-        </tr>
-    `).join('');
-    
-    document.getElementById('pageInfo').textContent = `Showing ${start + 1}-${end} of ${filteredData.length}`;
-    renderPagination(totalPages);
-}
 
-function renderPagination(totalPages) {
-    let html = `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" onclick="goToPage(${currentPage - 1})" style="cursor:pointer;">«</a></li>`;
-    for (let i = 1; i <= totalPages; i++) {
-        html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" onclick="goToPage(${i})" style="cursor:pointer;">${i}</a></li>`;
+    function renderTable() {
+        const tbody = document.getElementById('contactsTableBody');
+        const totalPages = Math.ceil(filteredData.length / pageSize);
+        const start = (currentPage - 1) * pageSize;
+        const end = Math.min(start + pageSize, filteredData.length);
+        const pageData = filteredData.slice(start, end);
+        
+        if (pageData.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-5">No contacts found</td></tr>';
+            document.getElementById('pagination').innerHTML = '';
+            document.getElementById('pageInfo').textContent = 'No contacts';
+            return;
+        }
+        
+        tbody.innerHTML = pageData.map(c => `
+            <tr>
+                <td><input type="checkbox" class="contact-check" value="${c.id}" ${selectedContacts.has(c.id) ? 'checked' : ''} onchange="toggleSelect('${c.id}', this.checked)"></td>
+                <td>${c.first_name || ''} ${c.last_name || ''}</td>
+                <td>${c.email}</td>
+                <td>${c.company || '-'}</td>
+                <td>${c.phone || '-'}</td>
+                <td><span class="badge bg-${c.status === 'active' ? 'success' : 'danger'}">${c.status || 'active'}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary" onclick="editContact('${c.id}')"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="deleteContact('${c.id}')"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+        
+        document.getElementById('pageInfo').textContent = `Showing ${start + 1}-${end} of ${filteredData.length}`;
+        renderPagination(totalPages);
     }
-    html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link" onclick="goToPage(${currentPage + 1})" style="cursor:pointer;">»</a></li>`;
-    document.getElementById('pagination').innerHTML = html;
-}
 
-function goToPage(page) {
-    const totalPages = Math.ceil(filteredData.length / pageSize);
-    if (page < 1 || page > totalPages) return;
-    currentPage = page;
-    renderTable();
-}
-
-function toggleSelectAll() {
-    const checked = document.getElementById('selectAll').checked;
-    document.querySelectorAll('.contact-check').forEach(cb => {
-        cb.checked = checked;
-        if (checked) selectedContacts.add(cb.value);
-        else selectedContacts.delete(cb.value);
-    });
-}
-
-function toggleSelect(id, checked) {
-    if (checked) selectedContacts.add(id);
-    else selectedContacts.delete(id);
-}
-
-function showAddContactModal() {
-    document.getElementById('contactModalTitle').textContent = 'Add Contact';
-    document.getElementById('contactId').value = '';
-    document.getElementById('firstName').value = '';
-    document.getElementById('lastName').value = '';
-    document.getElementById('contactEmail').value = '';
-    document.getElementById('contactPhone').value = '';
-    document.getElementById('contactCompany').value = '';
-    document.getElementById('contactStatus').value = 'active';
-    new bootstrap.Modal(document.getElementById('contactModal')).show();
-}
-
-function editContact(id) {
-    const c = contactsData.find(x => x.id === id);
-    if (!c) return;
-    document.getElementById('contactModalTitle').textContent = 'Edit Contact';
-    document.getElementById('contactId').value = c.id;
-    document.getElementById('firstName').value = c.first_name || '';
-    document.getElementById('lastName').value = c.last_name || '';
-    document.getElementById('contactEmail').value = c.email || '';
-    document.getElementById('contactPhone').value = c.phone || '';
-    document.getElementById('contactCompany').value = c.company || '';
-    document.getElementById('contactStatus').value = c.status || 'active';
-    new bootstrap.Modal(document.getElementById('contactModal')).show();
-}
-
-async function saveContact() {
-    const id = document.getElementById('contactId').value;
-    const data = {
-        first_name: document.getElementById('firstName').value,
-        last_name: document.getElementById('lastName').value,
-        email: document.getElementById('contactEmail').value,
-        phone: document.getElementById('contactPhone').value,
-        company: document.getElementById('contactCompany').value,
-        status: document.getElementById('contactStatus').value
-    };
-    
-    if (!data.first_name || !data.email) { alert('Required'); return; }
-    
-    if (id) {
-        await gbSupabase.update('contacts', data, { id });
-    } else {
-        await gbSupabase.insert('contacts', { ...data, user_id: gbApp.currentUser.id });
+    function renderPagination(totalPages) {
+        let html = `<li class="page-item ${currentPage === 1 ? 'disabled' : ''}"><a class="page-link" onclick="goToPage(${currentPage - 1})">«</a></li>`;
+        for (let i = 1; i <= totalPages; i++) {
+            html += `<li class="page-item ${i === currentPage ? 'active' : ''}"><a class="page-link" onclick="goToPage(${i})">${i}</a></li>`;
+        }
+        html += `<li class="page-item ${currentPage === totalPages ? 'disabled' : ''}"><a class="page-link" onclick="goToPage(${currentPage + 1})">»</a></li>`;
+        document.getElementById('pagination').innerHTML = html;
     }
-    
-    bootstrap.Modal.getInstance(document.getElementById('contactModal')).hide();
-    loadContacts();
-}
 
-async function deleteContact(id) {
-    if (!confirm('Delete?')) return;
-    await gbSupabase.delete('contacts', { id });
-    loadContacts();
-}
+    function goToPage(page) {
+        const totalPages = Math.ceil(filteredData.length / pageSize);
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderTable();
+    }
 
-function showImportModal() {
-    new bootstrap.Modal(document.getElementById('importModal')).show();
-}
+    function toggleSelectAll() {
+        const checked = document.getElementById('selectAll').checked;
+        document.querySelectorAll('.contact-check').forEach(cb => {
+            cb.checked = checked;
+            if (checked) selectedContacts.add(cb.value);
+            else selectedContacts.delete(cb.value);
+        });
+    }
 
-function handleFileUpload(event) {
-    const file = event.target.files[0];
-    const reader = new FileReader();
-    reader.onload = (e) => {
-        const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        importData = XLSX.utils.sheet_to_json(sheet);
-        importColumns = Object.keys(importData[0] || {});
-        showMapping();
-    };
-    reader.readAsArrayBuffer(file);
-}
+    function toggleSelect(id, checked) {
+        if (checked) selectedContacts.add(id);
+        else selectedContacts.delete(id);
+    }
 
-function showMapping() {
-    document.getElementById('mappingSection').classList.remove('d-none');
-    document.getElementById('mappingFields').innerHTML = [
-        ['first_name', 'First Name'], ['email', 'Email'], ['last_name', 'Last Name'], ['phone', 'Phone'], ['company', 'Company']
-    ].map(([field, label]) => `
-        <div class="col-md-4" style="margin-bottom:10px;">
-            <label style="font-weight:600;">${label}</label>
+    function showAddContactModal() {
+        document.getElementById('contactModalTitle').textContent = 'Add Contact';
+        document.getElementById('contactId').value = '';
+        document.getElementById('firstName').value = '';
+        document.getElementById('lastName').value = '';
+        document.getElementById('contactEmail').value = '';
+        document.getElementById('contactPhone').value = '';
+        document.getElementById('contactCompany').value = '';
+        document.getElementById('contactStatus').value = 'active';
+        new bootstrap.Modal(document.getElementById('contactModal')).show();
+    }
+
+    function editContact(id) {
+        const c = contactsData.find(x => x.id === id);
+        if (!c) return;
+        document.getElementById('contactModalTitle').textContent = 'Edit Contact';
+        document.getElementById('contactId').value = c.id;
+        document.getElementById('firstName').value = c.first_name || '';
+        document.getElementById('lastName').value = c.last_name || '';
+        document.getElementById('contactEmail').value = c.email || '';
+        document.getElementById('contactPhone').value = c.phone || '';
+        document.getElementById('contactCompany').value = c.company || '';
+        document.getElementById('contactStatus').value = c.status || 'active';
+        new bootstrap.Modal(document.getElementById('contactModal')).show();
+    }
+
+    async function saveContact() {
+        const id = document.getElementById('contactId').value;
+        const data = {
+            first_name: document.getElementById('firstName').value,
+            last_name: document.getElementById('lastName').value,
+            email: document.getElementById('contactEmail').value,
+            phone: document.getElementById('contactPhone').value,
+            company: document.getElementById('contactCompany').value,
+            status: document.getElementById('contactStatus').value
+        };
+        
+        if (!data.first_name || !data.email) { alert('Required'); return; }
+        
+        if (id) {
+            await gbSupabase.update('contacts', data, { id });
+        } else {
+            await gbSupabase.insert('contacts', { ...data, user_id: gbApp.currentUser.id });
+        }
+        
+        bootstrap.Modal.getInstance(document.getElementById('contactModal')).hide();
+        loadContacts();
+    }
+
+    async function deleteContact(id) {
+        if (!confirm('Delete?')) return;
+        await gbSupabase.delete('contacts', { id });
+        loadContacts();
+    }
+
+    function showImportModal() {
+        new bootstrap.Modal(document.getElementById('importModal')).show();
+    }
+
+    function handleFileUpload(event) {
+        const file = event.target.files[0];
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const workbook = XLSX.read(new Uint8Array(e.target.result), { type: 'array' });
+            const sheet = workbook.Sheets[workbook.SheetNames[0]];
+            importData = XLSX.utils.sheet_to_json(sheet);
+            importColumns = Object.keys(importData[0] || {});
+            showMapping();
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function showMapping() {
+        document.getElementById('mappingSection').classList.remove('d-none');
+        document.getElementById('mappingFields').innerHTML = [
+            ['first_name', 'First Name'], ['email', 'Email'], ['last_name', 'Last Name'], ['phone', 'Phone'], ['company', 'Company']
+        ].map(([field, label]) => `
+            <div class="col-md-4 mb-2"><label>${label}</label>
             <select class="form-select mapping-select" data-field="${field}">
                 <option value="">--</option>
                 ${importColumns.map(col => `<option>${col}</option>`).join('')}
-            </select>
-        </div>
-    `).join('');
-    
-    document.getElementById('previewSection').classList.remove('d-none');
-    document.getElementById('previewTable').innerHTML = `
-        <thead><tr>${importColumns.map(c => `<th>${c}</th>`).join('')}</tr></thead>
-        <tbody>${importData.slice(0, 5).map(row => `<tr>${importColumns.map(c => `<td>${row[c] || ''}</td>`).join('')}</tr>`).join('')}</tbody>
-    `;
-    document.getElementById('importBtn').disabled = false;
-}
-
-async function importContacts() {
-    const mappings = {};
-    document.querySelectorAll('.mapping-select').forEach(s => {
-        if (s.value) mappings[s.dataset.field] = s.value;
-    });
-    
-    if (!mappings.email) { alert('Email mapping required'); return; }
-    
-    const contacts = importData.map(row => ({
-        email: row[mappings.email] || '',
-        first_name: row[mappings.first_name] || '',
-        last_name: row[mappings.last_name] || '',
-        phone: row[mappings.phone] || '',
-        company: row[mappings.company] || '',
-        user_id: gbApp.currentUser.id,
-        status: 'active'
-    })).filter(c => c.email);
-    
-    await gbSupabase.client.from('contacts').upsert(contacts, { onConflict: 'user_id,email', ignoreDuplicates: true });
-    
-    bootstrap.Modal.getInstance(document.getElementById('importModal')).hide();
-    loadContacts();
-}
-
-function showSendEmailModal() {
-    document.getElementById('selectedCount').textContent = selectedContacts.size || filteredData.length;
-    new bootstrap.Modal(document.getElementById('sendEmailModal')).show();
-}
-
-async function sendEmails() {
-    const subject = document.getElementById('emailSubject').value;
-    const content = document.getElementById('emailContent').value;
-    
-    if (!subject || !content) { alert('Required'); return; }
-    
-    const recipients = selectedContacts.size > 0 
-        ? contactsData.filter(c => selectedContacts.has(c.id))
-        : filteredData;
-    
-    for (const c of recipients) {
-        let msg = content.replace('{{first_name}}', c.first_name || '').replace('{{company}}', c.company || '');
+            </select></div>
+        `).join('');
         
-        try {
-            await emailjs.send('service_ogrqrgs', 'template_2dnmc2h', {
-                to_email: c.email,
-                subject: subject,
-                message: msg
-            });
-        } catch(e) {
-            console.error('Send error:', e);
+        document.getElementById('previewSection').classList.remove('d-none');
+        document.getElementById('previewTable').innerHTML = `
+            <thead><tr>${importColumns.map(c => `<th>${c}</th>`).join('')}</tr></thead>
+            <tbody>${importData.slice(0, 5).map(row => `<tr>${importColumns.map(c => `<td>${row[c] || ''}</td>`).join('')}</tr>`).join('')}</tbody>
+        `;
+        document.getElementById('importBtn').disabled = false;
+    }
+
+    async function importContacts() {
+        const mappings = {};
+        document.querySelectorAll('.mapping-select').forEach(s => {
+            if (s.value) mappings[s.dataset.field] = s.value;
+        });
+        
+        if (!mappings.email) { alert('Email mapping required'); return; }
+        
+        const contacts = importData.map(row => ({
+            email: row[mappings.email] || '',
+            first_name: row[mappings.first_name] || '',
+            last_name: row[mappings.last_name] || '',
+            phone: row[mappings.phone] || '',
+            company: row[mappings.company] || '',
+            user_id: gbApp.currentUser.id,
+            status: 'active'
+        })).filter(c => c.email);
+        
+        await gbSupabase.client.from('contacts').upsert(contacts, { onConflict: 'user_id,email', ignoreDuplicates: true });
+        
+        bootstrap.Modal.getInstance(document.getElementById('importModal')).hide();
+        loadContacts();
+    }
+
+    function showSendEmailModal() {
+        document.getElementById('selectedCount').textContent = selectedContacts.size || filteredData.length;
+        new bootstrap.Modal(document.getElementById('sendEmailModal')).show();
+    }
+
+    async function sendEmails() {
+        const subject = document.getElementById('emailSubject').value;
+        const content = document.getElementById('emailContent').value;
+        
+        if (!subject || !content) { alert('Required'); return; }
+        
+        const recipients = selectedContacts.size > 0 
+            ? contactsData.filter(c => selectedContacts.has(c.id))
+            : filteredData;
+        
+        for (const c of recipients) {
+            let msg = content.replace('{{first_name}}', c.first_name || '').replace('{{company}}', c.company || '');
+            
+            try {
+                await emailjs.send('service_ogrqrgs', 'template_2dnmc2h', {
+                    to_email: c.email,
+                    subject: subject,
+                    message: msg
+                });
+            } catch(e) {
+                console.error('Send error:', e);
+            }
         }
+        
+        alert('Emails sent!');
+        bootstrap.Modal.getInstance(document.getElementById('sendEmailModal')).hide();
     }
-    
-    alert('Emails sent!');
-    bootstrap.Modal.getInstance(document.getElementById('sendEmailModal')).hide();
-}
 
-function insertVar(v) {
-    document.getElementById('emailContent').value += v;
-}
+    function insertVar(v) {
+        document.getElementById('emailContent').value += v;
+    }
 
-setTimeout(() => {
-    if (typeof initContactsModule === 'function') {
+    window.initContactsModule = initContactsModule;
+    window.filterContacts = filterContacts;
+    window.changePageSize = changePageSize;
+    window.goToPage = goToPage;
+    window.toggleSelectAll = toggleSelectAll;
+    window.toggleSelect = toggleSelect;
+    window.showAddContactModal = showAddContactModal;
+    window.editContact = editContact;
+    window.saveContact = saveContact;
+    window.deleteContact = deleteContact;
+    window.showImportModal = showImportModal;
+    window.handleFileUpload = handleFileUpload;
+    window.importContacts = importContacts;
+    window.showSendEmailModal = showSendEmailModal;
+    window.sendEmails = sendEmails;
+    window.insertVar = insertVar;
+
+    // Auto-init
+    setTimeout(() => {
         initContactsModule();
-    }
-}, 1000);
-
-window.initContactsModule = initContactsModule;
+    }, 1000);
+})();
 </script>
