@@ -1,345 +1,293 @@
-// Main Application Logic
-document.addEventListener('DOMContentLoaded', () => {
-    initializeApp();
-});
+// GB Mailer - Main Application JavaScript
 
-async function initializeApp() {
+// Global variables
+window.currentUser = null;
+window.currentModule = 'dashboard';
+window.supabase = null;
+
+// Initialize application
+document.addEventListener('DOMContentLoaded', async function() {
+    console.log('GB Mailer initializing...');
+    
+    // Initialize Supabase
     try {
-        const { data: { session }, error } = await gbSupabase.getSession();
-        
-        if (session) {
-            gbApp.currentUser = session.user;
-            await gbApp.loadMainApp();
+        window.supabase = supabase.createClient(
+            window.CONFIG.SUPABASE_URL,
+            window.CONFIG.SUPABASE_ANON_KEY
+        );
+        console.log('Supabase initialized');
+    } catch (error) {
+        console.error('Error initializing Supabase:', error);
+    }
+    
+    // Initialize EmailJS
+    try {
+        if (window.CONFIG.EMAILJS.PUBLIC_KEY !== 'YOUR_EMAILJS_PUBLIC_KEY') {
+            emailjs.init(window.CONFIG.EMAILJS.PUBLIC_KEY);
+            console.log('EmailJS initialized');
         } else {
-            gbApp.showScreen('login');
+            console.log('EmailJS not configured yet');
         }
     } catch (error) {
-        console.error('Session check error:', error);
-        gbApp.showScreen('login');
+        console.error('Error initializing EmailJS:', error);
+    }
+    
+    // Check if user is logged in
+    await checkAuth();
+});
+
+// Check authentication
+async function checkAuth() {
+    try {
+        const { data: { user }, error } = await window.supabase.auth.getUser();
+        
+        if (user) {
+            window.currentUser = user;
+            document.getElementById('userName').textContent = user.email.split('@')[0];
+            loadModule('dashboard');
+        } else {
+            showLogin();
+        }
+    } catch (error) {
+        console.error('Error checking auth:', error);
+        showLogin();
     }
 }
 
-class GBMailerApp {
-    constructor() {
-        this.currentUser = null;
-        this.currentModule = 'dashboard';
-        this.sidebarCollapsed = false;
-        this.toastContainer = null;
-        this.moduleCache = new Map();
-        
-        this.elements = {
-            loadingScreen: document.getElementById('loadingScreen'),
-            loginScreen: document.getElementById('loginScreen'),
-            signupScreen: document.getElementById('signupScreen'),
-            mainApp: document.getElementById('mainApp'),
-            contentArea: document.getElementById('contentArea'),
-            sidebar: document.getElementById('sidebar'),
-            sidebarToggle: document.getElementById('sidebarToggle')
-        };
-        
-        this.setupEventListeners();
-    }
+// Show login form
+function showLogin() {
+    document.getElementById('mainContent').innerHTML = `
+        <div class="auth-container">
+            <h2><i class="bi bi-envelope-paper-heart"></i> GB Mailer</h2>
+            <form class="auth-form" onsubmit="handleLogin(event)">
+                <input type="email" class="form-control" id="loginEmail" placeholder="Email" required>
+                <input type="password" class="form-control" id="loginPassword" placeholder="Password" required>
+                <button type="submit" class="btn btn-gradient-primary">Login</button>
+            </form>
+            <div class="auth-link">
+                <a href="#" onclick="showSignup()">Don't have an account? Sign up</a>
+            </div>
+        </div>
+    `;
+}
+
+// Show signup form
+function showSignup() {
+    document.getElementById('mainContent').innerHTML = `
+        <div class="auth-container">
+            <h2><i class="bi bi-envelope-paper-heart"></i> GB Mailer</h2>
+            <form class="auth-form" onsubmit="handleSignup(event)">
+                <input type="email" class="form-control" id="signupEmail" placeholder="Email" required>
+                <input type="password" class="form-control" id="signupPassword" placeholder="Password (min 6 characters)" required>
+                <button type="submit" class="btn btn-gradient-primary">Sign Up</button>
+            </form>
+            <div class="auth-link">
+                <a href="#" onclick="showLogin()">Already have an account? Login</a>
+            </div>
+        </div>
+    `;
+}
+
+// Handle login
+window.handleLogin = async function(event) {
+    event.preventDefault();
     
-    setupEventListeners() {
-        document.getElementById('loginBtn')?.addEventListener('click', () => this.handleLogin());
-        document.getElementById('signupBtn')?.addEventListener('click', () => this.handleSignup());
-        document.getElementById('logoutBtn')?.addEventListener('click', () => this.handleLogout());
-        
-        document.getElementById('showSignup')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.showScreen('signup');
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    
+    try {
+        const { data, error } = await window.supabase.auth.signInWithPassword({
+            email: email,
+            password: password
         });
         
-        document.getElementById('showLogin')?.addEventListener('click', (e) => {
-            e.preventDefault();
-            this.showScreen('login');
+        if (error) throw error;
+        
+        window.currentUser = data.user;
+        document.getElementById('userName').textContent = data.user.email.split('@')[0];
+        loadModule('dashboard');
+        
+    } catch (error) {
+        console.error('Login error:', error);
+        alert('Login failed: ' + error.message);
+    }
+};
+
+// Handle signup
+window.handleSignup = async function(event) {
+    event.preventDefault();
+    
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    
+    if (password.length < 6) {
+        alert('Password must be at least 6 characters');
+        return;
+    }
+    
+    try {
+        const { data, error } = await window.supabase.auth.signUp({
+            email: email,
+            password: password
         });
         
-        this.elements.sidebarToggle?.addEventListener('click', () => this.toggleSidebar());
+        if (error) throw error;
         
-        // Handle internal navigation (data-module links only)
-        document.addEventListener('click', (e) => {
-            const navLink = e.target.closest('[data-module]');
-            if (!navLink) return;
-            
-            e.preventDefault();
-            e.stopPropagation();
-            
-            const module = navLink.getAttribute('data-module');
-            if (module) {
-                this.navigateToModule(module);
-            }
-        });
+        alert('Signup successful! Please check your email to confirm your account.');
+        showLogin();
         
-        // IMPORTANT: External links should open in new tab
-        // target="_blank" in HTML handles this automatically
-        // We just need to make sure our click handler doesn't interfere
-        document.querySelectorAll('.external-link').forEach(link => {
-            link.addEventListener('click', (e) => {
-                // Let the browser handle it naturally
-                // Don't preventDefault, don't stopPropagation
-                console.log('External link clicked, opening in new tab');
-            });
-        });
+    } catch (error) {
+        console.error('Signup error:', error);
+        alert('Signup failed: ' + error.message);
     }
-    
-    async handleLogin() {
-        const email = document.getElementById('loginEmail').value.trim();
-        const password = document.getElementById('loginPassword').value;
-        
-        if (!email || !password) {
-            this.showToast('Please enter email and password', 'error');
-            return;
-        }
-        
-        try {
-            this.showLoading(true);
-            const { data, error } = await gbSupabase.signIn(email, password);
-            if (error) throw error;
-            
-            this.currentUser = data.user;
-            await this.loadMainApp();
-            this.showToast('Welcome back!', 'success');
-        } catch (error) {
-            this.showToast(error.message, 'error');
-            this.showLoading(false);
-        }
+};
+
+// Handle logout
+window.handleLogout = async function() {
+    try {
+        await window.supabase.auth.signOut();
+        window.currentUser = null;
+        document.getElementById('userName').textContent = 'User';
+        showLogin();
+    } catch (error) {
+        console.error('Logout error:', error);
     }
+};
+
+// Load module
+window.loadModule = async function(moduleName) {
+    console.log('Loading module:', moduleName);
+    window.currentModule = moduleName;
     
-    async handleSignup() {
-        const name = document.getElementById('signupName').value.trim();
-        const email = document.getElementById('signupEmail').value.trim();
-        const password = document.getElementById('signupPassword').value;
-        
-        if (!name || !email || !password) {
-            this.showToast('Please fill in all fields', 'error');
-            return;
-        }
-        
-        try {
-            this.showLoading(true);
-            const { data, error } = await gbSupabase.signUp(email, password, {
-                full_name: name,
-                plan: 'free'
-            });
-            if (error) throw error;
-            
-            if (data.user) {
-                this.currentUser = data.user;
-                await this.loadMainApp();
-                this.showToast('Account created successfully!', 'success');
-            }
-        } catch (error) {
-            this.showToast(error.message, 'error');
-            this.showLoading(false);
-        }
-    }
+    // Show loading
+    window.showLoading();
     
-    async handleLogout() {
-        try {
-            const { error } = await gbSupabase.signOut();
-            if (error) throw error;
-            this.currentUser = null;
-            this.moduleCache.clear();
-            this.showScreen('login');
-            this.showToast('Logged out successfully', 'success');
-        } catch (error) {
-            this.showToast(error.message, 'error');
-        }
-    }
-    
-    toggleSidebar() {
-        this.sidebarCollapsed = !this.sidebarCollapsed;
+    try {
+        // Load module HTML
+        const response = await fetch(`${moduleName}.html`);
         
-        if (this.sidebarCollapsed) {
-            this.elements.sidebar.classList.add('collapsed');
-            document.querySelector('.main-content').classList.add('expanded');
-        } else {
-            this.elements.sidebar.classList.remove('collapsed');
-            document.querySelector('.main-content').classList.remove('expanded');
+        if (!response.ok) {
+            throw new Error(`Failed to load module: ${moduleName}`);
         }
         
-        // Update arrow icons
-        const arrowLeft = document.getElementById('arrowLeft');
-        const arrowRight = document.getElementById('arrowRight');
+        const html = await response.text();
         
-        if (this.sidebarCollapsed) {
-            // Sidebar is collapsed - show right arrow
-            if (arrowLeft) arrowLeft.style.display = 'none';
-            if (arrowRight) arrowRight.style.display = 'inline-block';
-        } else {
-            // Sidebar is expanded - show left arrow
-            if (arrowLeft) arrowLeft.style.display = 'inline-block';
-            if (arrowRight) arrowRight.style.display = 'none';
-        }
-    }
-    
-    async navigateToModule(module) {
-        this.currentModule = module;
+        // Update main content
+        document.getElementById('mainContent').innerHTML = html;
         
-        // Update active state
+        // Update active nav link
         document.querySelectorAll('.nav-link').forEach(link => {
             link.classList.remove('active');
-            if (link.getAttribute('data-module') === module) {
-                link.classList.add('active');
-            }
         });
         
-        try {
-            const response = await fetch(`${module}.html`);
-            if (!response.ok) throw new Error('Module not found');
-            
-            const html = await response.text();
-            
-            const tempDiv = document.createElement('div');
-            tempDiv.innerHTML = html;
-            
-            const scripts = Array.from(tempDiv.querySelectorAll('script'));
-            scripts.forEach(script => script.remove());
-            
-            const styles = Array.from(tempDiv.querySelectorAll('style'));
-            styles.forEach(style => {
-                const newStyle = document.createElement('style');
-                newStyle.textContent = style.textContent;
-                document.head.appendChild(newStyle);
-                style.remove();
-            });
-            
-            this.elements.contentArea.innerHTML = tempDiv.innerHTML;
-            
-            for (const script of scripts) {
-                await this.executeScript(script);
-            }
-            
-            this.initializeModule(module);
-            
-        } catch (error) {
-            console.error('Error loading module:', error);
-            this.elements.contentArea.innerHTML = `
-                <div class="alert alert-danger">
-                    <h4>Error loading module</h4>
-                    <p>${error.message}</p>
-                    <p class="mt-2">Make sure <strong>${module}.html</strong> exists in the root directory.</p>
-                </div>
-            `;
-        }
-    }
-    
-    executeScript(scriptElement) {
-        return new Promise((resolve, reject) => {
-            const newScript = document.createElement('script');
-            
-            Array.from(scriptElement.attributes).forEach(attr => {
-                newScript.setAttribute(attr.name, attr.value);
-            });
-            
-            if (scriptElement.src) {
-                newScript.onload = resolve;
-                newScript.onerror = reject;
-                newScript.src = scriptElement.src;
-                document.body.appendChild(newScript);
-            } else {
-                newScript.textContent = scriptElement.textContent;
-                document.body.appendChild(newScript);
-                document.body.removeChild(newScript);
-                resolve();
-            }
-        });
-    }
-    
-    initializeModule(module) {
-        const initializers = {
-            'dashboard': () => { if (typeof loadDashboardData === 'function') loadDashboardData(); },
-            'contacts': () => { if (typeof initContactsModule === 'function') initContactsModule(); },
-            'lists': () => { if (typeof initListsModule === 'function') initListsModule(); },
-            'templates': () => { if (typeof initTemplatesModule === 'function') initTemplatesModule(); },
-            'campaigns': () => { if (typeof initCampaignsModule === 'function') initCampaignsModule(); },
-            'automation': () => { if (typeof initAutomationModule === 'function') initAutomationModule(); },
-            'analytics': () => { if (typeof initAnalyticsModule === 'function') initAnalyticsModule(); },
-            'scoring': () => { if (typeof initScoringModule === 'function') initScoringModule(); },
-            'reports': () => { if (typeof initReportsModule === 'function') initReportsModule(); },
-            'settings': () => { if (typeof initSettingsModule === 'function') initSettingsModule(); }
-        };
-        
-        if (initializers[module]) {
-            initializers[module]();
-        }
-    }
-    
-    showScreen(screen) {
-        const screens = {
-            loading: this.elements.loadingScreen,
-            login: document.getElementById('loginScreen'),
-            signup: document.getElementById('signupScreen'),
-            main: this.elements.mainApp
-        };
-        
-        Object.values(screens).forEach(s => s?.classList.add('d-none'));
-        
-        if (screens[screen]) {
-            screens[screen].classList.remove('d-none');
-        }
-    }
-    
-    showLoading(show) {
-        if (show) {
-            this.elements.loadingScreen.classList.remove('d-none');
-        } else {
-            this.elements.loadingScreen.classList.add('d-none');
-        }
-    }
-    
-    async loadMainApp() {
-        this.showScreen('main');
-        this.showLoading(false);
-        this.updateUserInfo();
-        await this.navigateToModule('dashboard');
-    }
-    
-    updateUserInfo() {
-        if (this.currentUser) {
-            const name = this.currentUser.user_metadata?.full_name || 'User';
-            const email = this.currentUser.email;
-            const initial = name.charAt(0).toUpperCase();
-            
-            document.getElementById('userName').textContent = name;
-            document.getElementById('userEmail').textContent = email;
-            document.getElementById('userAvatar').textContent = initial;
-        }
-    }
-    
-    showToast(message, type = 'info') {
-        if (!this.toastContainer) {
-            this.toastContainer = document.createElement('div');
-            this.toastContainer.style.cssText = 'position: fixed; top: 20px; right: 20px; z-index: 10000;';
-            document.body.appendChild(this.toastContainer);
+        const activeLink = document.querySelector(`[onclick="loadModule('${moduleName}')"]`);
+        if (activeLink) {
+            activeLink.classList.add('active');
         }
         
-        const toast = document.createElement('div');
-        const typeClasses = {
-            'error': 'alert-danger',
-            'success': 'alert-success',
-            'warning': 'alert-warning',
-            'info': 'alert-info'
-        };
+        // Hide loading
+        window.hideLoading();
         
-        toast.className = `alert ${typeClasses[type] || 'alert-info'}`;
-        toast.style.cssText = 'min-width: 300px; padding: 15px 20px; margin-bottom: 10px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.15);';
-        toast.textContent = message;
-        
-        this.toastContainer.appendChild(toast);
-        
+        // Execute any scripts in the loaded module
         setTimeout(() => {
-            if (toast.parentNode === this.toastContainer) {
-                this.toastContainer.removeChild(toast);
+            const scripts = document.getElementById('mainContent').querySelectorAll('script');
+            scripts.forEach(script => {
+                try {
+                    const newScript = document.createElement('script');
+                    newScript.textContent = script.textContent;
+                    script.parentNode.replaceChild(newScript, script);
+                } catch (e) {
+                    console.error('Error executing script:', e);
+                }
+            });
+            
+            // Trigger module-specific initialization
+            if (moduleName === 'templates') {
+                window.loadTemplates && window.loadTemplates();
+            } else if (moduleName === 'campaigns') {
+                window.loadCampaigns && window.loadCampaigns();
+            } else if (moduleName === 'contacts') {
+                window.loadContacts && window.loadContacts();
+            } else if (moduleName === 'lists') {
+                window.loadLists && window.loadLists();
+            } else if (moduleName === 'settings') {
+                window.loadSettings && window.loadSettings();
             }
-        }, 3000);
+        }, 100);
+        
+    } catch (error) {
+        console.error('Error loading module:', error);
+        window.hideLoading();
+        
+        document.getElementById('mainContent').innerHTML = `
+            <div class="alert alert-danger">
+                <h4>Error loading module</h4>
+                <p>${error.message}</p>
+                <button class="btn btn-primary" onclick="loadModule('dashboard')">Go to Dashboard</button>
+            </div>
+        `;
     }
-}
+};
 
-const gbApp = new GBMailerApp();
+// Get current user
+window.getCurrentUser = async function() {
+    if (window.currentUser) {
+        return window.currentUser;
+    }
+    
+    try {
+        const { data: { user }, error } = await window.supabase.auth.getUser();
+        window.currentUser = user;
+        return user;
+    } catch (error) {
+        console.error('Error getting current user:', error);
+        return null;
+    }
+};
 
-window.gbApp = gbApp;
-window.navigateToModule = (module) => gbApp.navigateToModule(module);
-window.showToast = (message, type) => gbApp.showToast(message, type);
-window.handleLogout = () => gbApp.handleLogout();
+// Show loading
+window.showLoading = function() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.style.display = 'flex';
+    }
+};
+
+// Hide loading
+window.hideLoading = function() {
+    const overlay = document.getElementById('loadingOverlay');
+    if (overlay) {
+        overlay.style.display = 'none';
+    }
+};
+
+// Format date
+window.formatDate = function(dateString) {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+};
+
+// Show toast notification
+window.showToast = function(message, type = 'success') {
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type} position-fixed top-0 end-0 m-3`;
+    toast.style.zIndex = '9999';
+    toast.style.minWidth = '300px';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 3000);
+};
+
+// Export functions to window
+window.checkAuth = checkAuth;
+window.showLogin = showLogin;
+window.showSignup = showSignup;
