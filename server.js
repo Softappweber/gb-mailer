@@ -1,41 +1,27 @@
 const express = require('express');
 const cors = require('cors');
-const dotenv = require('dotenv');
-const { createClient } = require('@supabase/supabase-js');
-const multer = require('multer');
-const XLSX = require('xlsx');
-const { v4: uuidv4 } = require('uuid');
 const nodemailer = require('nodemailer');
-
-dotenv.config();
+const { createClient } = require('@supabase/supabase-js');
+require('dotenv').config();
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// ============================================
-// MIDDLEWARE
-// ============================================
-app.use(cors({
-    origin: process.env.FRONTEND_URL || '*',
-    credentials: true
-}));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Middleware
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
-// ============================================
-// SUPABASE CLIENT
-// ============================================
+// Supabase client
 const supabase = createClient(
     process.env.SUPABASE_URL,
-    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_ANON_KEY
+    process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// ============================================
-// EMAIL (BREVO SMTP)
-// ============================================
-const transporter = nodemailer.createTransport({
-    host: 'smtp-relay.sendinblue.com',
-    port: 587,
+// SMTP Transporter for Brevo
+const smtpTransporter = nodemailer.createTransport({
+    host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
+    port: parseInt(process.env.SMTP_PORT || '587'),
     secure: false,
     auth: {
         user: process.env.EMAIL_USER,
@@ -43,268 +29,227 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// ============================================
-// ROOT ROUTE
-// ============================================
-app.get('/', (req, res) => {
-    res.json({ status: 'GB Mailer Backend Running' });
+// Verify SMTP connection
+smtpTransporter.verify(function(error, success) {
+    if (error) {
+        console.log('SMTP connection error:', error);
+    } else {
+        console.log('SMTP server is ready to send emails');
+    }
 });
 
-// ============================================
-// HEALTH CHECK
-// ============================================
-app.get('/health', (req, res) => {
-    res.json({ status: 'ok', timestamp: new Date().toISOString() });
-});
-
-// ============================================
-// CONTACTS - GET ALL
-// ============================================
-app.get('/api/contacts', async (req, res) => {
+// Send single email endpoint
+app.post('/api/send-email', async (req, res) => {
     try {
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 50;
-        const search = req.query.search || '';
+        const { to_email, to_name, from_email, from_name, subject, message_html, reply_to } = req.body;
         
-        let query = supabase.from('contacts').select('*', { count: 'exact' });
-        
-        if (search) {
-            query = query.or(`first_name.ilike.%${search}%,last_name.ilike.%${search}%,email.ilike.%${search}%,company.ilike.%${search}%`);
+        if (!to_email || !subject || !message_html) {
+            return res.status(400).json({ error: 'Missing required fields' });
         }
         
-        const start = (page - 1) * limit;
-        const { data, count, error } = await query
-            .range(start, start + limit - 1)
-            .order('created_at', { ascending: false });
+        const mailOptions = {
+            from: `"${from_name || 'GB Mailer'}" <${from_email || process.env.EMAIL_FROM}>`,
+            to: to_email,
+            subject: subject,
+            html: message_html,
+            replyTo: reply_to || from_email || process.env.EMAIL_FROM
+        };
         
-        if (error) throw error;
+        const info = await smtpTransporter.sendMail(mailOptions);
         
-        res.json({
-            data: data || [],
-            total: count || 0,
-            page: page,
-            total_pages: count ? Math.ceil(count / limit) : 0
+        res.json({ 
+            success: true, 
+            messageId: info.messageId,
+            response: info.response 
         });
+        
     } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// ============================================
-// CONTACTS - PREVIEW FILE
-// ============================================
-const upload = multer({ storage: multer.memoryStorage() });
-
-app.post('/api/contacts/preview', upload.single('file'), async (req, res) => {
-    try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded' });
-        }
-        
-        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const data = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-        
-        res.json({
-            columns: Object.keys(data[0] || {}),
-            preview: data.slice(0, 3)
+        console.error('Error sending email:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
         });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
     }
 });
 
-// ============================================
-// CONTACTS - UPLOAD
-// ============================================
-app.post('/api/contacts/upload', upload.single('file'), async (req, res) => {
+// Bulk email sending endpoint
+app.post('/api/send-bulk-emails', async (req, res) => {
     try {
-        if (!req.file) {
-            return res.status(400).json({ error: 'No file uploaded' });
+        const { contacts, from_email, from_name, subject, message_html, reply_to } = req.body;
+        
+        if (!contacts || !Array.isArray(contacts) || contacts.length === 0) {
+            return res.status(400).json({ error: 'No contacts provided' });
         }
         
-        const mapping = JSON.parse(req.body.mapping || '{}');
-        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
-        
-        const contacts = [];
-        for (const row of rows) {
-            const contact = {
-                id: uuidv4(),
-                custom_fields: {},
-                created_at: new Date().toISOString(),
-                updated_at: new Date().toISOString()
-            };
-            
-            const fieldMap = {
-                'first_name': 'first_name',
-                'last_name': 'last_name',
-                'email': 'email',
-                'phone': 'phone',
-                'company': 'company',
-                'job_title': 'job_title'
-            };
-            
-            for (const [field, colName] of Object.entries(fieldMap)) {
-                if (mapping[colName] && row[mapping[colName]] !== undefined && row[mapping[colName]] !== '') {
-                    contact[field] = String(row[mapping[colName]]).trim();
-                }
-            }
-            
-            for (const col of Object.keys(row)) {
-                if (!Object.values(mapping).includes(col) && row[col] !== '' && row[col] !== undefined) {
-                    contact.custom_fields[col] = String(row[col]).trim();
-                }
-            }
-            
-            contacts.push(contact);
-        }
-        
-        if (contacts.length > 0) {
-            const { error } = await supabase.from('contacts').insert(contacts);
-            if (error) throw error;
-        }
-        
-        res.json({
-            success: true,
-            message: `Uploaded ${contacts.length} contacts`,
-            total: contacts.length
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// ============================================
-// CONTACTS - DELETE
-// ============================================
-app.delete('/api/contacts/:id', async (req, res) => {
-    try {
-        const { error } = await supabase
-            .from('contacts')
-            .delete()
-            .eq('id', req.params.id);
-        
-        if (error) throw error;
-        res.json({ success: true });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
-});
-
-// ============================================
-// EMAILS - SEND BULK
-// ============================================
-app.post('/api/emails/send-bulk', async (req, res) => {
-    try {
-        const { contact_ids, subject, body } = req.body;
-        
-        if (!contact_ids || contact_ids.length === 0) {
-            return res.status(400).json({ error: 'No contacts selected' });
-        }
-        
-        const { data: contacts, error } = await supabase
-            .from('contacts')
-            .select('*')
-            .in('id', contact_ids);
-        
-        if (error) throw error;
-        
-        if (!contacts || contacts.length === 0) {
-            return res.status(404).json({ error: 'No contacts found' });
-        }
-        
-        const results = { sent: [], failed: [] };
+        let sentCount = 0;
+        let failedCount = 0;
+        const errors = [];
         
         for (const contact of contacts) {
             try {
-                let personalizedBody = body;
-                const fullName = [contact.first_name, contact.last_name].filter(Boolean).join(' ');
+                const personalizedHtml = message_html
+                    .replace(/\{\{first_name\}\}/g, contact.first_name || '')
+                    .replace(/\{\{last_name\}\}/g, contact.last_name || '')
+                    .replace(/\{\{email\}\}/g, contact.email)
+                    .replace(/\{\{company\}\}/g, contact.company || '');
                 
-                const replacements = {
-                    '{{first_name}}': contact.first_name || '',
-                    '{{last_name}}': contact.last_name || '',
-                    '{{full_name}}': fullName,
-                    '{{email}}': contact.email || '',
-                    '{{phone}}': contact.phone || '',
-                    '{{company}}': contact.company || '',
-                    '{{job_title}}': contact.job_title || ''
+                const personalizedSubject = subject
+                    .replace(/\{\{first_name\}\}/g, contact.first_name || '')
+                    .replace(/\{\{company\}\}/g, contact.company || '');
+                
+                const mailOptions = {
+                    from: `"${from_name || 'GB Mailer'}" <${from_email || process.env.EMAIL_FROM}>`,
+                    to: contact.email,
+                    subject: personalizedSubject,
+                    html: personalizedHtml,
+                    replyTo: reply_to || from_email || process.env.EMAIL_FROM
                 };
                 
-                for (const [key, value] of Object.entries(replacements)) {
-                    personalizedBody = personalizedBody.replace(new RegExp(key, 'g'), value);
-                }
+                await smtpTransporter.sendMail(mailOptions);
+                sentCount++;
                 
-                await transporter.sendMail({
-                    from: process.env.EMAIL_FROM,
-                    to: contact.email,
-                    subject: subject,
-                    html: personalizedBody
-                });
+                // Small delay to prevent rate limiting
+                await new Promise(resolve => setTimeout(resolve, 100));
                 
-                results.sent.push(contact.id);
-                await new Promise(resolve => setTimeout(resolve, 250));
-            } catch (err) {
-                results.failed.push({
-                    id: contact.id,
-                    email: contact.email,
-                    error: err.message
-                });
+            } catch (error) {
+                console.error(`Failed to send to ${contact.email}:`, error);
+                failedCount++;
+                errors.push({ email: contact.email, error: error.message });
             }
         }
         
         res.json({
             success: true,
-            sent: results.sent.length,
-            failed: results.failed,
-            total: contacts.length
+            sentCount,
+            failedCount,
+            totalProcessed: contacts.length,
+            errors: errors.slice(0, 10) // Return first 10 errors
         });
+        
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Bulk email error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
     }
 });
 
-// ============================================
-// EMAILS - TEST
-// ============================================
-app.post('/api/emails/test', async (req, res) => {
+// Campaign creation endpoint
+app.post('/api/campaigns', async (req, res) => {
     try {
-        const { test_email } = req.body;
-        const to = test_email || process.env.EMAIL_FROM;
+        const { user_id, name, template_id, list_ids, provider, from_email, from_name, reply_to } = req.body;
         
-        await transporter.sendMail({
-            from: process.env.EMAIL_FROM,
-            to: to,
-            subject: '✅ SMTP Test - GB Mailer',
-            html: `
-                <h1 style="color:#28a745;">SMTP Configuration Working!</h1>
-                <p>Your Brevo SMTP is configured correctly.</p>
-                <hr>
-                <p style="color:#6c757d;font-size:12px;">Sent from GB Mailer</p>
-            `
-        });
+        const { data: campaign, error } = await supabase
+            .from('campaigns')
+            .insert({
+                user_id,
+                name,
+                template_id,
+                list_ids,
+                status: 'sending',
+                provider,
+                from_email,
+                from_name,
+                reply_to,
+                total_recipients: 0,
+                sent_count: 0,
+                created_at: new Date().toISOString()
+            })
+            .select()
+            .single();
         
-        res.json({
-            success: true,
-            message: `Test email sent to ${to}`
-        });
+        if (error) throw error;
+        
+        res.json({ success: true, campaign });
+        
     } catch (error) {
-        res.status(500).json({ error: error.message });
+        console.error('Campaign creation error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
     }
 });
 
-// ============================================
-// TEST ROUTE
-// ============================================
-app.get('/test', (req, res) => {
-    res.json({ message: 'Routes are working!' });
+// Get contacts by list IDs
+app.post('/api/get-contacts', async (req, res) => {
+    try {
+        const { listIds } = req.body;
+        
+        if (!listIds || !Array.isArray(listIds) || listIds.length === 0) {
+            return res.status(400).json({ error: 'No list IDs provided' });
+        }
+        
+        // Get contact IDs from list_contacts
+        const { data: listContacts, error: listError } = await supabase
+            .from('list_contacts')
+            .select('contact_id')
+            .in('list_id', listIds);
+        
+        if (listError) throw listError;
+        
+        const contactIds = [...new Set(listContacts.map(lc => lc.contact_id))];
+        
+        if (contactIds.length === 0) {
+            return res.json({ success: true, contacts: [] });
+        }
+        
+        // Get contact details
+        const { data: contacts, error: contactsError } = await supabase
+            .from('contacts')
+            .select('*')
+            .in('id', contactIds)
+            .eq('subscribed', true);
+        
+        if (contactsError) throw contactsError;
+        
+        res.json({ success: true, contacts: contacts || [] });
+        
+    } catch (error) {
+        console.error('Get contacts error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message 
+        });
+    }
 });
 
-// ============================================
-// START SERVER
-// ============================================
+// Health check endpoint
+app.get('/health', (req, res) => {
+    res.json({ 
+        status: 'healthy', 
+        timestamp: new Date().toISOString(),
+        service: 'GB Mailer Backend'
+    });
+});
+
+// Root endpoint
+app.get('/', (req, res) => {
+    res.json({ 
+        message: 'GB Mailer API',
+        version: '1.0.0',
+        endpoints: [
+            '/api/send-email',
+            '/api/send-bulk-emails',
+            '/api/campaigns',
+            '/api/get-contacts',
+            '/health'
+        ]
+    });
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    console.error('Unhandled error:', err);
+    res.status(500).json({ 
+        success: false, 
+        error: 'Internal server error' 
+    });
+});
+
+// Start server
 app.listen(PORT, () => {
-    console.log(`✅ GB Mailer Backend running on port ${PORT}`);
-    console.log(`📍 Supabase: ${process.env.SUPABASE_URL}`);
+    console.log(`GB Mailer backend running on port ${PORT}`);
+    console.log(`Health check: http://localhost:${PORT}/health`);
 });
