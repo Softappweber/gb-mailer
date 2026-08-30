@@ -1,0 +1,810 @@
+<div class="container">
+    <div class="header">
+        <h1><i class="fas fa-address-book"></i> Contacts</h1>
+        <div class="header-actions">
+            <a href="#" onclick="showOutbox(event)" class="btn btn-info" style="text-decoration:none; background: linear-gradient(135deg, #17a2b8, #117a8b); font-weight: bold;">
+                <i class="fas fa-inbox"></i> Sent/Outbox
+            </a>
+            <button class="btn btn-primary" onclick="showUploadModal()" style="background: linear-gradient(135deg, #0056b3, #003d80); font-weight: bold; padding: 12px 20px;">
+                <i class="fas fa-upload"></i> Upload
+            </button>
+            <button class="btn btn-success" onclick="showAddContactModal()" style="background: linear-gradient(135deg, #1e7e34, #145523); font-weight: bold; padding: 12px 20px;">
+                <i class="fas fa-user-plus"></i> Add Contact
+            </button>
+            <button class="btn btn-success" id="sendSelectedBtn" onclick="sendSelected()" disabled style="background: linear-gradient(135deg, #28a745, #1e7e34); font-weight: bold; padding: 12px 20px;">
+                <i class="fas fa-envelope"></i> Send Selected (<span id="selectedCount">0</span>)
+            </button>
+            <button class="btn btn-danger" onclick="resetAllLeads()" style="background: linear-gradient(135deg, #dc3545, #a71d2a); font-weight: bold; padding: 14px 24px; font-size: 16px; box-shadow: 0 4px 15px rgba(220,53,69,0.4);">
+                <i class="fas fa-exclamation-triangle"></i> Reset All Leads
+            </button>
+            <button class="btn btn-secondary" onclick="loadContacts()" style="background: linear-gradient(135deg, #495057, #343a40); font-weight: bold; padding: 12px 20px;">
+                <i class="fas fa-sync"></i> Refresh
+            </button>
+        </div>
+    </div>
+
+    <div class="search-bar">
+        <input id="searchInput" type="search" placeholder="Search by name, email, phone, or company..." onkeyup="searchContacts()">
+    </div>
+
+    <div class="controls-bar" style="display:flex; gap:10px; align-items:center; margin-bottom:10px;">
+        <label style="font-weight:bold;">Per Page:</label>
+        <select id="pageSizeSelect" onchange="changePageSize()" style="padding:8px;border-radius:5px;border:1px solid #ddd;">
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+            <option value="125">125</option>
+            <option value="150">150</option>
+        </select>
+        <span id="pageStatus" style="margin-left:10px;"></span>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th><input type="checkbox" id="selectAll"></th>
+                    <th>#</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Company</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="contactsBody">
+                <tr><td colspan="7" class="empty">Loading contacts...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="pagination" class="pagination"></div>
+</div>
+
+<!-- Add Contact Modal -->
+<div id="addContactModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('addContactModal')">&times;</span>
+        <h2><i class="fas fa-user-plus"></i> Add Contact</h2>
+        
+        <div class="form-group">
+            <label>First Name *</label>
+            <input id="addFirstName" type="text" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Last Name</label>
+            <input id="addLastName" type="text">
+        </div>
+        
+        <div class="form-group">
+            <label>Email *</label>
+            <input id="addEmail" type="email" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Phone</label>
+            <input id="addPhone" type="tel">
+        </div>
+        
+        <div class="form-group">
+            <label>Company</label>
+            <input id="addCompany" type="text">
+        </div>
+        
+        <div class="form-actions">
+            <button class="btn btn-success" onclick="saveNewContact()" style="background: linear-gradient(135deg, #1e7e34, #145523); font-weight: bold; padding: 12px 25px;">
+                <i class="fas fa-save"></i> Save Contact
+            </button>
+            <button class="btn btn-secondary" onclick="closeModal('addContactModal')" style="background: linear-gradient(135deg, #495057, #343a40); font-weight: bold;">
+                Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('uploadModal')">&times;</span>
+        <h2><i class="fas fa-file-import"></i> Import Contacts</h2>
+        <div id="step1">
+            <div class="upload-area">
+                <input id="fileInput" type="file" accept=".csv,.xlsx,.xls">
+                <button class="btn btn-primary" onclick="previewFile()" style="background: linear-gradient(135deg, #0056b3, #003d80); font-weight: bold;">Preview File</button>
+            </div>
+        </div>
+        <div id="step2" style="display:none">
+            <h3>Map Columns</h3>
+            <div id="columnMapping"></div>
+            <div class="mapping-actions">
+                <button class="btn btn-success" onclick="confirmMapping()" style="background: linear-gradient(135deg, #1e7e34, #145523); font-weight: bold;">Confirm Import</button>
+                <button class="btn btn-secondary" onclick="goBack()">Back</button>
+            </div>
+        </div>
+        <div id="step3" style="display:none">
+            <h3>Importing...</h3>
+            <div class="progress-bar"><div id="progressBar"></div></div>
+            <p id="importStatus"></p>
+        </div>
+    </div>
+</div>
+
+<!-- Email Modal (Bulk) -->
+<div id="emailModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('emailModal')">&times;</span>
+        <h2><i class="fas fa-paper-plane"></i> Send Email</h2>
+        <p>Recipients: <strong><span id="recipientCount">0</span></strong></p>
+        <input type="hidden" id="contactIds">
+        <div class="form-group">
+            <label>Subject *</label>
+            <input id="emailSubject" type="text" required>
+        </div>
+        <div class="form-group">
+            <label>Message *</label>
+            <textarea id="emailBody" rows="10" required></textarea>
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-success" onclick="sendEmails()" style="background: linear-gradient(135deg, #1e7e34, #145523); font-weight: bold; padding: 12px 25px;">Send</button>
+            <button class="btn btn-secondary" onclick="closeModal('emailModal')">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<!-- Single Email Modal -->
+<div id="singleEmailModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeModal('singleEmailModal')">&times;</span>
+        <h2><i class="fas fa-envelope"></i> Send Email to: <span id="singleEmailName"></span></h2>
+        <input type="hidden" id="singleContactId">
+        <div class="form-group">
+            <label>To: *</label>
+            <input id="singleEmailTo" type="email" readonly>
+        </div>
+        <div class="form-group">
+            <label>Subject *</label>
+            <input id="singleEmailSubject" type="text" required>
+        </div>
+        <div class="form-group">
+            <label>Message *</label>
+            <textarea id="singleEmailBody" rows="8" required></textarea>
+        </div>
+        <div class="form-actions">
+            <button class="btn btn-success" onclick="sendSingleEmail()" style="background: linear-gradient(135deg, #1e7e34, #145523); font-weight: bold; padding: 12px 25px;">Send</button>
+            <button class="btn btn-secondary" onclick="closeModal('singleEmailModal')">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f7fa; color: #333; }
+.container { max-width: 1400px; margin: auto; padding: 20px; }
+.header { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-bottom: 20px; padding: 20px; background: #fff; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,.1); flex-wrap: wrap; }
+.header h1 { white-space: nowrap; }
+.header-actions, .form-actions, .mapping-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.btn { padding: 10px 16px; border: 0; border-radius: 5px; cursor: pointer; color: white; font-size: 14px; text-decoration: none; display: inline-flex; align-items: center; gap: 5px; transition: all 0.3s; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.btn:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,0,0,0.25); }
+.btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+.btn-primary { background: linear-gradient(135deg, #0066cc, #004d99); }
+.btn-success { background: linear-gradient(135deg, #28a745, #1e7e34); }
+.btn-secondary { background: linear-gradient(135deg, #6c757d, #495057); }
+.btn-danger { background: linear-gradient(135deg, #dc3545, #a71d2a); box-shadow: 0 4px 15px rgba(220,53,69,0.4); }
+.btn-info { background: linear-gradient(135deg, #17a2b8, #117a8b); }
+.btn-sm { padding: 5px 9px; font-size: 12px; }
+.search-bar { margin-bottom: 12px; }
+.search-bar input { width: 100%; padding: 12px 16px; border: 1px solid #ddd; border-radius: 5px; font-size: 16px; }
+.table-container { overflow-x: auto; background: white; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,.1); }
+table { width: 100%; min-width: 800px; border-collapse: collapse; }
+th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #e3e3e3; }
+th { background: #f8f9fa; font-size: 13px; text-transform: uppercase; color: #555; }
+tr:hover { background: #f8f9fa; }
+.pagination { display: flex; justify-content: center; margin-top: 20px; }
+.pagination-controls { display: flex; gap: 5px; flex-wrap: wrap; }
+.pagination-controls button { padding: 8px 13px; border: 1px solid #ddd; border-radius: 5px; background: white; cursor: pointer; }
+.pagination-controls button.active { background: #007bff; border-color: #007bff; color: white; }
+.pagination-controls button:disabled { opacity: .5; cursor: not-allowed; }
+.modal { display: none; position: fixed; z-index: 1000; inset: 0; overflow-y: auto; padding: 20px; background: rgba(0,0,0,.55); }
+.modal-content { position: relative; width: 100%; max-width: 700px; margin: 30px auto; padding: 28px; background: white; border-radius: 10px; }
+.close { position: absolute; top: 10px; right: 18px; color: #999; font-size: 28px; cursor: pointer; }
+.close:hover { color: #222; }
+.upload-area { margin: 20px 0; padding: 30px 20px; text-align: center; border: 2px dashed #ccc; border-radius: 10px; }
+.form-group { margin: 15px 0; }
+.form-group label { display: block; margin-bottom: 6px; font-weight: bold; }
+.form-group input, .form-group textarea, .form-group select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+.form-group textarea { resize: vertical; }
+.mapping-table { width: 100%; margin: 20px 0; }
+.progress-bar { width: 100%; height: 28px; margin: 20px 0; border-radius: 15px; background: #eee; overflow: hidden; }
+#progressBar { width: 0; height: 100%; background: #28a745; transition: width .3s; }
+.empty { padding: 45px; text-align: center; }
+@media (max-width: 768px) { .header { flex-direction: column; align-items: stretch; } .header-actions .btn { flex: 1; } }
+</style>
+
+<script>
+(function() {
+    emailjs.init('0eRq16_I94xMRC97a');
+
+    let PAGE_SIZE = 10;
+    let contacts = [];
+    let filteredContacts = [];
+    let currentPage = 1;
+    let selectedIds = new Set();
+    let importedRows = [];
+    let importedHeaders = [];
+    let columnMap = {};
+
+    const $ = (id) => document.getElementById(id);
+
+    function initContactsModule() {
+        loadContacts();
+    }
+
+    async function loadContacts() {
+        try {
+            const { data, error } = await gbSupabase.client
+                .from('contacts')
+                .select('*')
+                .eq('user_id', gbApp.currentUser.id)
+                .order('created_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            contacts = data || [];
+            filteredContacts = [...contacts];
+            currentPage = 1;
+            renderContacts();
+        } catch (error) {
+            console.error(error);
+            $("contactsBody").innerHTML = '<tr><td colspan="7" class="empty">Error loading contacts</td></tr>';
+        }
+    }
+
+    function searchContacts() {
+        const query = $("searchInput").value.toLowerCase().trim();
+        filteredContacts = contacts.filter(contact =>
+            Object.values(contact).some(value => String(value ?? "").toLowerCase().includes(query))
+        );
+        currentPage = 1;
+        renderContacts();
+    }
+
+    function changePageSize() {
+        PAGE_SIZE = parseInt($("pageSizeSelect").value);
+        currentPage = 1;
+        renderContacts();
+    }
+
+    function renderContacts() {
+        const body = $("contactsBody");
+        
+        if (!filteredContacts.length) {
+            body.innerHTML = '<tr><td colspan="7" class="empty">No contacts found</td></tr>';
+            $("pagination").innerHTML = "";
+            updateSelectionDisplay();
+            return;
+        }
+
+        const totalPages = Math.ceil(filteredContacts.length / PAGE_SIZE);
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageContacts = filteredContacts.slice(start, start + PAGE_SIZE);
+
+        body.innerHTML = pageContacts.map((contact, index) => {
+            const id = String(contact.id || "");
+            const name = [contact.first_name, contact.last_name].filter(Boolean).join(" ") || contact.email;
+            return `
+                <tr>
+                    <td><input type="checkbox" class="contact-checkbox" value="${escapeHtml(id)}" ${selectedIds.has(id) ? "checked" : ""} onchange="toggleContact('${escapeHtml(id)}', this.checked)"></td>
+                    <td>${start + index + 1}</td>
+                    <td>${escapeHtml(name)}</td>
+                    <td>${escapeHtml(contact.email || "")}</td>
+                    <td>${escapeHtml(contact.phone || "")}</td>
+                    <td>${escapeHtml(contact.company || "")}</td>
+                    <td style="display:flex; gap:5px; flex-wrap:wrap;">
+                        <button class="btn btn-success btn-sm" onclick="showSingleEmailModal('${escapeHtml(id)}')" title="Send Email">
+                            <i class="fas fa-envelope"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteContact('${escapeHtml(id)}')" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join("");
+
+        renderPagination(totalPages);
+        updateSelectionDisplay();
+        updateSelectAllState();
+    }
+
+    function renderPagination(totalPages) {
+        if (totalPages <= 1) {
+            $("pagination").innerHTML = "";
+            return;
+        }
+
+        let html = '<div class="pagination-controls">';
+        html += `<button onclick="changePage(${currentPage - 1})" ${currentPage === 1 ? "disabled" : ""}>Previous</button>`;
+        
+        for (let page = 1; page <= totalPages; page++) {
+            if (page === 1 || page === totalPages || Math.abs(page - currentPage) <= 2) {
+                html += `<button class="${page === currentPage ? "active" : ""}" onclick="changePage(${page})">${page}</button>`;
+            }
+        }
+        
+        html += `<button onclick="changePage(${currentPage + 1})" ${currentPage === totalPages ? "disabled" : ""}>Next</button>`;
+        html += '</div>';
+        
+        $("pagination").innerHTML = html;
+    }
+
+    function changePage(page) {
+        const totalPages = Math.ceil(filteredContacts.length / PAGE_SIZE);
+        if (page < 1 || page > totalPages) return;
+        currentPage = page;
+        renderContacts();
+    }
+
+    function toggleContact(id, checked) {
+        if (checked) selectedIds.add(id);
+        else selectedIds.delete(id);
+        updateSelectionDisplay();
+        updateSelectAllState();
+    }
+
+    function toggleAll() {
+        const checked = $("selectAll").checked;
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageContacts = filteredContacts.slice(start, start + PAGE_SIZE);
+        
+        for (const contact of pageContacts) {
+            const id = String(contact.id || "");
+            if (checked) selectedIds.add(id);
+            else selectedIds.delete(id);
+        }
+        renderContacts();
+    }
+
+    function updateSelectionDisplay() {
+        $("selectedCount").textContent = selectedIds.size;
+        $("sendSelectedBtn").disabled = selectedIds.size === 0;
+    }
+
+    function updateSelectAllState() {
+        const start = (currentPage - 1) * PAGE_SIZE;
+        const pageContacts = filteredContacts.slice(start, start + PAGE_SIZE);
+        $("selectAll").checked = pageContacts.length > 0 && pageContacts.every(contact => selectedIds.has(String(contact.id)));
+    }
+
+    // Add Contact
+    function showAddContactModal() {
+        $("addFirstName").value = '';
+        $("addLastName").value = '';
+        $("addEmail").value = '';
+        $("addPhone").value = '';
+        $("addCompany").value = '';
+        $("addContactModal").style.display = "block";
+    }
+
+   async function saveNewContact() {
+    const firstName = $("addFirstName").value.trim();
+    const lastName = $("addLastName").value.trim();
+    const email = $("addEmail").value.trim().toLowerCase();
+    const phone = $("addPhone").value.trim();
+    const company = $("addCompany").value.trim();
+
+    if (!firstName || !email) {
+        alert('First Name and Email are required');
+        return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        alert('Invalid email');
+        return;
+    }
+
+    try {
+        // ✅ Check if email already exists
+        const { data: existing } = await gbSupabase.client
+            .from('contacts')
+            .select('id')
+            .eq('user_id', gbApp.currentUser.id)
+            .eq('email', email)
+            .single();
+
+        if (existing) {
+            alert('⚠️ This email already exists!');
+            return;
+        }
+
+        // Insert new contact
+        const { error } = await gbSupabase.insert('contacts', {
+            user_id: gbApp.currentUser.id,
+            first_name: firstName,
+            last_name: lastName,
+            email: email,
+            phone: phone,
+            company: company,
+            status: 'active'
+        });
+
+        if (error) throw error;
+
+        closeModal('addContactModal');
+        loadContacts();
+        alert('✅ Contact added successfully!');
+    } catch(e) {
+        alert('Error: ' + e.message);
+    }
+}
+
+    // Reset All Leads
+    async function resetAllLeads() {
+        if (!confirm('⚠️ WARNING: This will DELETE ALL contacts (CSV/XLSX data).\n\nThis action cannot be undone!\n\nAre you sure?')) return;
+        
+        if (!confirm('Final confirmation: Delete ALL contacts?')) return;
+
+        try {
+            const { error } = await gbSupabase.client
+                .from('contacts')
+                .delete()
+                .eq('user_id', gbApp.currentUser.id);
+
+            if (error) throw error;
+
+            contacts = [];
+            filteredContacts = [];
+            selectedIds.clear();
+            renderContacts();
+            alert('✅ All leads have been reset!');
+        } catch(e) {
+            alert('Error: ' + e.message);
+        }
+    }
+
+    // Single Email
+    function showSingleEmailModal(id) {
+        const contact = contacts.find(c => String(c.id) === String(id));
+        if (!contact) return;
+        
+        $("singleEmailName").textContent = [contact.first_name, contact.last_name].filter(Boolean).join(" ") || contact.email;
+        $("singleContactId").value = id;
+        $("singleEmailTo").value = contact.email || '';
+        $("singleEmailSubject").value = '';
+        $("singleEmailBody").value = '';
+        $("singleEmailModal").style.display = "block";
+    }
+
+    async function sendSingleEmail() {
+        const id = $("singleContactId").value;
+        const contact = contacts.find(c => String(c.id) === String(id));
+        const subject = $("singleEmailSubject").value.trim();
+        const body = $("singleEmailBody").value.trim();
+
+        if (!contact || !subject || !body) {
+            alert('Fill all fields');
+            return;
+        }
+
+        let msg = body;
+        msg = msg.replace(/\{\{first_name\}\}/g, contact.first_name || '');
+        msg = msg.replace(/\{\{last_name\}\}/g, contact.last_name || '');
+        msg = msg.replace(/\{\{company\}\}/g, contact.company || '');
+
+        try {
+            await emailjs.send('service_ogrqrgs', 'template_2dnmc2h', {
+                to_email: contact.email,
+                subject: subject,
+                message: msg
+            });
+            
+            await gbSupabase.insert('email_logs', {
+                user_id: gbApp.currentUser.id,
+                contact_id: contact.id,
+                email: contact.email,
+                subject: subject,
+                content: msg,
+                status: 'sent',
+                sent_at: new Date().toISOString()
+            });
+            
+            alert('Email sent!');
+            closeModal('singleEmailModal');
+        } catch(e) {
+            alert('Failed: ' + e.message);
+        }
+    }
+
+    // Bulk Email
+    function sendSelected() {
+        if (!selectedIds.size) {
+            alert("Select contacts first");
+            return;
+        }
+        $("recipientCount").textContent = selectedIds.size;
+        $("contactIds").value = JSON.stringify([...selectedIds]);
+        $("emailModal").style.display = "block";
+    }
+
+    async function sendEmails() {
+        const subject = $("emailSubject").value.trim();
+        const bodyHtml = $("emailBody").value.trim();
+        const contactIds = JSON.parse($("contactIds").value || "[]");
+
+        if (!subject || !bodyHtml || !contactIds.length) {
+            alert('Fill all fields');
+            return;
+        }
+
+        let sent = 0, failed = 0;
+
+        for (const id of contactIds) {
+            const contact = contacts.find(c => String(c.id) === String(id));
+            if (!contact) continue;
+            
+            let msg = bodyHtml;
+            msg = msg.replace(/\{\{first_name\}\}/g, contact.first_name || '');
+            msg = msg.replace(/\{\{last_name\}\}/g, contact.last_name || '');
+            msg = msg.replace(/\{\{company\}\}/g, contact.company || '');
+
+            try {
+                await emailjs.send('service_ogrqrgs', 'template_2dnmc2h', {
+                    to_email: contact.email,
+                    subject: subject,
+                    message: msg
+                });
+                
+                await gbSupabase.insert('email_logs', {
+                    user_id: gbApp.currentUser.id,
+                    contact_id: contact.id,
+                    email: contact.email,
+                    subject: subject,
+                    content: msg,
+                    status: 'sent',
+                    sent_at: new Date().toISOString()
+                });
+                sent++;
+            } catch(e) {
+                failed++;
+            }
+        }
+
+        alert(`Sent: ${sent}, Failed: ${failed}`);
+        closeModal('emailModal');
+        selectedIds.clear();
+        renderContacts();
+    }
+
+    // Outbox
+    async function showOutbox(event) {
+        if (event) event.preventDefault();
+        
+        try {
+            const { data, error } = await gbSupabase.client
+                .from('email_logs')
+                .select('*')
+                .eq('user_id', gbApp.currentUser.id)
+                .order('sent_at', { ascending: false })
+                .limit(100);
+            
+            if (error) throw error;
+            
+            const logs = data || [];
+            
+            if (!logs.length) {
+                alert('No sent emails found');
+                return;
+            }
+            
+            let outboxHTML = `
+                <div style="position:fixed;top:0;left:0;right:0;bottom:0;background:white;z-index:9999;overflow-y:auto;padding:20px;">
+                    <div style="max-width:1200px;margin:auto;">
+                        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+                            <h2><i class="fas fa-inbox"></i> Sent/Outbox</h2>
+                            <button class="btn btn-secondary" onclick="this.closest('div[style*=fixed]').remove()">Close</button>
+                        </div>
+                        <table style="width:100%;border-collapse:collapse;">
+                            <thead>
+                                <tr style="background:#f5f5f5;">
+                                    <th style="padding:12px;text-align:left;border-bottom:1px solid #ddd;">To</th>
+                                    <th style="padding:12px;text-align:left;border-bottom:1px solid #ddd;">Subject</th>
+                                    <th style="padding:12px;text-align:left;border-bottom:1px solid #ddd;">Sent At</th>
+                                    <th style="padding:12px;text-align:left;border-bottom:1px solid #ddd;">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${logs.map(log => `
+                                    <tr>
+                                        <td style="padding:12px;border-bottom:1px solid #eee;">${escapeHtml(log.email || '')}</td>
+                                        <td style="padding:12px;border-bottom:1px solid #eee;">${escapeHtml(log.subject || '')}</td>
+                                        <td style="padding:12px;border-bottom:1px solid #eee;">${log.sent_at ? new Date(log.sent_at).toLocaleString() : '-'}</td>
+                                        <td style="padding:12px;border-bottom:1px solid #eee;"><span style="color:green;">✓ ${escapeHtml(log.status || 'sent')}</span></td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+            
+            document.body.insertAdjacentHTML('beforeend', outboxHTML);
+            
+        } catch(e) {
+            alert('Error loading outbox: ' + e.message);
+        }
+    }
+
+    // Import functions
+    function showUploadModal() {
+        $("uploadModal").style.display = "block";
+        goBack();
+    }
+
+    function closeModal(id) {
+        $(id).style.display = "none";
+    }
+
+    window.addEventListener("click", event => {
+        if (event.target.classList.contains("modal")) {
+            event.target.style.display = "none";
+        }
+    });
+
+    function previewFile() {
+        const file = $("fileInput").files[0];
+        if (!file) { alert("Choose file first"); return; }
+        
+        const reader = new FileReader();
+        reader.onload = event => {
+            try {
+                const workbook = XLSX.read(event.target.result, { type: "array" });
+                const worksheet = workbook.Sheets[workbook.SheetNames[0]];
+                importedRows = XLSX.utils.sheet_to_json(worksheet, { defval: "", raw: false });
+                
+                if (!importedRows.length) { alert("No data"); return; }
+                
+                importedHeaders = Object.keys(importedRows[0]);
+                createColumnMapping();
+                $("step1").style.display = "none";
+                $("step2").style.display = "block";
+            } catch(e) { alert('File read error'); }
+        };
+        reader.readAsArrayBuffer(file);
+    }
+
+    function createColumnMapping() {
+        columnMap = {
+            email: importedHeaders.find(h => h.toLowerCase().includes('email')) || '',
+            first_name: importedHeaders.find(h => h.toLowerCase().includes('first') || h.toLowerCase().includes('name')) || '',
+            last_name: importedHeaders.find(h => h.toLowerCase().includes('last')) || '',
+            phone: importedHeaders.find(h => h.toLowerCase().includes('phone') || h.toLowerCase().includes('mobile')) || '',
+            company: importedHeaders.find(h => h.toLowerCase().includes('company') || h.toLowerCase().includes('org')) || ''
+        };
+
+        const fields = [
+            ['email', 'Email', true],
+            ['first_name', 'First name', false],
+            ['last_name', 'Last name', false],
+            ['phone', 'Phone', false],
+            ['company', 'Company', false]
+        ];
+
+        $("columnMapping").innerHTML = `
+            <table class="mapping-table">
+                <thead><tr><th>Contact field</th><th>File column</th></tr></thead>
+                <tbody>
+                    ${fields.map(([field, label, required]) => `
+                        <tr>
+                            <td>${label}${required ? ' *' : ''}</td>
+                            <td>
+                                <select data-field="${field}">
+                                    <option value="">Do not import</option>
+                                    ${importedHeaders.map(h => `<option value="${escapeHtml(h)}" ${columnMap[field] === h ? 'selected' : ''}>${escapeHtml(h)}</option>`).join('')}
+                                </select>
+                            </td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+            <p>${importedRows.length} rows detected.</p>
+        `;
+    }
+
+    async function confirmMapping() {
+        document.querySelectorAll("#columnMapping select").forEach(select => {
+            columnMap[select.dataset.field] = select.value;
+        });
+
+        if (!columnMap.email) { alert("Email column required"); return; }
+
+        const validContacts = importedRows.filter(row => {
+            const email = String(row[columnMap.email] || '').trim().toLowerCase();
+            return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        }).map(row => ({
+            email: String(row[columnMap.email]).trim().toLowerCase(),
+            first_name: columnMap.first_name ? String(row[columnMap.first_name] || '').trim() : '',
+            last_name: columnMap.last_name ? String(row[columnMap.last_name] || '').trim() : '',
+            phone: columnMap.phone ? String(row[columnMap.phone] || '').trim() : '',
+            company: columnMap.company ? String(row[columnMap.company] || '').trim() : '',
+            user_id: gbApp.currentUser.id,
+            status: 'active'
+        }));
+
+        const unique = [...new Map(validContacts.map(c => [c.email, c])).values()];
+
+        if (!unique.length) { alert("No valid emails"); return; }
+
+        $("step2").style.display = "none";
+        $("step3").style.display = "block";
+        $("progressBar").style.width = "50%";
+        $("importStatus").textContent = `Importing ${unique.length} contacts...`;
+
+        try {
+            await gbSupabase.client.from('contacts').upsert(unique, { onConflict: 'user_id,email', ignoreDuplicates: true });
+            $("progressBar").style.width = "100%";
+            $("importStatus").textContent = `Complete! ${unique.length} imported.`;
+            setTimeout(() => { closeModal('uploadModal'); loadContacts(); }, 1000);
+        } catch(e) {
+            $("importStatus").textContent = `Failed: ${e.message}`;
+        }
+    }
+
+    function goBack() {
+        $("step1").style.display = "block";
+        $("step2").style.display = "none";
+        $("step3").style.display = "none";
+        $("progressBar").style.width = "0%";
+        $("fileInput").value = "";
+        importedRows = [];
+        importedHeaders = [];
+        columnMap = {};
+    }
+
+    async function deleteContact(id) {
+        if (!confirm("Delete this contact?")) return;
+        try {
+            await gbSupabase.delete('contacts', { id });
+            selectedIds.delete(id);
+            await loadContacts();
+        } catch(e) { alert(e.message); }
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#039;");
+    }
+
+    // Expose
+    window.initContactsModule = initContactsModule;
+    window.loadContacts = loadContacts;
+    window.searchContacts = searchContacts;
+    window.changePageSize = changePageSize;
+    window.changePage = changePage;
+    window.toggleContact = toggleContact;
+    window.toggleAll = toggleAll;
+    window.showUploadModal = showUploadModal;
+    window.closeModal = closeModal;
+    window.previewFile = previewFile;
+    window.confirmMapping = confirmMapping;
+    window.goBack = goBack;
+    window.deleteContact = deleteContact;
+    window.sendSelected = sendSelected;
+    window.sendEmails = sendEmails;
+    window.showSingleEmailModal = showSingleEmailModal;
+    window.sendSingleEmail = sendSingleEmail;
+    window.showOutbox = showOutbox;
+    window.showAddContactModal = showAddContactModal;
+    window.saveNewContact = saveNewContact;
+    window.resetAllLeads = resetAllLeads;
+
+    // Auto-init
+    setTimeout(() => {
+        initContactsModule();
+    }, 500);
+})();
+</script>

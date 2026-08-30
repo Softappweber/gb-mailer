@@ -1,0 +1,1152 @@
+<div class="module-container">
+    <!-- Header -->
+    <div class="module-header">
+        <div>
+            <h2 class="module-title">Campaigns</h2>
+            <p class="text-muted mb-0" id="campaignCount">0 campaigns</p>
+        </div>
+        <div>
+            <button class="btn learn-btn me-2" onclick="showCampaignsGuide()">
+                <i class="bi bi-book"></i> Learn Campaigns
+            </button>
+            <button class="btn btn-primary" onclick="showCreateCampaignModal()">
+                <i class="bi bi-send-plus"></i> Create Campaign
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Tips Banner -->
+    <div class="alert alert-info alert-dismissible fade show" role="alert">
+        <i class="bi bi-lightbulb"></i>
+        <strong>Pro Tip:</strong> Campaigns with personalized subject lines have 26% higher open rates. Use variables like <code>{{first_name}}</code> to personalize!
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+
+    <!-- Campaign Stats Overview -->
+    <div class="row mb-4" id="campaignStats">
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-0">Total Campaigns</h6>
+                            <h3 class="mb-0" id="totalCampaigns">0</h3>
+                        </div>
+                        <i class="bi bi-send" style="font-size: 2rem; color: #667eea;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-0">Avg Open Rate</h6>
+                            <h3 class="mb-0" id="avgOpenRate">0%</h3>
+                        </div>
+                        <i class="bi bi-envelope-open" style="font-size: 2rem; color: #28a745;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-0">Avg Click Rate</h6>
+                            <h3 class="mb-0" id="avgClickRate">0%</h3>
+                        </div>
+                        <i class="bi bi-hand-index" style="font-size: 2rem; color: #17a2b8;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card stat-card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-0">Total Recipients</h6>
+                            <h3 class="mb-0" id="totalRecipients">0</h3>
+                        </div>
+                        <i class="bi bi-people" style="font-size: 2rem; color: #ffc107;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaign Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" id="campaignSearch" placeholder="Search campaigns..." onkeyup="filterCampaigns()">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="campaignStatusFilter" onchange="filterCampaigns()">
+                        <option value="all">All Status</option>
+                        <option value="draft">Draft</option>
+                        <option value="scheduled">Scheduled</option>
+                        <option value="sending">Sending</option>
+                        <option value="sent">Sent</option>
+                        <option value="paused">Paused</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="campaignTypeFilter" onchange="filterCampaigns()">
+                        <option value="all">All Types</option>
+                        <option value="regular">Regular</option>
+                        <option value="ab_test">A/B Test</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaigns Grid -->
+    <div class="row" id="campaignsContainer">
+        <div class="col-12 text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Learning Guide Modal -->
+<div class="modal fade" id="campaignsGuideModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header learn-header border-0">
+                <h5 class="modal-title text-white">
+                    <i class="bi bi-book"></i> Campaign Management Guide
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-primary">
+                            <div class="card-body">
+                                <h6 class="text-primary"><i class="bi bi-1-circle"></i> What are Campaigns?</h6>
+                                <p class="small">Campaigns are bulk email sends to targeted lists. They allow you to schedule, track, and analyze your email marketing efforts.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-success">
+                            <div class="card-body">
+                                <h6 class="text-success"><i class="bi bi-2-circle"></i> A/B Testing</h6>
+                                <p class="small">Test two versions of your email to see which performs better. The system automatically sends the winner to more recipients.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-warning">
+                            <div class="card-body">
+                                <h6 class="text-warning"><i class="bi bi-3-circle"></i> Best Practices</h6>
+                                <ul class="small mb-0">
+                                    <li>Schedule for optimal times</li>
+                                    <li>Segment your audience</li>
+                                    <li>Monitor open/click rates</li>
+                                    <li>Clean bounced emails</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div class="card h-100 border-info">
+                            <div class="card-body">
+                                <h6 class="text-info"><i class="bi bi-4-circle"></i> Key Metrics</h6>
+                                <ul class="small mb-0">
+                                    <li><strong>Open Rate</strong> - % who opened</li>
+                                    <li><strong>Click Rate</strong> - % who clicked links</li>
+                                    <li><strong>Bounce Rate</strong> - % undelivered</li>
+                                    <li><strong>Unsubscribe</strong> - % opted out</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="alert alert-success mt-3 mb-0">
+                    <i class="bi bi-graph-up"></i>
+                    <strong>Marketing Tip:</strong> Segmented campaigns see <strong>760% increase in revenue</strong> compared to non-segmented campaigns!
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Create Campaign Modal -->
+<div class="modal fade" id="campaignModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="campaignModalTitle">Create Campaign</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Campaign Wizard Steps -->
+                <div class="campaign-wizard">
+                    <div class="wizard-steps mb-4">
+                        <div class="wizard-step active" id="step1Indicator">
+                            <div class="step-circle">1</div>
+                            <span>Basic Info</span>
+                        </div>
+                        <div class="wizard-line"></div>
+                        <div class="wizard-step" id="step2Indicator">
+                            <div class="step-circle">2</div>
+                            <span>Audience</span>
+                        </div>
+                        <div class="wizard-line"></div>
+                        <div class="wizard-step" id="step3Indicator">
+                            <div class="step-circle">3</div>
+                            <span>Content</span>
+                        </div>
+                        <div class="wizard-line"></div>
+                        <div class="wizard-step" id="step4Indicator">
+                            <div class="step-circle">4</div>
+                            <span>Schedule</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 1: Basic Info -->
+                    <div class="wizard-content" id="step1Content">
+                        <div class="mb-3">
+                            <label class="form-label">Campaign Name *</label>
+                            <input type="text" class="form-control" id="campaignName" placeholder="e.g., Spring Sale Newsletter">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Campaign Type</label>
+                            <select class="form-select" id="campaignType" onchange="toggleABTestFields()">
+                                <option value="regular">Regular Campaign</option>
+                                <option value="ab_test">A/B Test Campaign</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Audience -->
+                    <div class="wizard-content d-none" id="step2Content">
+                        <div class="mb-3">
+                            <label class="form-label">Select Contact List *</label>
+                            <select class="form-select" id="campaignList">
+                                <option value="">Select a list...</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Or Filter Contacts</label>
+                            <input type="text" class="form-control" id="campaignFilter" placeholder="e.g., company=Google">
+                            <small class="text-muted">Leave empty to send to entire list</small>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <span id="selectedAudienceInfo">No audience selected yet</span>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Content -->
+                    <div class="wizard-content d-none" id="step3Content">
+                        <div class="mb-3">
+                            <label class="form-label">Subject Line *</label>
+                            <input type="text" class="form-control" id="campaignSubject" placeholder="Enter subject line">
+                        </div>
+                        <div id="abTestSubject" class="d-none">
+                            <div class="mb-3">
+                                <label class="form-label">Subject Line B *</label>
+                                <input type="text" class="form-control" id="campaignSubjectB" placeholder="Enter alternative subject">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Preheader Text</label>
+                            <input type="text" class="form-control" id="campaignPreheader" placeholder="Preview text shown in inbox">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Select Template (Optional)</label>
+                            <select class="form-select" id="campaignTemplate" onchange="loadTemplateContent()">
+                                <option value="">Use custom content below</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Email Content *</label>
+                            <textarea class="form-control" id="campaignContent" rows="10" placeholder="Write your email content..."></textarea>
+                        </div>
+                        <div id="abTestContent" class="d-none">
+                            <div class="mb-3">
+                                <label class="form-label">Email Content B *</label>
+                                <textarea class="form-control" id="campaignContentB" rows="10" placeholder="Write alternative content..."></textarea>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Variables (click to insert)</label>
+                            <div class="d-flex flex-wrap gap-2">
+                                <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertCampaignVariable('{{first_name}}')">&#123;&#123;first_name&#125;&#125;</span>
+                                <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertCampaignVariable('{{last_name}}')">&#123;&#123;last_name&#125;&#125;</span>
+                                <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertCampaignVariable('{{email}}')">&#123;&#123;email&#125;&#125;</span>
+                                <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertCampaignVariable('{{company}}')">&#123;&#123;company&#125;&#125;</span>
+                                <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertCampaignVariable('{{unsubscribe_link}}')">&#123;&#123;unsubscribe_link&#125;&#125;</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: Schedule -->
+                    <div class="wizard-content d-none" id="step4Content">
+                        <div class="mb-3">
+                            <label class="form-label">Send Timing</label>
+                            <select class="form-select" id="campaignScheduleType" onchange="toggleScheduleOptions()">
+                                <option value="now">Send Immediately</option>
+                                <option value="later">Schedule for Later</option>
+                            </select>
+                        </div>
+                        <div id="scheduleOptions" class="d-none">
+                            <div class="mb-3">
+                                <label class="form-label">Send Date & Time *</label>
+                                <input type="datetime-local" class="form-control" id="campaignScheduleDate">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Timezone</label>
+                                <select class="form-select" id="campaignTimezone">
+                                    <option value="local">Recipient's Local Time</option>
+                                    <option value="utc">UTC</option>
+                                    <option value="est">EST</option>
+                                    <option value="pst">PST</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="alert alert-warning">
+                            <i class="bi bi-exclamation-triangle"></i>
+                            <strong>Please review before sending:</strong>
+                            <ul class="small mb-0 mt-2" id="campaignSummary"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" id="prevStep" onclick="changeStep(-1)" disabled>
+                    <i class="bi bi-arrow-left"></i> Previous
+                </button>
+                <button type="button" class="btn btn-primary" id="nextStep" onclick="changeStep(1)">
+                    Next <i class="bi bi-arrow-right"></i>
+                </button>
+                <button type="button" class="btn btn-success d-none" id="createCampaignBtn" onclick="createCampaign()">
+                    <i class="bi bi-check-lg"></i> Create Campaign
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Campaign Analytics Modal -->
+<div class="modal fade" id="campaignAnalyticsModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="analyticsModalTitle">Campaign Analytics</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Analytics Content -->
+                <div class="row mb-4">
+                    <div class="col-md-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <h3 id="analyticsSent">0</h3>
+                                <p class="mb-0">Sent</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <h3 id="analyticsOpened">0</h3>
+                                <p class="mb-0">Opened</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <h3 id="analyticsClicked">0</h3>
+                                <p class="mb-0">Clicked</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <h3 id="analyticsBounced">0</h3>
+                                <p class="mb-0">Bounced</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Click Map -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-map"></i> Click Heat Map</h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="clickHeatMap" class="text-center">
+                            <p class="text-muted">No click data available</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Recipients Table -->
+                <div class="card">
+                    <div class="card-header">
+                        <h6 class="mb-0"><i class="bi bi-people"></i> Recipients</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Email</th>
+                                        <th>Status</th>
+                                        <th>Opened</th>
+                                        <th>Clicked</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="analyticsRecipients"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline-secondary" onclick="exportCampaignReport('csv')">
+                    <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
+                </button>
+                <button class="btn btn-outline-secondary" onclick="exportCampaignReport('pdf')">
+                    <i class="bi bi-file-earmark-pdf"></i> Export PDF
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.stat-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: transform 0.3s;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.learn-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: calc(0.3rem - 1px) calc(0.3rem - 1px) 0 0;
+}
+
+.learn-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: all 0.3s;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.learn-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+    color: white;
+    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
+}
+
+/* Campaign Card */
+.campaign-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
+.campaign-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.campaign-status {
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-draft {
+    background: #e9ecef;
+    color: #6c757d;
+}
+
+.status-scheduled {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-sending {
+    background: #cce5ff;
+    color: #004085;
+}
+
+.status-sent {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-paused {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+/* Wizard */
+.wizard-steps {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.wizard-step {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.step-circle {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 5px;
+    transition: all 0.3s;
+}
+
+.wizard-step.active .step-circle {
+    background: #667eea;
+    color: white;
+}
+
+.wizard-step.completed .step-circle {
+    background: #28a745;
+    color: white;
+}
+
+.wizard-line {
+    flex: 1;
+    height: 2px;
+    background: #e9ecef;
+    margin: 0 10px;
+    margin-bottom: 20px;
+}
+
+.wizard-line.completed {
+    background: #28a745;
+}
+</style>
+
+<script>
+let campaignsState = {
+    campaigns: [],
+    currentCampaignId: null,
+    currentStep: 1,
+    templates: [],
+    lists: []
+};
+
+function initCampaignsModule() {
+    loadCampaigns();
+    loadTemplates();
+    loadLists();
+}
+
+async function loadCampaigns() {
+    try {
+        const { data, error } = await gbSupabase.client
+            .from('campaigns')
+            .select('*')
+            .eq('user_id', gbApp.currentUser.id)
+            .order('created_at', { ascending: false });
+        
+        if (error) throw error;
+        
+        campaignsState.campaigns = data || [];
+        updateCampaignStats();
+        renderCampaigns();
+        
+    } catch (error) {
+        console.error('Error loading campaigns:', error);
+        showToast('Error loading campaigns: ' + error.message, 'error');
+    }
+}
+
+async function loadTemplates() {
+    try {
+        const { data, error } = await gbSupabase.client
+            .from('email_templates')
+            .select('*')
+            .eq('user_id', gbApp.currentUser.id);
+        
+        if (!error) {
+            campaignsState.templates = data || [];
+            const select = document.getElementById('campaignTemplate');
+            select.innerHTML = '<option value="">Use custom content below</option>' +
+                campaignsState.templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+        }
+    } catch (error) {
+        console.error('Error loading templates:', error);
+    }
+}
+
+async function loadLists() {
+    try {
+        const { data, error } = await gbSupabase.client
+            .from('lists')
+            .select('*')
+            .eq('user_id', gbApp.currentUser.id);
+        
+        if (!error) {
+            campaignsState.lists = data || [];
+            const select = document.getElementById('campaignList');
+            select.innerHTML = '<option value="">Select a list...</option>' +
+                campaignsState.lists.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+        }
+    } catch (error) {
+        console.error('Error loading lists:', error);
+    }
+}
+
+function updateCampaignStats() {
+    const campaigns = campaignsState.campaigns;
+    document.getElementById('totalCampaigns').textContent = campaigns.length;
+    
+    const sentCampaigns = campaigns.filter(c => c.status === 'sent');
+    const totalOpens = sentCampaigns.reduce((sum, c) => sum + (c.opens_count || 0), 0);
+    const totalClicks = sentCampaigns.reduce((sum, c) => sum + (c.clicks_count || 0), 0);
+    const totalSent = sentCampaigns.reduce((sum, c) => sum + (c.recipients_count || 0), 0);
+    const totalBounced = sentCampaigns.reduce((sum, c) => sum + (c.bounces_count || 0), 0);
+    
+    document.getElementById('avgOpenRate').textContent = totalSent > 0 ? 
+        `${((totalOpens / totalSent) * 100).toFixed(1)}%` : '0%';
+    document.getElementById('avgClickRate').textContent = totalSent > 0 ? 
+        `${((totalClicks / totalSent) * 100).toFixed(1)}%` : '0%';
+    document.getElementById('totalRecipients').textContent = totalSent;
+    
+    document.getElementById('campaignCount').textContent = `${campaigns.length} campaigns`;
+}
+
+function renderCampaigns(campaigns = null) {
+    const data = campaigns || campaignsState.campaigns;
+    const container = document.getElementById('campaignsContainer');
+    
+    if (data.length === 0) {
+        container.innerHTML = `
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-body text-center py-5">
+                        <i class="bi bi-send" style="font-size: 4rem; color: #ccc;"></i>
+                        <h5 class="mt-3">No Campaigns Yet</h5>
+                        <p class="text-muted">Create your first campaign to start reaching your audience</p>
+                        <button class="btn btn-primary" onclick="showCreateCampaignModal()">
+                            <i class="bi bi-send-plus"></i> Create Your First Campaign
+                        </button>
+                        <br><br>
+                        <button class="btn learn-btn" onclick="showCampaignsGuide()">
+                            <i class="bi bi-book"></i> Learn how campaigns work
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = data.map(campaign => {
+        const statusClass = `status-${campaign.status}`;
+        const openRate = campaign.recipients_count > 0 ? 
+            ((campaign.opens_count / campaign.recipients_count) * 100).toFixed(1) : '0.0';
+        const clickRate = campaign.recipients_count > 0 ? 
+            ((campaign.clicks_count / campaign.recipients_count) * 100).toFixed(1) : '0.0';
+        
+        return `
+            <div class="col-md-4 mb-3">
+                <div class="card campaign-card h-100" onclick="viewCampaignAnalytics('${campaign.id}')">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <div>
+                                <h6 class="mb-1">${campaign.name}</h6>
+                                <span class="campaign-status ${statusClass}">${campaign.status}</span>
+                            </div>
+                            <div class="dropdown" onclick="event.stopPropagation();">
+                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
+                                    <i class="bi bi-three-dots-vertical"></i>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end">
+                                    <li><a class="dropdown-item" href="#" onclick="viewCampaignAnalytics('${campaign.id}')">
+                                        <i class="bi bi-graph-up"></i> Analytics
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="pauseCampaign('${campaign.id}')">
+                                        <i class="bi bi-pause"></i> Pause
+                                    </a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteCampaign('${campaign.id}')">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </a></li>
+                                </ul>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-2">
+                            <strong>Subject:</strong> ${campaign.subject}
+                        </div>
+                        
+                        <div class="row text-center mb-3">
+                            <div class="col-4">
+                                <h6 class="mb-0">${campaign.recipients_count || 0}</h6>
+                                <small class="text-muted">Sent</small>
+                            </div>
+                            <div class="col-4">
+                                <h6 class="mb-0 text-success">${openRate}%</h6>
+                                <small class="text-muted">Opens</small>
+                            </div>
+                            <div class="col-4">
+                                <h6 class="mb-0 text-info">${clickRate}%</h6>
+                                <small class="text-muted">Clicks</small>
+                            </div>
+                        </div>
+                        
+                        <div class="progress mb-3" style="height: 8px;">
+                            <div class="progress-bar bg-success" style="width: ${openRate}%"></div>
+                            <div class="progress-bar bg-info" style="width: ${clickRate}%"></div>
+                        </div>
+                        
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">
+                                ${campaign.scheduled_for ? 'Scheduled: ' + GBUtils.formatDate(campaign.scheduled_for, 'date') : GBUtils.formatDate(campaign.created_at, 'relative')}
+                            </small>
+                            <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); viewCampaignAnalytics('${campaign.id}')">
+                                View
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+function filterCampaigns() {
+    const search = document.getElementById('campaignSearch').value.toLowerCase();
+    const statusFilter = document.getElementById('campaignStatusFilter').value;
+    const typeFilter = document.getElementById('campaignTypeFilter').value;
+    
+    let filtered = campaignsState.campaigns.filter(campaign => {
+        const matchesSearch = campaign.name.toLowerCase().includes(search) || 
+                            campaign.subject.toLowerCase().includes(search);
+        const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter;
+        const matchesType = typeFilter === 'all' || campaign.type === typeFilter;
+        
+        return matchesSearch && matchesStatus && matchesType;
+    });
+    
+    renderCampaigns(filtered);
+}
+
+function resetFilters() {
+    document.getElementById('campaignSearch').value = '';
+    document.getElementById('campaignStatusFilter').value = 'all';
+    document.getElementById('campaignTypeFilter').value = 'all';
+    renderCampaigns();
+}
+
+function showCampaignsGuide() {
+    const modal = new bootstrap.Modal(document.getElementById('campaignsGuideModal'));
+    modal.show();
+}
+
+function showCreateCampaignModal() {
+    document.getElementById('campaignModalTitle').textContent = 'Create Campaign';
+    document.getElementById('campaignName').value = '';
+    document.getElementById('campaignType').value = 'regular';
+    document.getElementById('campaignSubject').value = '';
+    document.getElementById('campaignSubjectB').value = '';
+    document.getElementById('campaignPreheader').value = '';
+    document.getElementById('campaignContent').value = '';
+    document.getElementById('campaignContentB').value = '';
+    document.getElementById('campaignScheduleType').value = 'now';
+    document.getElementById('campaignScheduleDate').value = '';
+    
+    campaignsState.currentStep = 1;
+    updateWizard();
+    toggleABTestFields();
+    toggleScheduleOptions();
+    
+    const modal = new bootstrap.Modal(document.getElementById('campaignModal'));
+    modal.show();
+}
+
+function toggleABTestFields() {
+    const type = document.getElementById('campaignType').value;
+    document.getElementById('abTestSubject').classList.toggle('d-none', type !== 'ab_test');
+    document.getElementById('abTestContent').classList.toggle('d-none', type !== 'ab_test');
+}
+
+function toggleScheduleOptions() {
+    const type = document.getElementById('campaignScheduleType').value;
+    document.getElementById('scheduleOptions').classList.toggle('d-none', type !== 'later');
+}
+
+function changeStep(delta) {
+    const newStep = campaignsState.currentStep + delta;
+    if (newStep < 1 || newStep > 4) return;
+    
+    // Validate current step
+    if (delta > 0 && !validateStep(campaignsState.currentStep)) {
+        return;
+    }
+    
+    campaignsState.currentStep = newStep;
+    updateWizard();
+    updateSummary();
+}
+
+function validateStep(step) {
+    if (step === 1) {
+        const name = document.getElementById('campaignName').value.trim();
+        if (!name) {
+            showToast('Please enter a campaign name', 'error');
+            return false;
+        }
+    } else if (step === 2) {
+        const list = document.getElementById('campaignList').value;
+        if (!list) {
+            showToast('Please select a contact list', 'error');
+            return false;
+        }
+    } else if (step === 3) {
+        const subject = document.getElementById('campaignSubject').value.trim();
+        const content = document.getElementById('campaignContent').value.trim();
+        if (!subject || !content) {
+            showToast('Please enter subject and content', 'error');
+            return false;
+        }
+    }
+    return true;
+}
+
+function updateWizard() {
+    for (let i = 1; i <= 4; i++) {
+        const content = document.getElementById(`step${i}Content`);
+        const indicator = document.getElementById(`step${i}Indicator`);
+        
+        if (i === campaignsState.currentStep) {
+            content.classList.remove('d-none');
+            indicator.classList.add('active');
+            indicator.classList.remove('completed');
+        } else {
+            content.classList.add('d-none');
+            if (i < campaignsState.currentStep) {
+                indicator.classList.add('completed');
+                indicator.classList.remove('active');
+            } else {
+                indicator.classList.remove('active', 'completed');
+            }
+        }
+    }
+    
+    // Update wizard lines
+    document.querySelectorAll('.wizard-line').forEach((line, index) => {
+        if (index + 1 < campaignsState.currentStep) {
+            line.classList.add('completed');
+        } else {
+            line.classList.remove('completed');
+        }
+    });
+    
+    // Update buttons
+    document.getElementById('prevStep').disabled = campaignsState.currentStep === 1;
+    document.getElementById('nextStep').classList.toggle('d-none', campaignsState.currentStep === 4);
+    document.getElementById('createCampaignBtn').classList.toggle('d-none', campaignsState.currentStep !== 4);
+}
+
+function updateSummary() {
+    const summary = document.getElementById('campaignSummary');
+    const name = document.getElementById('campaignName').value;
+    const listId = document.getElementById('campaignList').value;
+    const list = campaignsState.lists.find(l => l.id === listId);
+    const subject = document.getElementById('campaignSubject').value;
+    const scheduleType = document.getElementById('campaignScheduleType').value;
+    const scheduleDate = document.getElementById('campaignScheduleDate').value;
+    
+    summary.innerHTML = `
+        <li><strong>Campaign:</strong> ${name}</li>
+        <li><strong>Audience:</strong> ${list ? list.name : 'Not selected'}</li>
+        <li><strong>Subject:</strong> ${subject}</li>
+        <li><strong>Schedule:</strong> ${scheduleType === 'now' ? 'Send immediately' : 'Scheduled for ' + GBUtils.formatDate(scheduleDate, 'date')}</li>
+    `;
+}
+
+function loadTemplateContent() {
+    const templateId = document.getElementById('campaignTemplate').value;
+    if (!templateId) return;
+    
+    const template = campaignsState.templates.find(t => t.id === templateId);
+    if (template) {
+        document.getElementById('campaignSubject').value = template.subject;
+        document.getElementById('campaignPreheader').value = template.preheader_text || '';
+        document.getElementById('campaignContent').value = template.content_html || '';
+        showToast('Template loaded successfully!', 'success');
+    }
+}
+
+async function createCampaign() {
+    const name = document.getElementById('campaignName').value.trim();
+    const type = document.getElementById('campaignType').value;
+    const listId = document.getElementById('campaignList').value;
+    const subject = document.getElementById('campaignSubject').value.trim();
+    const subjectB = document.getElementById('campaignSubjectB').value.trim();
+    const preheader = document.getElementById('campaignPreheader').value.trim();
+    const content = document.getElementById('campaignContent').value;
+    const contentB = document.getElementById('campaignContentB').value;
+    const scheduleType = document.getElementById('campaignScheduleType').value;
+    const scheduleDate = document.getElementById('campaignScheduleDate').value;
+    
+    try {
+        const campaignData = {
+            user_id: gbApp.currentUser.id,
+            name,
+            type,
+            list_id: listId,
+            subject,
+            subject_b: type === 'ab_test' ? subjectB : null,
+            preheader_text: preheader,
+            content_html: content,
+            content_html_b: type === 'ab_test' ? contentB : null,
+            status: scheduleType === 'now' ? 'sending' : 'scheduled',
+            scheduled_for: scheduleType === 'later' ? scheduleDate : null,
+            recipients_count: 0,
+            opens_count: 0,
+            clicks_count: 0,
+            bounces_count: 0
+        };
+        
+        const { data, error } = await gbSupabase.insert('campaigns', campaignData);
+        if (error) throw error;
+        
+        bootstrap.Modal.getInstance(document.getElementById('campaignModal')).hide();
+        showToast('Campaign created successfully!', 'success');
+        loadCampaigns();
+        
+        if (scheduleType === 'now') {
+            // Trigger campaign sending
+            await sendCampaign(data.id || data[0].id);
+        }
+        
+    } catch (error) {
+        showToast('Error creating campaign: ' + error.message, 'error');
+    }
+}
+
+async function sendCampaign(campaignId) {
+    try {
+        // Get campaign details
+        const { data: campaign } = await gbSupabase.client
+            .from('campaigns')
+            .select('*')
+            .eq('id', campaignId)
+            .single();
+        
+        if (!campaign) return;
+        
+        // Get list contacts
+        const { data: listContacts } = await gbSupabase.client
+            .from('list_contacts')
+            .select(`
+                contacts (
+                    id,
+                    email,
+                    first_name,
+                    last_name,
+                    company
+                )
+            `)
+            .eq('list_id', campaign.list_id);
+        
+        const recipients = listContacts.map(lc => lc.contacts).filter(c => c && c.email);
+        
+        // Update campaign with recipient count
+        await gbSupabase.update('campaigns', {
+            recipients_count: recipients.length,
+            status: 'sending'
+        }, { id: campaignId });
+        
+        // Send emails (this would integrate with your email sending service)
+        // For now, simulate sending
+        for (const recipient of recipients) {
+            // Replace variables in content
+            let personalizedContent = campaign.content_html;
+            personalizedContent = personalizedContent.replace('{{first_name}}', recipient.first_name || '');
+            personalizedContent = personalizedContent.replace('{{last_name}}', recipient.last_name || '');
+            personalizedContent = personalizedContent.replace('{{email}}', recipient.email);
+            personalizedContent = personalizedContent.replace('{{company}}', recipient.company || '');
+            
+            // Log email
+            await gbSupabase.insert('email_logs', {
+                user_id: gbApp.currentUser.id,
+                campaign_id: campaignId,
+                contact_id: recipient.id,
+                email: recipient.email,
+                subject: campaign.subject,
+                status: 'sent',
+                sent_at: new Date().toISOString()
+            });
+        }
+        
+        // Update campaign status
+        await gbSupabase.update('campaigns', {
+            status: 'sent',
+            sent_at: new Date().toISOString()
+        }, { id: campaignId });
+        
+        showToast(`Campaign sent to ${recipients.length} recipients!`, 'success');
+        loadCampaigns();
+        
+    } catch (error) {
+        console.error('Error sending campaign:', error);
+        showToast('Error sending campaign: ' + error.message, 'error');
+    }
+}
+
+async function viewCampaignAnalytics(campaignId) {
+    try {
+        const { data: campaign } = await gbSupabase.client
+            .from('campaigns')
+            .select('*')
+            .eq('id', campaignId)
+            .single();
+        
+        if (!campaign) return;
+        
+        document.getElementById('analyticsModalTitle').textContent = `Analytics: ${campaign.name}`;
+        document.getElementById('analyticsSent').textContent = campaign.recipients_count || 0;
+        document.getElementById('analyticsOpened').textContent = campaign.opens_count || 0;
+        document.getElementById('analyticsClicked').textContent = campaign.clicks_count || 0;
+        document.getElementById('analyticsBounced').textContent = campaign.bounces_count || 0;
+        
+        // Load recipients
+        const { data: logs } = await gbSupabase.client
+            .from('email_logs')
+            .select('*')
+            .eq('campaign_id', campaignId);
+        
+        const tbody = document.getElementById('analyticsRecipients');
+        if (logs && logs.length > 0) {
+            tbody.innerHTML = logs.map(log => `
+                <tr>
+                    <td>${log.email}</td>
+                    <td><span class="badge bg-success">${log.status}</span></td>
+                    <td>${log.opened_at ? 'Yes' : 'No'}</td>
+                    <td>${log.clicked_at ? 'Yes' : 'No'}</td>
+                    <td>${log.sent_at ? GBUtils.formatDate(log.sent_at, 'time') : '-'}</td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No recipients found</td></tr>';
+        }
+        
+        const modal = new bootstrap.Modal(document.getElementById('campaignAnalyticsModal'));
+        modal.show();
+        
+    } catch (error) {
+        showToast('Error loading analytics: ' + error.message, 'error');
+    }
+}
+
+async function pauseCampaign(campaignId) {
+    if (!confirm('Pause this campaign?')) return;
+    
+    try {
+        const { error } = await gbSupabase.update('campaigns', {
+            status: 'paused'
+        }, { id: campaignId });
+        
+        if (error) throw error;
+        showToast('Campaign paused', 'success');
+        loadCampaigns();
+        
+    } catch (error) {
+        showToast('Error pausing campaign: ' + error.message, 'error');
+    }
+}
+
+async function deleteCampaign(campaignId) {
+    if (!confirm('Are you sure you want to delete this campaign? This cannot be undone.')) return;
+    
+    try {
+        const { error } = await gbSupabase.delete('campaigns', { id: campaignId });
+        if (error) throw error;
+        
+        showToast('Campaign deleted', 'success');
+        loadCampaigns();
+        
+    } catch (error) {
+        showToast('Error deleting campaign: ' + error.message, 'error');
+    }
+}
+
+function insertCampaignVariable(variable) {
+    const textarea = document.getElementById('campaignContent');
+    const cursorPos = textarea.selectionStart;
+    const textBefore = textarea.value.substring(0, cursorPos);
+    const textAfter = textarea.value.substring(cursorPos);
+    textarea.value = textBefore + variable + textAfter;
+    textarea.focus();
+    textarea.selectionStart = cursorPos + variable.length;
+    textarea.selectionEnd = cursorPos + variable.length;
+}
+
+function exportCampaignReport(format) {
+    // Implementation for exporting reports
+    showToast(`Exporting ${format.toUpperCase()} report...`, 'info');
+    // This would generate and download the report
+}
+
+// Make functions globally accessible
+window.initCampaignsModule = initCampaignsModule;
+window.loadCampaigns = loadCampaigns;
+window.showCampaignsGuide = showCampaignsGuide;
+window.showCreateCampaignModal = showCreateCampaignModal;
+window.viewCampaignAnalytics = viewCampaignAnalytics;
+window.pauseCampaign = pauseCampaign;
+window.deleteCampaign = deleteCampaign;
+window.createCampaign = createCampaign;
+window.changeStep = changeStep;
+window.toggleABTestFields = toggleABTestFields;
+window.toggleScheduleOptions = toggleScheduleOptions;
+window.loadTemplateContent = loadTemplateContent;
+window.insertCampaignVariable = insertCampaignVariable;
+window.filterCampaigns = filterCampaigns;
+window.resetFilters = resetFilters;
+window.exportCampaignReport = exportCampaignReport;
+</script>
