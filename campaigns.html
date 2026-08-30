@@ -1,1152 +1,771 @@
-<div class="module-container">
-    <!-- Header -->
-    <div class="module-header">
-        <div>
-            <h2 class="module-title">Campaigns</h2>
-            <p class="text-muted mb-0" id="campaignCount">0 campaigns</p>
-        </div>
-        <div>
-            <button class="btn learn-btn me-2" onclick="showCampaignsGuide()">
-                <i class="bi bi-book"></i> Learn Campaigns
-            </button>
-            <button class="btn btn-primary" onclick="showCreateCampaignModal()">
-                <i class="bi bi-send-plus"></i> Create Campaign
-            </button>
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2><i class="bi bi-send"></i> Campaigns</h2>
+            <p class="text-muted">Create and send email campaigns</p>
         </div>
     </div>
 
-    <!-- Quick Tips Banner -->
-    <div class="alert alert-info alert-dismissible fade show" role="alert">
-        <i class="bi bi-lightbulb"></i>
-        <strong>Pro Tip:</strong> Campaigns with personalized subject lines have 26% higher open rates. Use variables like <code>{{first_name}}</code> to personalize!
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-    </div>
+    <div class="row">
+        <!-- Campaign List -->
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Your Campaigns</h5>
+                    <button class="btn btn-sm btn-primary" onclick="window.createNewCampaign()">
+                        <i class="bi bi-plus"></i> New Campaign
+                    </button>
+                </div>
+                <div class="card-body" id="campaignList">
+                    <!-- Campaigns will be loaded here -->
+                    <p class="text-muted text-center">Loading campaigns...</p>
+                </div>
+            </div>
+            
+            <!-- Marketing Tips -->
+            <div class="tip-box mt-3">
+                <div class="tip-icon">📈</div>
+                <div class="tip-title">Campaign Tips</div>
+                <div class="tip-content">
+                    <p><strong>Best Times to Send:</strong> Tuesday-Thursday, 9-11 AM local time.</p>
+                    <p><strong>Subject Line:</strong> Keep under 50 characters for best open rates.</p>
+                    <p><strong>Follow-up:</strong> Send follow-up emails to non-openers after 3 days.</p>
+                    <button class="learn-btn mt-2" onclick="window.showCampaignTips()">
+                        Learn More
+                    </button>
+                </div>
+            </div>
+        </div>
 
-    <!-- Campaign Stats Overview -->
-    <div class="row mb-4" id="campaignStats">
-        <div class="col-md-3 mb-3">
-            <div class="card stat-card">
+        <!-- Campaign Creation Form -->
+        <div class="col-md-8">
+            <div class="card" id="campaignForm" style="display:none;">
+                <div class="card-header">
+                    <h5 class="mb-0">Create New Campaign</h5>
+                </div>
                 <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-0">Total Campaigns</h6>
-                            <h3 class="mb-0" id="totalCampaigns">0</h3>
+                    <form id="newCampaignForm">
+                        <div class="mb-3">
+                            <label class="form-label">Campaign Name</label>
+                            <input type="text" class="form-control" id="campaignName" placeholder="e.g., soloDS Box Launch" required>
                         </div>
-                        <i class="bi bi-send" style="font-size: 2rem; color: #667eea;"></i>
-                    </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Select Template</label>
+                            <select class="form-control" id="campaignTemplate" required onchange="window.loadTemplatePreview()">
+                                <option value="">Choose template...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Select List(s)</label>
+                            <select class="form-control" id="campaignLists" multiple required size="4">
+                                <option value="">Choose list(s)...</option>
+                            </select>
+                            <small class="text-muted">Hold Ctrl/Cmd to select multiple lists</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Email Provider</label>
+                            <select class="form-control" id="campaignProvider" required>
+                                <option value="">Select provider...</option>
+                                <option value="smtp">SMTP (Brevo) - Recommended</option>
+                                <option value="emailjs">EmailJS (Test Only)</option>
+                                <option value="aws_ses">AWS SES (Coming Soon)</option>
+                            </select>
+                            <small class="text-muted">SMTP via Brevo is recommended for bulk sending</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">From Email</label>
+                            <input type="email" class="form-control" id="campaignFromEmail" 
+                                   placeholder="sushantkadam75@gmail.com" required>
+                            <small class="text-muted">This will be the sender email address</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">From Name</label>
+                            <input type="text" class="form-control" id="campaignFromName" 
+                                   placeholder="GB Mailer" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Reply-To Email (Optional)</label>
+                            <input type="email" class="form-control" id="campaignReplyTo" 
+                                   placeholder="sushantkadam75@gmail.com">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-outline-primary" onclick="window.previewCampaign()">
+                                <i class="bi bi-eye"></i> Preview Email
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="window.sendTestEmail()">
+                                <i class="bi bi-envelope"></i> Send Test to Myself
+                            </button>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle"></i>
+                            <strong>Marketing Tip:</strong> Send campaigns during business hours (9 AM - 5 PM) 
+                            for best open rates. Tuesday, Wednesday, and Thursday typically perform best.
+                        </div>
+                        
+                        <button type="button" class="btn btn-gradient-success btn-lg w-100" onclick="window.sendCampaign()">
+                            <i class="bi bi-send"></i> Send Campaign Now
+                        </button>
+                    </form>
                 </div>
             </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card stat-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-0">Avg Open Rate</h6>
-                            <h3 class="mb-0" id="avgOpenRate">0%</h3>
-                        </div>
-                        <i class="bi bi-envelope-open" style="font-size: 2rem; color: #28a745;"></i>
-                    </div>
+            
+            <!-- Campaign Details View -->
+            <div class="card" id="campaignDetails" style="display:none;">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0" id="campaignDetailsTitle">Campaign Details</h5>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="window.hideCampaignDetails()">
+                        <i class="bi bi-x"></i> Close
+                    </button>
+                </div>
+                <div class="card-body" id="campaignDetailsBody">
+                    <!-- Campaign details will be shown here -->
                 </div>
             </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card stat-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-0">Avg Click Rate</h6>
-                            <h3 class="mb-0" id="avgClickRate">0%</h3>
-                        </div>
-                        <i class="bi bi-hand-index" style="font-size: 2rem; color: #17a2b8;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3 mb-3">
-            <div class="card stat-card">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-0">Total Recipients</h6>
-                            <h3 class="mb-0" id="totalRecipients">0</h3>
-                        </div>
-                        <i class="bi bi-people" style="font-size: 2rem; color: #ffc107;"></i>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Campaign Filters -->
-    <div class="card mb-4">
-        <div class="card-body">
-            <div class="row">
-                <div class="col-md-4">
-                    <input type="text" class="form-control" id="campaignSearch" placeholder="Search campaigns..." onkeyup="filterCampaigns()">
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select" id="campaignStatusFilter" onchange="filterCampaigns()">
-                        <option value="all">All Status</option>
-                        <option value="draft">Draft</option>
-                        <option value="scheduled">Scheduled</option>
-                        <option value="sending">Sending</option>
-                        <option value="sent">Sent</option>
-                        <option value="paused">Paused</option>
-                    </select>
-                </div>
-                <div class="col-md-3">
-                    <select class="form-select" id="campaignTypeFilter" onchange="filterCampaigns()">
-                        <option value="all">All Types</option>
-                        <option value="regular">Regular</option>
-                        <option value="ab_test">A/B Test</option>
-                    </select>
-                </div>
-                <div class="col-md-2">
-                    <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
-                        <i class="bi bi-arrow-counterclockwise"></i> Reset
+            
+            <!-- Welcome Message -->
+            <div class="card" id="welcomeMessage">
+                <div class="card-body text-center py-5">
+                    <i class="bi bi-send" style="font-size: 4rem; color: #667eea;"></i>
+                    <h3 class="mt-3">Create Your First Campaign</h3>
+                    <p class="text-muted">Send beautiful HTML emails to your contact lists</p>
+                    <button class="btn btn-gradient-primary" onclick="window.createNewCampaign()">
+                        <i class="bi bi-plus"></i> Create Campaign
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Campaigns Grid -->
-    <div class="row" id="campaignsContainer">
-        <div class="col-12 text-center py-5">
-            <div class="spinner-border text-primary" role="status"></div>
-        </div>
-    </div>
-</div>
-
-<!-- Learning Guide Modal -->
-<div class="modal fade" id="campaignsGuideModal" tabindex="-1">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header learn-header border-0">
-                <h5 class="modal-title text-white">
-                    <i class="bi bi-book"></i> Campaign Management Guide
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div class="card h-100 border-primary">
-                            <div class="card-body">
-                                <h6 class="text-primary"><i class="bi bi-1-circle"></i> What are Campaigns?</h6>
-                                <p class="small">Campaigns are bulk email sends to targeted lists. They allow you to schedule, track, and analyze your email marketing efforts.</p>
-                            </div>
+    <!-- Campaign Preview Modal -->
+    <div class="modal fade" id="previewModal" tabindex="-1">
+        <div class="modal-dialog modal-lg modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Email Preview</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-6">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="window.previewDevice('desktop')">
+                                <i class="bi bi-display"></i> Desktop
+                            </button>
+                        </div>
+                        <div class="col-6 text-end">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="window.previewDevice('mobile')">
+                                <i class="bi bi-phone"></i> Mobile
+                            </button>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="card h-100 border-success">
-                            <div class="card-body">
-                                <h6 class="text-success"><i class="bi bi-2-circle"></i> A/B Testing</h6>
-                                <p class="small">Test two versions of your email to see which performs better. The system automatically sends the winner to more recipients.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="card h-100 border-warning">
-                            <div class="card-body">
-                                <h6 class="text-warning"><i class="bi bi-3-circle"></i> Best Practices</h6>
-                                <ul class="small mb-0">
-                                    <li>Schedule for optimal times</li>
-                                    <li>Segment your audience</li>
-                                    <li>Monitor open/click rates</li>
-                                    <li>Clean bounced emails</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-6 mb-3">
-                        <div class="card h-100 border-info">
-                            <div class="card-body">
-                                <h6 class="text-info"><i class="bi bi-4-circle"></i> Key Metrics</h6>
-                                <ul class="small mb-0">
-                                    <li><strong>Open Rate</strong> - % who opened</li>
-                                    <li><strong>Click Rate</strong> - % who clicked links</li>
-                                    <li><strong>Bounce Rate</strong> - % undelivered</li>
-                                    <li><strong>Unsubscribe</strong> - % opted out</li>
-                                </ul>
-                            </div>
-                        </div>
+                    <div id="campaignPreviewContainer" class="border p-3 bg-white">
+                        <!-- Preview content here -->
                     </div>
                 </div>
-                <div class="alert alert-success mt-3 mb-0">
-                    <i class="bi bi-graph-up"></i>
-                    <strong>Marketing Tip:</strong> Segmented campaigns see <strong>760% increase in revenue</strong> compared to non-segmented campaigns!
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
-
-<!-- Create Campaign Modal -->
-<div class="modal fade" id="campaignModal" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="campaignModalTitle">Create Campaign</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Campaign Wizard Steps -->
-                <div class="campaign-wizard">
-                    <div class="wizard-steps mb-4">
-                        <div class="wizard-step active" id="step1Indicator">
-                            <div class="step-circle">1</div>
-                            <span>Basic Info</span>
-                        </div>
-                        <div class="wizard-line"></div>
-                        <div class="wizard-step" id="step2Indicator">
-                            <div class="step-circle">2</div>
-                            <span>Audience</span>
-                        </div>
-                        <div class="wizard-line"></div>
-                        <div class="wizard-step" id="step3Indicator">
-                            <div class="step-circle">3</div>
-                            <span>Content</span>
-                        </div>
-                        <div class="wizard-line"></div>
-                        <div class="wizard-step" id="step4Indicator">
-                            <div class="step-circle">4</div>
-                            <span>Schedule</span>
-                        </div>
-                    </div>
-
-                    <!-- Step 1: Basic Info -->
-                    <div class="wizard-content" id="step1Content">
-                        <div class="mb-3">
-                            <label class="form-label">Campaign Name *</label>
-                            <input type="text" class="form-control" id="campaignName" placeholder="e.g., Spring Sale Newsletter">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Campaign Type</label>
-                            <select class="form-select" id="campaignType" onchange="toggleABTestFields()">
-                                <option value="regular">Regular Campaign</option>
-                                <option value="ab_test">A/B Test Campaign</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Step 2: Audience -->
-                    <div class="wizard-content d-none" id="step2Content">
-                        <div class="mb-3">
-                            <label class="form-label">Select Contact List *</label>
-                            <select class="form-select" id="campaignList">
-                                <option value="">Select a list...</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Or Filter Contacts</label>
-                            <input type="text" class="form-control" id="campaignFilter" placeholder="e.g., company=Google">
-                            <small class="text-muted">Leave empty to send to entire list</small>
-                        </div>
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle"></i>
-                            <span id="selectedAudienceInfo">No audience selected yet</span>
-                        </div>
-                    </div>
-
-                    <!-- Step 3: Content -->
-                    <div class="wizard-content d-none" id="step3Content">
-                        <div class="mb-3">
-                            <label class="form-label">Subject Line *</label>
-                            <input type="text" class="form-control" id="campaignSubject" placeholder="Enter subject line">
-                        </div>
-                        <div id="abTestSubject" class="d-none">
-                            <div class="mb-3">
-                                <label class="form-label">Subject Line B *</label>
-                                <input type="text" class="form-control" id="campaignSubjectB" placeholder="Enter alternative subject">
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Preheader Text</label>
-                            <input type="text" class="form-control" id="campaignPreheader" placeholder="Preview text shown in inbox">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Select Template (Optional)</label>
-                            <select class="form-select" id="campaignTemplate" onchange="loadTemplateContent()">
-                                <option value="">Use custom content below</option>
-                            </select>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email Content *</label>
-                            <textarea class="form-control" id="campaignContent" rows="10" placeholder="Write your email content..."></textarea>
-                        </div>
-                        <div id="abTestContent" class="d-none">
-                            <div class="mb-3">
-                                <label class="form-label">Email Content B *</label>
-                                <textarea class="form-control" id="campaignContentB" rows="10" placeholder="Write alternative content..."></textarea>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Variables (click to insert)</label>
-                            <div class="d-flex flex-wrap gap-2">
-                                <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertCampaignVariable('{{first_name}}')">&#123;&#123;first_name&#125;&#125;</span>
-                                <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertCampaignVariable('{{last_name}}')">&#123;&#123;last_name&#125;&#125;</span>
-                                <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertCampaignVariable('{{email}}')">&#123;&#123;email&#125;&#125;</span>
-                                <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertCampaignVariable('{{company}}')">&#123;&#123;company&#125;&#125;</span>
-                                <span class="badge bg-light text-dark" style="cursor: pointer;" onclick="insertCampaignVariable('{{unsubscribe_link}}')">&#123;&#123;unsubscribe_link&#125;&#125;</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Step 4: Schedule -->
-                    <div class="wizard-content d-none" id="step4Content">
-                        <div class="mb-3">
-                            <label class="form-label">Send Timing</label>
-                            <select class="form-select" id="campaignScheduleType" onchange="toggleScheduleOptions()">
-                                <option value="now">Send Immediately</option>
-                                <option value="later">Schedule for Later</option>
-                            </select>
-                        </div>
-                        <div id="scheduleOptions" class="d-none">
-                            <div class="mb-3">
-                                <label class="form-label">Send Date & Time *</label>
-                                <input type="datetime-local" class="form-control" id="campaignScheduleDate">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Timezone</label>
-                                <select class="form-select" id="campaignTimezone">
-                                    <option value="local">Recipient's Local Time</option>
-                                    <option value="utc">UTC</option>
-                                    <option value="est">EST</option>
-                                    <option value="pst">PST</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="alert alert-warning">
-                            <i class="bi bi-exclamation-triangle"></i>
-                            <strong>Please review before sending:</strong>
-                            <ul class="small mb-0 mt-2" id="campaignSummary"></ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="prevStep" onclick="changeStep(-1)" disabled>
-                    <i class="bi bi-arrow-left"></i> Previous
-                </button>
-                <button type="button" class="btn btn-primary" id="nextStep" onclick="changeStep(1)">
-                    Next <i class="bi bi-arrow-right"></i>
-                </button>
-                <button type="button" class="btn btn-success d-none" id="createCampaignBtn" onclick="createCampaign()">
-                    <i class="bi bi-check-lg"></i> Create Campaign
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Campaign Analytics Modal -->
-<div class="modal fade" id="campaignAnalyticsModal" tabindex="-1">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="analyticsModalTitle">Campaign Analytics</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <!-- Analytics Content -->
-                <div class="row mb-4">
-                    <div class="col-md-3">
-                        <div class="card bg-primary text-white">
-                            <div class="card-body text-center">
-                                <h3 id="analyticsSent">0</h3>
-                                <p class="mb-0">Sent</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-success text-white">
-                            <div class="card-body text-center">
-                                <h3 id="analyticsOpened">0</h3>
-                                <p class="mb-0">Opened</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-info text-white">
-                            <div class="card-body text-center">
-                                <h3 id="analyticsClicked">0</h3>
-                                <p class="mb-0">Clicked</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="card bg-danger text-white">
-                            <div class="card-body text-center">
-                                <h3 id="analyticsBounced">0</h3>
-                                <p class="mb-0">Bounced</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Click Map -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h6 class="mb-0"><i class="bi bi-map"></i> Click Heat Map</h6>
-                    </div>
-                    <div class="card-body">
-                        <div id="clickHeatMap" class="text-center">
-                            <p class="text-muted">No click data available</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Recipients Table -->
-                <div class="card">
-                    <div class="card-header">
-                        <h6 class="mb-0"><i class="bi bi-people"></i> Recipients</h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>Email</th>
-                                        <th>Status</th>
-                                        <th>Opened</th>
-                                        <th>Clicked</th>
-                                        <th>Time</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="analyticsRecipients"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-outline-secondary" onclick="exportCampaignReport('csv')">
-                    <i class="bi bi-file-earmark-spreadsheet"></i> Export CSV
-                </button>
-                <button class="btn btn-outline-secondary" onclick="exportCampaignReport('pdf')">
-                    <i class="bi bi-file-earmark-pdf"></i> Export PDF
-                </button>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<style>
-.stat-card {
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    transition: transform 0.3s;
-}
-
-.stat-card:hover {
-    transform: translateY(-5px);
-}
-
-.learn-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: calc(0.3rem - 1px) calc(0.3rem - 1px) 0 0;
-}
-
-.learn-btn {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-weight: 600;
-    transition: all 0.3s;
-    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
-}
-
-.learn-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
-    color: white;
-    background: linear-gradient(135deg, #764ba2 0%, #667eea 100%);
-}
-
-/* Campaign Card */
-.campaign-card {
-    transition: transform 0.3s, box-shadow 0.3s;
-    border: none;
-    border-radius: 10px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    cursor: pointer;
-}
-
-.campaign-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
-}
-
-.campaign-status {
-    padding: 5px 10px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-}
-
-.status-draft {
-    background: #e9ecef;
-    color: #6c757d;
-}
-
-.status-scheduled {
-    background: #fff3cd;
-    color: #856404;
-}
-
-.status-sending {
-    background: #cce5ff;
-    color: #004085;
-}
-
-.status-sent {
-    background: #d4edda;
-    color: #155724;
-}
-
-.status-paused {
-    background: #f8d7da;
-    color: #721c24;
-}
-
-/* Wizard */
-.wizard-steps {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.wizard-step {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
-.step-circle {
-    width: 35px;
-    height: 35px;
-    border-radius: 50%;
-    background: #e9ecef;
-    color: #6c757d;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    margin-bottom: 5px;
-    transition: all 0.3s;
-}
-
-.wizard-step.active .step-circle {
-    background: #667eea;
-    color: white;
-}
-
-.wizard-step.completed .step-circle {
-    background: #28a745;
-    color: white;
-}
-
-.wizard-line {
-    flex: 1;
-    height: 2px;
-    background: #e9ecef;
-    margin: 0 10px;
-    margin-bottom: 20px;
-}
-
-.wizard-line.completed {
-    background: #28a745;
-}
-</style>
 
 <script>
-let campaignsState = {
-    campaigns: [],
-    currentCampaignId: null,
-    currentStep: 1,
-    templates: [],
-    lists: []
+// Campaign management functions
+window.currentCampaignId = null;
+window.previewDeviceType = 'desktop';
+window.currentTemplateContent = '';
+window.currentTemplateSubject = '';
+
+// Create new campaign
+window.createNewCampaign = function() {
+    document.getElementById('campaignForm').style.display = 'block';
+    document.getElementById('campaignDetails').style.display = 'none';
+    document.getElementById('welcomeMessage').style.display = 'none';
+    
+    // Set default values
+    document.getElementById('campaignFromEmail').value = 'sushantkadam75@gmail.com';
+    document.getElementById('campaignFromName').value = 'GB Mailer';
+    document.getElementById('campaignReplyTo').value = 'sushantkadam75@gmail.com';
+    
+    window.loadCampaignTemplates();
+    window.loadCampaignLists();
 };
 
-function initCampaignsModule() {
-    loadCampaigns();
-    loadTemplates();
-    loadLists();
-}
+// Hide campaign details
+window.hideCampaignDetails = function() {
+    document.getElementById('campaignDetails').style.display = 'none';
+    document.getElementById('welcomeMessage').style.display = 'block';
+};
 
-async function loadCampaigns() {
+// Load templates for campaign
+window.loadCampaignTemplates = async function() {
     try {
-        const { data, error } = await gbSupabase.client
-            .from('campaigns')
+        const user = await window.getCurrentUser();
+        if (!user) {
+            alert('Please login first');
+            return;
+        }
+        
+        const { data: templates, error } = await window.supabase
+            .from('email_templates')
             .select('*')
-            .eq('user_id', gbApp.currentUser.id)
+            .eq('user_id', user.id)
             .order('created_at', { ascending: false });
         
         if (error) throw error;
         
-        campaignsState.campaigns = data || [];
-        updateCampaignStats();
-        renderCampaigns();
+        const select = document.getElementById('campaignTemplate');
+        select.innerHTML = '<option value="">Choose template...</option>';
         
-    } catch (error) {
-        console.error('Error loading campaigns:', error);
-        showToast('Error loading campaigns: ' + error.message, 'error');
-    }
-}
-
-async function loadTemplates() {
-    try {
-        const { data, error } = await gbSupabase.client
-            .from('email_templates')
-            .select('*')
-            .eq('user_id', gbApp.currentUser.id);
-        
-        if (!error) {
-            campaignsState.templates = data || [];
-            const select = document.getElementById('campaignTemplate');
-            select.innerHTML = '<option value="">Use custom content below</option>' +
-                campaignsState.templates.map(t => `<option value="${t.id}">${t.name}</option>`).join('');
+        if (templates && templates.length > 0) {
+            templates.forEach(template => {
+                const option = document.createElement('option');
+                option.value = template.id;
+                option.textContent = template.name;
+                option.setAttribute('data-content', template.content_html);
+                option.setAttribute('data-subject', template.subject);
+                select.appendChild(option);
+            });
+        } else {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No templates found - create one first';
+            select.appendChild(option);
         }
+        
     } catch (error) {
         console.error('Error loading templates:', error);
+        alert('Error loading templates: ' + error.message);
     }
-}
+};
 
-async function loadLists() {
+// Load lists for campaign
+window.loadCampaignLists = async function() {
     try {
-        const { data, error } = await gbSupabase.client
+        const user = await window.getCurrentUser();
+        if (!user) return;
+        
+        const { data: lists, error } = await window.supabase
             .from('lists')
             .select('*')
-            .eq('user_id', gbApp.currentUser.id);
+            .eq('user_id', user.id)
+            .eq('is_active', true);
         
-        if (!error) {
-            campaignsState.lists = data || [];
-            const select = document.getElementById('campaignList');
-            select.innerHTML = '<option value="">Select a list...</option>' +
-                campaignsState.lists.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+        if (error) throw error;
+        
+        const select = document.getElementById('campaignLists');
+        select.innerHTML = '';
+        
+        if (lists && lists.length > 0) {
+            lists.forEach(list => {
+                const option = document.createElement('option');
+                option.value = list.id;
+                option.textContent = list.name;
+                select.appendChild(option);
+            });
+        } else {
+            const option = document.createElement('option');
+            option.value = '';
+            option.textContent = 'No lists available - create a list first';
+            select.appendChild(option);
         }
+        
     } catch (error) {
         console.error('Error loading lists:', error);
     }
-}
+};
 
-function updateCampaignStats() {
-    const campaigns = campaignsState.campaigns;
-    document.getElementById('totalCampaigns').textContent = campaigns.length;
-    
-    const sentCampaigns = campaigns.filter(c => c.status === 'sent');
-    const totalOpens = sentCampaigns.reduce((sum, c) => sum + (c.opens_count || 0), 0);
-    const totalClicks = sentCampaigns.reduce((sum, c) => sum + (c.clicks_count || 0), 0);
-    const totalSent = sentCampaigns.reduce((sum, c) => sum + (c.recipients_count || 0), 0);
-    const totalBounced = sentCampaigns.reduce((sum, c) => sum + (c.bounces_count || 0), 0);
-    
-    document.getElementById('avgOpenRate').textContent = totalSent > 0 ? 
-        `${((totalOpens / totalSent) * 100).toFixed(1)}%` : '0%';
-    document.getElementById('avgClickRate').textContent = totalSent > 0 ? 
-        `${((totalClicks / totalSent) * 100).toFixed(1)}%` : '0%';
-    document.getElementById('totalRecipients').textContent = totalSent;
-    
-    document.getElementById('campaignCount').textContent = `${campaigns.length} campaigns`;
-}
+// Load template preview when selected
+window.loadTemplatePreview = function() {
+    const select = document.getElementById('campaignTemplate');
+    const selectedOption = select.options[select.selectedIndex];
+    window.currentTemplateContent = selectedOption.getAttribute('data-content') || '';
+    window.currentTemplateSubject = selectedOption.getAttribute('data-subject') || '';
+};
 
-function renderCampaigns(campaigns = null) {
-    const data = campaigns || campaignsState.campaigns;
-    const container = document.getElementById('campaignsContainer');
+// Preview campaign email
+window.previewCampaign = function() {
+    const templateContent = window.currentTemplateContent;
     
-    if (data.length === 0) {
-        container.innerHTML = `
-            <div class="col-12">
-                <div class="card">
-                    <div class="card-body text-center py-5">
-                        <i class="bi bi-send" style="font-size: 4rem; color: #ccc;"></i>
-                        <h5 class="mt-3">No Campaigns Yet</h5>
-                        <p class="text-muted">Create your first campaign to start reaching your audience</p>
-                        <button class="btn btn-primary" onclick="showCreateCampaignModal()">
-                            <i class="bi bi-send-plus"></i> Create Your First Campaign
-                        </button>
-                        <br><br>
-                        <button class="btn learn-btn" onclick="showCampaignsGuide()">
-                            <i class="bi bi-book"></i> Learn how campaigns work
-                        </button>
-                    </div>
-                </div>
-            </div>
-        `;
+    if (!templateContent) {
+        alert('Please select a template first');
         return;
     }
     
-    container.innerHTML = data.map(campaign => {
-        const statusClass = `status-${campaign.status}`;
-        const openRate = campaign.recipients_count > 0 ? 
-            ((campaign.opens_count / campaign.recipients_count) * 100).toFixed(1) : '0.0';
-        const clickRate = campaign.recipients_count > 0 ? 
-            ((campaign.clicks_count / campaign.recipients_count) * 100).toFixed(1) : '0.0';
-        
-        return `
-            <div class="col-md-4 mb-3">
-                <div class="card campaign-card h-100" onclick="viewCampaignAnalytics('${campaign.id}')">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-3">
-                            <div>
-                                <h6 class="mb-1">${campaign.name}</h6>
-                                <span class="campaign-status ${statusClass}">${campaign.status}</span>
-                            </div>
-                            <div class="dropdown" onclick="event.stopPropagation();">
-                                <button class="btn btn-sm btn-light" data-bs-toggle="dropdown">
-                                    <i class="bi bi-three-dots-vertical"></i>
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end">
-                                    <li><a class="dropdown-item" href="#" onclick="viewCampaignAnalytics('${campaign.id}')">
-                                        <i class="bi bi-graph-up"></i> Analytics
-                                    </a></li>
-                                    <li><a class="dropdown-item" href="#" onclick="pauseCampaign('${campaign.id}')">
-                                        <i class="bi bi-pause"></i> Pause
-                                    </a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item text-danger" href="#" onclick="deleteCampaign('${campaign.id}')">
-                                        <i class="bi bi-trash"></i> Delete
-                                    </a></li>
-                                </ul>
-                            </div>
-                        </div>
-                        
-                        <div class="mb-2">
-                            <strong>Subject:</strong> ${campaign.subject}
-                        </div>
-                        
-                        <div class="row text-center mb-3">
-                            <div class="col-4">
-                                <h6 class="mb-0">${campaign.recipients_count || 0}</h6>
-                                <small class="text-muted">Sent</small>
-                            </div>
-                            <div class="col-4">
-                                <h6 class="mb-0 text-success">${openRate}%</h6>
-                                <small class="text-muted">Opens</small>
-                            </div>
-                            <div class="col-4">
-                                <h6 class="mb-0 text-info">${clickRate}%</h6>
-                                <small class="text-muted">Clicks</small>
-                            </div>
-                        </div>
-                        
-                        <div class="progress mb-3" style="height: 8px;">
-                            <div class="progress-bar bg-success" style="width: ${openRate}%"></div>
-                            <div class="progress-bar bg-info" style="width: ${clickRate}%"></div>
-                        </div>
-                        
-                        <div class="d-flex justify-content-between align-items-center">
-                            <small class="text-muted">
-                                ${campaign.scheduled_for ? 'Scheduled: ' + GBUtils.formatDate(campaign.scheduled_for, 'date') : GBUtils.formatDate(campaign.created_at, 'relative')}
-                            </small>
-                            <button class="btn btn-sm btn-outline-primary" onclick="event.stopPropagation(); viewCampaignAnalytics('${campaign.id}')">
-                                View
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }).join('');
-}
-
-function filterCampaigns() {
-    const search = document.getElementById('campaignSearch').value.toLowerCase();
-    const statusFilter = document.getElementById('campaignStatusFilter').value;
-    const typeFilter = document.getElementById('campaignTypeFilter').value;
+    // Personalize with sample data
+    const previewContent = templateContent
+        .replace(/\{\{first_name\}\}/g, 'John')
+        .replace(/\{\{last_name\}\}/g, 'Doe')
+        .replace(/\{\{email\}\}/g, 'john@example.com')
+        .replace(/\{\{company\}\}/g, 'Example Corp');
     
-    let filtered = campaignsState.campaigns.filter(campaign => {
-        const matchesSearch = campaign.name.toLowerCase().includes(search) || 
-                            campaign.subject.toLowerCase().includes(search);
-        const matchesStatus = statusFilter === 'all' || campaign.status === statusFilter;
-        const matchesType = typeFilter === 'all' || campaign.type === typeFilter;
-        
-        return matchesSearch && matchesStatus && matchesType;
-    });
+    const previewContainer = document.getElementById('campaignPreviewContainer');
+    previewContainer.innerHTML = previewContent;
     
-    renderCampaigns(filtered);
-}
-
-function resetFilters() {
-    document.getElementById('campaignSearch').value = '';
-    document.getElementById('campaignStatusFilter').value = 'all';
-    document.getElementById('campaignTypeFilter').value = 'all';
-    renderCampaigns();
-}
-
-function showCampaignsGuide() {
-    const modal = new bootstrap.Modal(document.getElementById('campaignsGuideModal'));
-    modal.show();
-}
-
-function showCreateCampaignModal() {
-    document.getElementById('campaignModalTitle').textContent = 'Create Campaign';
-    document.getElementById('campaignName').value = '';
-    document.getElementById('campaignType').value = 'regular';
-    document.getElementById('campaignSubject').value = '';
-    document.getElementById('campaignSubjectB').value = '';
-    document.getElementById('campaignPreheader').value = '';
-    document.getElementById('campaignContent').value = '';
-    document.getElementById('campaignContentB').value = '';
-    document.getElementById('campaignScheduleType').value = 'now';
-    document.getElementById('campaignScheduleDate').value = '';
-    
-    campaignsState.currentStep = 1;
-    updateWizard();
-    toggleABTestFields();
-    toggleScheduleOptions();
-    
-    const modal = new bootstrap.Modal(document.getElementById('campaignModal'));
-    modal.show();
-}
-
-function toggleABTestFields() {
-    const type = document.getElementById('campaignType').value;
-    document.getElementById('abTestSubject').classList.toggle('d-none', type !== 'ab_test');
-    document.getElementById('abTestContent').classList.toggle('d-none', type !== 'ab_test');
-}
-
-function toggleScheduleOptions() {
-    const type = document.getElementById('campaignScheduleType').value;
-    document.getElementById('scheduleOptions').classList.toggle('d-none', type !== 'later');
-}
-
-function changeStep(delta) {
-    const newStep = campaignsState.currentStep + delta;
-    if (newStep < 1 || newStep > 4) return;
-    
-    // Validate current step
-    if (delta > 0 && !validateStep(campaignsState.currentStep)) {
-        return;
+    if (window.previewDeviceType === 'mobile') {
+        previewContainer.style.maxWidth = '375px';
+        previewContainer.style.margin = '0 auto';
+    } else {
+        previewContainer.style.maxWidth = '100%';
+        previewContainer.style.margin = '0';
     }
     
-    campaignsState.currentStep = newStep;
-    updateWizard();
-    updateSummary();
-}
+    const previewModal = new bootstrap.Modal(document.getElementById('previewModal'));
+    previewModal.show();
+};
 
-function validateStep(step) {
-    if (step === 1) {
-        const name = document.getElementById('campaignName').value.trim();
-        if (!name) {
-            showToast('Please enter a campaign name', 'error');
-            return false;
-        }
-    } else if (step === 2) {
-        const list = document.getElementById('campaignList').value;
-        if (!list) {
-            showToast('Please select a contact list', 'error');
-            return false;
-        }
-    } else if (step === 3) {
-        const subject = document.getElementById('campaignSubject').value.trim();
-        const content = document.getElementById('campaignContent').value.trim();
-        if (!subject || !content) {
-            showToast('Please enter subject and content', 'error');
-            return false;
-        }
-    }
-    return true;
-}
+// Preview device toggle
+window.previewDevice = function(device) {
+    window.previewDeviceType = device;
+    window.previewCampaign();
+};
 
-function updateWizard() {
-    for (let i = 1; i <= 4; i++) {
-        const content = document.getElementById(`step${i}Content`);
-        const indicator = document.getElementById(`step${i}Indicator`);
-        
-        if (i === campaignsState.currentStep) {
-            content.classList.remove('d-none');
-            indicator.classList.add('active');
-            indicator.classList.remove('completed');
-        } else {
-            content.classList.add('d-none');
-            if (i < campaignsState.currentStep) {
-                indicator.classList.add('completed');
-                indicator.classList.remove('active');
-            } else {
-                indicator.classList.remove('active', 'completed');
-            }
-        }
-    }
-    
-    // Update wizard lines
-    document.querySelectorAll('.wizard-line').forEach((line, index) => {
-        if (index + 1 < campaignsState.currentStep) {
-            line.classList.add('completed');
-        } else {
-            line.classList.remove('completed');
-        }
-    });
-    
-    // Update buttons
-    document.getElementById('prevStep').disabled = campaignsState.currentStep === 1;
-    document.getElementById('nextStep').classList.toggle('d-none', campaignsState.currentStep === 4);
-    document.getElementById('createCampaignBtn').classList.toggle('d-none', campaignsState.currentStep !== 4);
-}
-
-function updateSummary() {
-    const summary = document.getElementById('campaignSummary');
-    const name = document.getElementById('campaignName').value;
-    const listId = document.getElementById('campaignList').value;
-    const list = campaignsState.lists.find(l => l.id === listId);
-    const subject = document.getElementById('campaignSubject').value;
-    const scheduleType = document.getElementById('campaignScheduleType').value;
-    const scheduleDate = document.getElementById('campaignScheduleDate').value;
-    
-    summary.innerHTML = `
-        <li><strong>Campaign:</strong> ${name}</li>
-        <li><strong>Audience:</strong> ${list ? list.name : 'Not selected'}</li>
-        <li><strong>Subject:</strong> ${subject}</li>
-        <li><strong>Schedule:</strong> ${scheduleType === 'now' ? 'Send immediately' : 'Scheduled for ' + GBUtils.formatDate(scheduleDate, 'date')}</li>
-    `;
-}
-
-function loadTemplateContent() {
-    const templateId = document.getElementById('campaignTemplate').value;
-    if (!templateId) return;
-    
-    const template = campaignsState.templates.find(t => t.id === templateId);
-    if (template) {
-        document.getElementById('campaignSubject').value = template.subject;
-        document.getElementById('campaignPreheader').value = template.preheader_text || '';
-        document.getElementById('campaignContent').value = template.content_html || '';
-        showToast('Template loaded successfully!', 'success');
-    }
-}
-
-async function createCampaign() {
-    const name = document.getElementById('campaignName').value.trim();
-    const type = document.getElementById('campaignType').value;
-    const listId = document.getElementById('campaignList').value;
-    const subject = document.getElementById('campaignSubject').value.trim();
-    const subjectB = document.getElementById('campaignSubjectB').value.trim();
-    const preheader = document.getElementById('campaignPreheader').value.trim();
-    const content = document.getElementById('campaignContent').value;
-    const contentB = document.getElementById('campaignContentB').value;
-    const scheduleType = document.getElementById('campaignScheduleType').value;
-    const scheduleDate = document.getElementById('campaignScheduleDate').value;
-    
+// Send test email to self
+window.sendTestEmail = async function() {
     try {
-        const campaignData = {
-            user_id: gbApp.currentUser.id,
-            name,
-            type,
-            list_id: listId,
-            subject,
-            subject_b: type === 'ab_test' ? subjectB : null,
-            preheader_text: preheader,
-            content_html: content,
-            content_html_b: type === 'ab_test' ? contentB : null,
-            status: scheduleType === 'now' ? 'sending' : 'scheduled',
-            scheduled_for: scheduleType === 'later' ? scheduleDate : null,
-            recipients_count: 0,
-            opens_count: 0,
-            clicks_count: 0,
-            bounces_count: 0
-        };
-        
-        const { data, error } = await gbSupabase.insert('campaigns', campaignData);
-        if (error) throw error;
-        
-        bootstrap.Modal.getInstance(document.getElementById('campaignModal')).hide();
-        showToast('Campaign created successfully!', 'success');
-        loadCampaigns();
-        
-        if (scheduleType === 'now') {
-            // Trigger campaign sending
-            await sendCampaign(data.id || data[0].id);
+        const user = await window.getCurrentUser();
+        if (!user) {
+            alert('Please login first');
+            return;
         }
         
-    } catch (error) {
-        showToast('Error creating campaign: ' + error.message, 'error');
-    }
-}
-
-async function sendCampaign(campaignId) {
-    try {
-        // Get campaign details
-        const { data: campaign } = await gbSupabase.client
-            .from('campaigns')
+        const templateId = document.getElementById('campaignTemplate').value;
+        const provider = document.getElementById('campaignProvider').value;
+        const fromEmail = document.getElementById('campaignFromEmail').value;
+        const fromName = document.getElementById('campaignFromName').value;
+        const replyTo = document.getElementById('campaignReplyTo').value || fromEmail;
+        
+        if (!templateId || !provider || !fromEmail || !fromName) {
+            alert('Please fill in all required fields');
+            return;
+        }
+        
+        // Get template
+        const { data: template, error } = await window.supabase
+            .from('email_templates')
             .select('*')
-            .eq('id', campaignId)
+            .eq('id', templateId)
             .single();
         
-        if (!campaign) return;
+        if (error) throw error;
         
-        // Get list contacts
-        const { data: listContacts } = await gbSupabase.client
-            .from('list_contacts')
-            .select(`
-                contacts (
-                    id,
-                    email,
-                    first_name,
-                    last_name,
-                    company
-                )
-            `)
-            .eq('list_id', campaign.list_id);
+        // Personalize test email
+        const testContent = template.content_html
+            .replace(/\{\{first_name\}\}/g, 'Test User')
+            .replace(/\{\{last_name\}\}/g, '')
+            .replace(/\{\{email\}\}/g, user.email)
+            .replace(/\{\{company\}\}/g, 'GB Mailer');
         
-        const recipients = listContacts.map(lc => lc.contacts).filter(c => c && c.email);
+        const testSubject = template.subject
+            .replace(/\{\{first_name\}\}/g, 'Test User');
         
-        // Update campaign with recipient count
-        await gbSupabase.update('campaigns', {
-            recipients_count: recipients.length,
-            status: 'sending'
-        }, { id: campaignId });
+        window.showLoading();
         
-        // Send emails (this would integrate with your email sending service)
-        // For now, simulate sending
-        for (const recipient of recipients) {
-            // Replace variables in content
-            let personalizedContent = campaign.content_html;
-            personalizedContent = personalizedContent.replace('{{first_name}}', recipient.first_name || '');
-            personalizedContent = personalizedContent.replace('{{last_name}}', recipient.last_name || '');
-            personalizedContent = personalizedContent.replace('{{email}}', recipient.email);
-            personalizedContent = personalizedContent.replace('{{company}}', recipient.company || '');
-            
-            // Log email
-            await gbSupabase.insert('email_logs', {
-                user_id: gbApp.currentUser.id,
-                campaign_id: campaignId,
-                contact_id: recipient.id,
-                email: recipient.email,
-                subject: campaign.subject,
-                status: 'sent',
-                sent_at: new Date().toISOString()
+        if (provider === 'smtp') {
+            // Send via backend SMTP
+            const response = await fetch(`${window.CONFIG.BACKEND_URL}/api/send-email`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    to_email: user.email,
+                    to_name: 'Test User',
+                    from_email: fromEmail,
+                    from_name: fromName,
+                    subject: testSubject,
+                    message_html: testContent,
+                    reply_to: replyTo
+                })
             });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to send test email');
+            }
+            
+        } else if (provider === 'emailjs') {
+            // Send via EmailJS
+            const templateParams = {
+                to_email: user.email,
+                to_name: 'Test User',
+                from_email: fromEmail,
+                from_name: fromName,
+                subject: testSubject,
+                message_html: testContent,
+                reply_to: replyTo
+            };
+            
+            await emailjs.send(
+                window.CONFIG.EMAILJS.SERVICE_ID,
+                window.CONFIG.EMAILJS.TEMPLATE_ID,
+                templateParams,
+                window.CONFIG.EMAILJS.PUBLIC_KEY
+            );
+        }
+        
+        window.hideLoading();
+        alert('Test email sent to ' + user.email);
+        
+    } catch (error) {
+        console.error('Error sending test email:', error);
+        window.hideLoading();
+        alert('Error sending test email: ' + error.message);
+    }
+};
+
+// Send campaign
+window.sendCampaign = async function() {
+    try {
+        const user = await window.getCurrentUser();
+        if (!user) {
+            alert('Please login first');
+            return;
+        }
+        
+        const campaignName = document.getElementById('campaignName').value;
+        const templateId = document.getElementById('campaignTemplate').value;
+        const listIds = Array.from(document.getElementById('campaignLists').selectedOptions).map(opt => opt.value);
+        const provider = document.getElementById('campaignProvider').value;
+        const fromEmail = document.getElementById('campaignFromEmail').value;
+        const fromName = document.getElementById('campaignFromName').value;
+        const replyTo = document.getElementById('campaignReplyTo').value || fromEmail;
+        
+        // Validate
+        if (!campaignName) {
+            alert('Please enter campaign name');
+            return;
+        }
+        if (!templateId) {
+            alert('Please select a template');
+            return;
+        }
+        if (listIds.length === 0) {
+            alert('Please select at least one list');
+            return;
+        }
+        if (!provider) {
+            alert('Please select an email provider');
+            return;
+        }
+        if (!fromEmail || !fromName) {
+            alert('Please enter from email and name');
+            return;
+        }
+        
+        if (!confirm(`Send campaign "${campaignName}" to ${listIds.length} list(s) using ${provider.toUpperCase()}?`)) {
+            return;
+        }
+        
+        window.showLoading();
+        
+        // Get template
+        const { data: template, error: templateError } = await window.supabase
+            .from('email_templates')
+            .select('*')
+            .eq('id', templateId)
+            .single();
+        
+        if (templateError) throw templateError;
+        
+        // Get contacts from selected lists
+        let contacts = [];
+        
+        if (provider === 'smtp') {
+            // Use backend to get contacts
+            const response = await fetch(`${window.CONFIG.BACKEND_URL}/api/get-contacts`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    listIds: listIds
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to get contacts');
+            }
+            
+            contacts = result.contacts || [];
+            
+        } else {
+            // Get contacts directly from Supabase
+            const { data: listContacts, error: listError } = await window.supabase
+                .from('list_contacts')
+                .select('contact_id')
+                .in('list_id', listIds);
+            
+            if (listError) throw listError;
+            
+            const contactIds = [...new Set(listContacts.map(lc => lc.contact_id))];
+            
+            if (contactIds.length === 0) {
+                alert('No contacts found in selected lists');
+                window.hideLoading();
+                return;
+            }
+            
+            const { data: contactsData, error: contactsError } = await window.supabase
+                .from('contacts')
+                .select('*')
+                .in('id', contactIds)
+                .eq('subscribed', true);
+            
+            if (contactsError) throw contactsError;
+            
+            contacts = contactsData || [];
+        }
+        
+        if (!contacts || contacts.length === 0) {
+            alert('No active subscribers found in selected lists');
+            window.hideLoading();
+            return;
+        }
+        
+        // Create campaign record
+        const { data: campaign, error: campaignError } = await window.supabase
+            .from('campaigns')
+            .insert({
+                user_id: user.id,
+                name: campaignName,
+                template_id: templateId,
+                list_ids: listIds,
+                status: 'sending',
+                total_recipients: contacts.length,
+                provider: provider,
+                from_email: fromEmail,
+                from_name: fromName,
+                reply_to: replyTo,
+                sent_count: 0,
+                failed_count: 0,
+                created_at: new Date().toISOString()
+            })
+            .select()
+            .single();
+        
+        if (campaignError) throw campaignError;
+        
+        // Send emails
+        let sentCount = 0;
+        let failedCount = 0;
+        
+        if (provider === 'smtp') {
+            // Send via backend SMTP
+            const response = await fetch(`${window.CONFIG.BACKEND_URL}/api/send-bulk-emails`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    contacts: contacts,
+                    from_email: fromEmail,
+                    from_name: fromName,
+                    subject: template.subject,
+                    message_html: template.content_html,
+                    reply_to: replyTo
+                })
+            });
+            
+            const result = await response.json();
+            
+            if (!result.success) {
+                throw new Error(result.error || 'Failed to send emails');
+            }
+            
+            sentCount = result.sentCount || 0;
+            failedCount = result.failedCount || 0;
+            
+        } else if (provider === 'emailjs') {
+            // Send via EmailJS (for testing only)
+            for (const contact of contacts) {
+                try {
+                    const personalizedContent = template.content_html
+                        .replace(/\{\{first_name\}\}/g, contact.first_name || '')
+                        .replace(/\{\{last_name\}\}/g, contact.last_name || '')
+                        .replace(/\{\{email\}\}/g, contact.email)
+                        .replace(/\{\{company\}\}/g, contact.company || '');
+                    
+                    const personalizedSubject = template.subject
+                        .replace(/\{\{first_name\}\}/g, contact.first_name || '')
+                        .replace(/\{\{company\}\}/g, contact.company || '');
+                    
+                    const templateParams = {
+                        to_email: contact.email,
+                        to_name: contact.first_name || contact.email,
+                        from_email: fromEmail,
+                        from_name: fromName,
+                        subject: personalizedSubject,
+                        message_html: personalizedContent,
+                        reply_to: replyTo
+                    };
+                    
+                    await emailjs.send(
+                        window.CONFIG.EMAILJS.SERVICE_ID,
+                        window.CONFIG.EMAILJS.TEMPLATE_ID,
+                        templateParams,
+                        window.CONFIG.EMAILJS.PUBLIC_KEY
+                    );
+                    
+                    sentCount++;
+                    
+                } catch (error) {
+                    console.error(`Error sending to ${contact.email}:`, error);
+                    failedCount++;
+                }
+                
+                // Small delay to prevent rate limiting
+                await new Promise(resolve => setTimeout(resolve, 100));
+            }
         }
         
         // Update campaign status
-        await gbSupabase.update('campaigns', {
-            status: 'sent',
-            sent_at: new Date().toISOString()
-        }, { id: campaignId });
+        const finalStatus = failedCount === 0 ? 'sent' : 'partially_sent';
+        await window.supabase
+            .from('campaigns')
+            .update({
+                status: finalStatus,
+                sent_count: sentCount,
+                failed_count: failedCount,
+                sent_at: new Date().toISOString()
+            })
+            .eq('id', campaign.id);
         
-        showToast(`Campaign sent to ${recipients.length} recipients!`, 'success');
-        loadCampaigns();
+        window.hideLoading();
+        
+        alert(`Campaign sent!\n\nSent: ${sentCount}\nFailed: ${failedCount}`);
+        
+        // Reset form and reload campaigns
+        document.getElementById('campaignForm').style.display = 'none';
+        document.getElementById('welcomeMessage').style.display = 'block';
+        window.loadCampaigns();
         
     } catch (error) {
         console.error('Error sending campaign:', error);
-        showToast('Error sending campaign: ' + error.message, 'error');
+        window.hideLoading();
+        alert('Error sending campaign: ' + error.message);
     }
-}
+};
 
-async function viewCampaignAnalytics(campaignId) {
+// Load campaigns
+window.loadCampaigns = async function() {
     try {
-        const { data: campaign } = await gbSupabase.client
+        const user = await window.getCurrentUser();
+        if (!user) return;
+        
+        const { data: campaigns, error } = await window.supabase
+            .from('campaigns')
+            .select('*')
+            .eq('user_id', user.id)
+            .order('created_at', { ascending: false })
+            .limit(20);
+        
+        if (error) throw error;
+        
+        const campaignList = document.getElementById('campaignList');
+        campaignList.innerHTML = '';
+        
+        if (!campaigns || campaigns.length === 0) {
+            campaignList.innerHTML = '<p class="text-muted text-center">No campaigns yet</p>';
+            return;
+        }
+        
+        campaigns.forEach(campaign => {
+            const statusClass = window.getStatusClass(campaign.status);
+            const campaignItem = document.createElement('div');
+            campaignItem.className = 'campaign-card';
+            campaignItem.innerHTML = `
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <strong>${campaign.name}</strong>
+                        <p class="mb-1 text-muted small">${campaign.total_recipients || 0} recipients</p>
+                        <span class="status-badge ${statusClass}">${campaign.status}</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary" onclick="window.viewCampaign('${campaign.id}')">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </div>
+            `;
+            campaignList.appendChild(campaignItem);
+        });
+        
+    } catch (error) {
+        console.error('Error loading campaigns:', error);
+        document.getElementById('campaignList').innerHTML = '<p class="text-muted text-center">Error loading campaigns</p>';
+    }
+};
+
+// Get status class
+window.getStatusClass = function(status) {
+    switch(status) {
+        case 'draft': return 'status-draft';
+        case 'sending': return 'status-sending';
+        case 'sent': return 'status-sent';
+        case 'partially_sent': return 'status-sending';
+        case 'failed': return 'status-failed';
+        default: return 'status-draft';
+    }
+};
+
+// View campaign details
+window.viewCampaign = async function(campaignId) {
+    try {
+        const { data: campaign, error } = await window.supabase
             .from('campaigns')
             .select('*')
             .eq('id', campaignId)
             .single();
         
-        if (!campaign) return;
-        
-        document.getElementById('analyticsModalTitle').textContent = `Analytics: ${campaign.name}`;
-        document.getElementById('analyticsSent').textContent = campaign.recipients_count || 0;
-        document.getElementById('analyticsOpened').textContent = campaign.opens_count || 0;
-        document.getElementById('analyticsClicked').textContent = campaign.clicks_count || 0;
-        document.getElementById('analyticsBounced').textContent = campaign.bounces_count || 0;
-        
-        // Load recipients
-        const { data: logs } = await gbSupabase.client
-            .from('email_logs')
-            .select('*')
-            .eq('campaign_id', campaignId);
-        
-        const tbody = document.getElementById('analyticsRecipients');
-        if (logs && logs.length > 0) {
-            tbody.innerHTML = logs.map(log => `
-                <tr>
-                    <td>${log.email}</td>
-                    <td><span class="badge bg-success">${log.status}</span></td>
-                    <td>${log.opened_at ? 'Yes' : 'No'}</td>
-                    <td>${log.clicked_at ? 'Yes' : 'No'}</td>
-                    <td>${log.sent_at ? GBUtils.formatDate(log.sent_at, 'time') : '-'}</td>
-                </tr>
-            `).join('');
-        } else {
-            tbody.innerHTML = '<tr><td colspan="5" class="text-center">No recipients found</td></tr>';
-        }
-        
-        const modal = new bootstrap.Modal(document.getElementById('campaignAnalyticsModal'));
-        modal.show();
-        
-    } catch (error) {
-        showToast('Error loading analytics: ' + error.message, 'error');
-    }
-}
-
-async function pauseCampaign(campaignId) {
-    if (!confirm('Pause this campaign?')) return;
-    
-    try {
-        const { error } = await gbSupabase.update('campaigns', {
-            status: 'paused'
-        }, { id: campaignId });
-        
-        if (error) throw error;
-        showToast('Campaign paused', 'success');
-        loadCampaigns();
-        
-    } catch (error) {
-        showToast('Error pausing campaign: ' + error.message, 'error');
-    }
-}
-
-async function deleteCampaign(campaignId) {
-    if (!confirm('Are you sure you want to delete this campaign? This cannot be undone.')) return;
-    
-    try {
-        const { error } = await gbSupabase.delete('campaigns', { id: campaignId });
         if (error) throw error;
         
-        showToast('Campaign deleted', 'success');
-        loadCampaigns();
+        document.getElementById('campaignForm').style.display = 'none';
+        document.getElementById('welcomeMessage').style.display = 'none';
+        document.getElementById('campaignDetails').style.display = 'block';
+        
+        document.getElementById('campaignDetailsTitle').textContent = campaign.name;
+        document.getElementById('campaignDetailsBody').innerHTML = `
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Status:</strong> ${campaign.status}</p>
+                    <p><strong>Provider:</strong> ${campaign.provider}</p>
+                    <p><strong>From:</strong> ${campaign.from_name} (${campaign.from_email})</p>
+                    <p><strong>Created:</strong> ${window.formatDate(campaign.created_at)}</p>
+                    ${campaign.sent_at ? `<p><strong>Sent:</strong> ${window.formatDate(campaign.sent_at)}</p>` : ''}
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Total Recipients:</strong> ${campaign.total_recipients || 0}</p>
+                    <p><strong>Sent:</strong> ${campaign.sent_count || 0}</p>
+                    <p><strong>Failed:</strong> ${campaign.failed_count || 0}</p>
+                    <p><strong>Opened:</strong> ${campaign.opened_count || 0}</p>
+                    <p><strong>Clicked:</strong> ${campaign.clicked_count || 0}</p>
+                </div>
+            </div>
+        `;
         
     } catch (error) {
-        showToast('Error deleting campaign: ' + error.message, 'error');
+        console.error('Error viewing campaign:', error);
+        alert('Error loading campaign details');
     }
-}
+};
 
-function insertCampaignVariable(variable) {
-    const textarea = document.getElementById('campaignContent');
-    const cursorPos = textarea.selectionStart;
-    const textBefore = textarea.value.substring(0, cursorPos);
-    const textAfter = textarea.value.substring(cursorPos);
-    textarea.value = textBefore + variable + textAfter;
-    textarea.focus();
-    textarea.selectionStart = cursorPos + variable.length;
-    textarea.selectionEnd = cursorPos + variable.length;
-}
+// Show campaign tips
+window.showCampaignTips = function() {
+    alert('Campaign Tips:\n\n1. Test your email before sending to everyone\n2. Segment your lists for better targeting\n3. Use A/B testing for subject lines\n4. Monitor open and click rates\n5. Follow up with non-openers after 3-5 days\n6. Keep your email list clean and updated\n7. Personalize emails with recipient names');
+};
 
-function exportCampaignReport(format) {
-    // Implementation for exporting reports
-    showToast(`Exporting ${format.toUpperCase()} report...`, 'info');
-    // This would generate and download the report
-}
-
-// Make functions globally accessible
-window.initCampaignsModule = initCampaignsModule;
-window.loadCampaigns = loadCampaigns;
-window.showCampaignsGuide = showCampaignsGuide;
-window.showCreateCampaignModal = showCreateCampaignModal;
-window.viewCampaignAnalytics = viewCampaignAnalytics;
-window.pauseCampaign = pauseCampaign;
-window.deleteCampaign = deleteCampaign;
-window.createCampaign = createCampaign;
-window.changeStep = changeStep;
-window.toggleABTestFields = toggleABTestFields;
-window.toggleScheduleOptions = toggleScheduleOptions;
-window.loadTemplateContent = loadTemplateContent;
-window.insertCampaignVariable = insertCampaignVariable;
-window.filterCampaigns = filterCampaigns;
-window.resetFilters = resetFilters;
-window.exportCampaignReport = exportCampaignReport;
+// Load campaigns when module loads
+document.addEventListener('DOMContentLoaded', function() {
+    window.loadCampaigns();
+});
 </script>
